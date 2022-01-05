@@ -18,7 +18,7 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     volumes:
-      - ./_containers/database:/var/lib/postgresql/data
+      - ./.containers/database:/var/lib/postgresql/data
     ports:
       - 5100:5432
 
@@ -28,8 +28,8 @@ services:
     depends_on:
       - db
     volumes:
-      - ./_files/dev_servers.json:/pgadmin4/servers.json
-      - ./_containers/database_ui:/var/lib/pgadmin
+      - ./.files/dev_servers.json:/pgadmin4/servers.json
+      - ./.containers/database_ui:/var/lib/pgadmin
     ports:
       - "5101:80"
     environment:

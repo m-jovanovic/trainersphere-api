@@ -8,8 +8,4 @@
 
   <Import Project="..\..\CodeAnalysis.targets" />
 
-  <ItemGroup>
-    <ProjectReference Include="..\Common.Primitives\Common.Primitives.csproj" />
-  </ItemGroup>
-
 </Project>

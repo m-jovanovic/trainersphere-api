@@ -1,4 +1,4 @@
-﻿namespace Common.Primitives.Result
+﻿namespace Domain.Result
 {
     /// <summary>
     /// Contains extension methods for working with the <see cref="Result"/> class.

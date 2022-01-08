@@ -1,7 +1,7 @@
-﻿using Common.Primitives.Result;
+﻿using Domain.Result;
 using MediatR;
 
-namespace Common.Abstractions.Messaging
+namespace Application.Messaging
 {
     /// <summary>
     /// Represents the query handler interface.

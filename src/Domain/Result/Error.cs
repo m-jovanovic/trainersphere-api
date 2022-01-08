@@ -1,4 +1,4 @@
-﻿namespace Common.Primitives.Result
+﻿namespace Domain.Result
 {
     /// <summary>
     /// Represents an error.

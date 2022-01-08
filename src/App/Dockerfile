@@ -7,14 +7,10 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 
 # Common
-COPY ["Common.Primitives/Common.Primitives.csproj", "Common.Primitives/"]
-COPY ["Common.Abstractions/Common.Abstractions.csproj", "Common.Abstractions/"]
-
-# Core
 COPY ["Domain/Domain.csproj", "Domain/"]
+COPY ["Application/Application.csproj", "Application/"]
 
-
-# External
+# Modules
 
 # Executable
 COPY ["App/App.csproj", "App/"]

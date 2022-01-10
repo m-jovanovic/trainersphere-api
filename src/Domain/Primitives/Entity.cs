@@ -5,6 +5,8 @@
     /// </summary>
     public abstract class Entity : IEquatable<Entity>
     {
+        private readonly List<IDomainEvent> _domainEvents = new();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Entity"/> class.
         /// </summary>
@@ -34,6 +36,11 @@
         /// Gets the entity identifier.
         /// </summary>
         public Guid Id { get; private set; }
+
+        /// <summary>
+        /// Gets the domain events.
+        /// </summary>
+        public IReadOnlyList<IDomainEvent> DomainEvents => _domainEvents.ToList();
 
         public static bool operator ==(Entity? a, Entity? b)
         {
@@ -96,5 +103,16 @@
 
         /// <inheritdoc />
         public override int GetHashCode() => Id.GetHashCode() * 41;
+
+        /// <summary>
+        /// Clears the list of domain events.
+        /// </summary>
+        public void ClearDomainEvents() => _domainEvents.Clear();
+
+        /// <summary>
+        /// Raises the specified domain event.
+        /// </summary>
+        /// <param name="domainEvent">The domain event.</param>
+        protected void RaiseDomainEvent(IDomainEvent domainEvent) => _domainEvents.Add(domainEvent);
     }
 }

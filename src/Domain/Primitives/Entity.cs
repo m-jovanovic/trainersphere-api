@@ -35,7 +35,7 @@
         /// <summary>
         /// Gets the entity identifier.
         /// </summary>
-        public Guid Id { get; private set; }
+        public Guid Id { get; private init; }
 
         /// <summary>
         /// Gets the domain events.

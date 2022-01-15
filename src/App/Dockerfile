@@ -9,6 +9,7 @@ WORKDIR /src
 # Common
 COPY ["Domain/Domain.csproj", "Domain/"]
 COPY ["Application/Application.csproj", "Application/"]
+COPY ["Infrastructure/Infrastructure.csproj", "Infrastructure/"]
 
 # Modules
 

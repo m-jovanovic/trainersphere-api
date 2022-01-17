@@ -20,7 +20,7 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Install dependencies 🛠
-        run: dotnet restore ./TrainerHub.sln
+        run: dotnet restore ./TrainerSphere.sln
 
       - name: Build 🧱
-        run: dotnet build ./TrainerHub.sln --configuration Release --no-restore
+        run: dotnet build ./TrainerSphere.sln --configuration Release --no-restore

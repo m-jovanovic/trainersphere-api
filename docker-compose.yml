@@ -14,7 +14,7 @@ services:
     image: postgres:14.1
     container_name: Database
     environment:
-      - POSTGRES_DB=trainerhub
+      - POSTGRES_DB=trainersphere
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     volumes:

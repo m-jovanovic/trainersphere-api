@@ -1,118 +1,117 @@
-﻿namespace Domain.Primitives
+﻿namespace Domain.Primitives;
+
+/// <summary>
+/// Represents the abstract entity primitive.
+/// </summary>
+public abstract class Entity : IEquatable<Entity>
 {
+    private readonly List<IDomainEvent> _domainEvents = new();
+
     /// <summary>
-    /// Represents the abstract entity primitive.
+    /// Initializes a new instance of the <see cref="Entity"/> class.
     /// </summary>
-    public abstract class Entity : IEquatable<Entity>
+    /// <param name="id">The entity identifier.</param>
+    protected Entity(Guid id)
+        : this()
     {
-        private readonly List<IDomainEvent> _domainEvents = new();
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Entity"/> class.
-        /// </summary>
-        /// <param name="id">The entity identifier.</param>
-        protected Entity(Guid id)
-            : this()
+        if (id == Guid.Empty)
         {
-            if (id == Guid.Empty)
-            {
-                throw new ArgumentException("The entity identifier is required.", nameof(id));
-            }
-
-            Id = id;
+            throw new ArgumentException("The entity identifier is required.", nameof(id));
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Entity"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Required for deserialization.
-        /// </remarks>
-        protected Entity()
-        {
-        }
-
-        /// <summary>
-        /// Gets the entity identifier.
-        /// </summary>
-        public Guid Id { get; private init; }
-
-        /// <summary>
-        /// Gets the domain events.
-        /// </summary>
-        public IReadOnlyList<IDomainEvent> DomainEvents => _domainEvents.ToList();
-
-        public static bool operator ==(Entity? a, Entity? b)
-        {
-            if (a is null && b is null)
-            {
-                return true;
-            }
-
-            if (a is null || b is null)
-            {
-                return false;
-            }
-
-            return a.Equals(b);
-        }
-
-        public static bool operator !=(Entity? a, Entity? b) => !(a == b);
-
-        /// <inheritdoc />
-        public bool Equals(Entity? other)
-        {
-            if (other is null)
-            {
-                return false;
-            }
-
-            if (other.GetType() != GetType())
-            {
-                return false;
-            }
-
-            return ReferenceEquals(this, other) || Id == other.Id;
-        }
-
-        /// <inheritdoc />
-        public override bool Equals(object? obj)
-        {
-            if (obj is null)
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-
-            if (obj is not Entity other)
-            {
-                return false;
-            }
-
-            if (Id == Guid.Empty || other.Id == Guid.Empty)
-            {
-                return false;
-            }
-
-            return Id == other.Id;
-        }
-
-        /// <inheritdoc />
-        public override int GetHashCode() => Id.GetHashCode() * 41;
-
-        /// <summary>
-        /// Clears the list of domain events.
-        /// </summary>
-        public void ClearDomainEvents() => _domainEvents.Clear();
-
-        /// <summary>
-        /// Raises the specified domain event.
-        /// </summary>
-        /// <param name="domainEvent">The domain event.</param>
-        protected void RaiseDomainEvent(IDomainEvent domainEvent) => _domainEvents.Add(domainEvent);
+        Id = id;
     }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Entity"/> class.
+    /// </summary>
+    /// <remarks>
+    /// Required for deserialization.
+    /// </remarks>
+    protected Entity()
+    {
+    }
+
+    /// <summary>
+    /// Gets the entity identifier.
+    /// </summary>
+    public Guid Id { get; private init; }
+
+    /// <summary>
+    /// Gets the domain events.
+    /// </summary>
+    public IReadOnlyList<IDomainEvent> DomainEvents => _domainEvents.ToList();
+
+    public static bool operator ==(Entity? a, Entity? b)
+    {
+        if (a is null && b is null)
+        {
+            return true;
+        }
+
+        if (a is null || b is null)
+        {
+            return false;
+        }
+
+        return a.Equals(b);
+    }
+
+    public static bool operator !=(Entity? a, Entity? b) => !(a == b);
+
+    /// <inheritdoc />
+    public bool Equals(Entity? other)
+    {
+        if (other is null)
+        {
+            return false;
+        }
+
+        if (other.GetType() != GetType())
+        {
+            return false;
+        }
+
+        return ReferenceEquals(this, other) || Id == other.Id;
+    }
+
+    /// <inheritdoc />
+    public override bool Equals(object? obj)
+    {
+        if (obj is null)
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, obj))
+        {
+            return true;
+        }
+
+        if (obj is not Entity other)
+        {
+            return false;
+        }
+
+        if (Id == Guid.Empty || other.Id == Guid.Empty)
+        {
+            return false;
+        }
+
+        return Id == other.Id;
+    }
+
+    /// <inheritdoc />
+    public override int GetHashCode() => Id.GetHashCode() * 41;
+
+    /// <summary>
+    /// Clears the list of domain events.
+    /// </summary>
+    public void ClearDomainEvents() => _domainEvents.Clear();
+
+    /// <summary>
+    /// Raises the specified domain event.
+    /// </summary>
+    /// <param name="domainEvent">The domain event.</param>
+    protected void RaiseDomainEvent(IDomainEvent domainEvent) => _domainEvents.Add(domainEvent);
 }

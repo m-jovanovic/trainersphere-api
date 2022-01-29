@@ -1,9 +1,8 @@
-﻿namespace Domain.Primitives
+﻿namespace Domain.Primitives;
+
+/// <summary>
+/// Represents the domain event interface.
+/// </summary>
+public interface IDomainEvent
 {
-    /// <summary>
-    /// Represents the domain event interface.
-    /// </summary>
-    public interface IDomainEvent
-    {
-    }
 }

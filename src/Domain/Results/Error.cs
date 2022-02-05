@@ -1,4 +1,4 @@
-﻿namespace Domain.Result;
+﻿namespace Domain.Results;
 
 /// <summary>
 /// Represents an error.

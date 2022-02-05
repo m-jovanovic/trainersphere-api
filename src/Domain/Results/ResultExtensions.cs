@@ -1,4 +1,4 @@
-﻿namespace Domain.Result;
+﻿namespace Domain.Results;
 
 /// <summary>
 /// Contains extension methods for working with the <see cref="Result"/> class.

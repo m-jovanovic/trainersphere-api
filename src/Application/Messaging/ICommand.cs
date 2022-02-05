@@ -1,4 +1,4 @@
-﻿using Domain.Result;
+﻿using Domain.Results;
 using MediatR;
 
 namespace Application.Messaging;

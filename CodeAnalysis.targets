@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
-    <AnalysisLevel>preview</AnalysisLevel>
-    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>All</AnalysisMode>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>

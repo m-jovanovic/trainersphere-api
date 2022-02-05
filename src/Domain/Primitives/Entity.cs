@@ -37,11 +37,6 @@ public abstract class Entity : IEquatable<Entity>
     /// </summary>
     public Guid Id { get; private init; }
 
-    /// <summary>
-    /// Gets the domain events.
-    /// </summary>
-    public IReadOnlyList<IDomainEvent> DomainEvents => _domainEvents.ToList();
-
     public static bool operator ==(Entity? a, Entity? b)
     {
         if (a is null && b is null)
@@ -59,8 +54,14 @@ public abstract class Entity : IEquatable<Entity>
 
     public static bool operator !=(Entity? a, Entity? b) => !(a == b);
 
+    /// <summary>
+    /// Gets the domain events.
+    /// </summary>
+    /// <returns>The readonly list of domain events.</returns>
+    public IReadOnlyList<IDomainEvent> GetDomainEvents() => _domainEvents.ToList();
+
     /// <inheritdoc />
-    public bool Equals(Entity? other)
+    public virtual bool Equals(Entity? other)
     {
         if (other is null)
         {

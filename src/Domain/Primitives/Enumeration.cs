@@ -32,12 +32,6 @@ public abstract class Enumeration<TEnum> : IEquatable<Enumeration<TEnum>>
     protected Enumeration() => Name = string.Empty;
 
     /// <summary>
-    /// Gets the enumeration values.
-    /// </summary>
-    /// <returns>The read-only collection of enumeration values.</returns>
-    public static IReadOnlyCollection<TEnum> List => EnumerationsDictionary.Value.Values.ToList();
-
-    /// <summary>
     /// Gets the value.
     /// </summary>
     public int Value { get; private init; }
@@ -65,6 +59,12 @@ public abstract class Enumeration<TEnum> : IEquatable<Enumeration<TEnum>>
     public static bool operator !=(Enumeration<TEnum> a, Enumeration<TEnum> b) => !(a == b);
 
     /// <summary>
+    /// Gets the enumeration values.
+    /// </summary>
+    /// <returns>The read-only collection of enumeration values.</returns>
+    public static IReadOnlyCollection<TEnum> GetValues() => EnumerationsDictionary.Value.Values.ToList();
+
+    /// <summary>
     /// Creates an enumeration of the specified type based on the specified value.
     /// </summary>
     /// <param name="value">The enumeration value.</param>
@@ -86,7 +86,7 @@ public abstract class Enumeration<TEnum> : IEquatable<Enumeration<TEnum>>
     public static bool ContainsValue(int value) => EnumerationsDictionary.Value.ContainsKey(value);
 
     /// <inheritdoc />
-    public bool Equals(Enumeration<TEnum>? other)
+    public virtual bool Equals(Enumeration<TEnum>? other)
     {
         if (other is null)
         {

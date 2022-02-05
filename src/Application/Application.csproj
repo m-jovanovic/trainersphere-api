@@ -6,8 +6,6 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <Import Project="..\..\CodeAnalysis.targets" />
-
   <ItemGroup>
     <PackageReference Include="MediatR" Version="10.0.1" />
   </ItemGroup>

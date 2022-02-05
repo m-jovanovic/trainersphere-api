@@ -23,7 +23,7 @@ public abstract class ValueObject : IEquatable<ValueObject>
     public static bool operator !=(ValueObject? a, ValueObject? b) => !(a == b);
 
     /// <inheritdoc />
-    public bool Equals(ValueObject? other) => other is not null && ValuesAreEqual(other);
+    public virtual bool Equals(ValueObject? other) => other is not null && ValuesAreEqual(other);
 
     /// <inheritdoc />
     public override bool Equals(object? obj) => obj is ValueObject valueObject && ValuesAreEqual(valueObject);

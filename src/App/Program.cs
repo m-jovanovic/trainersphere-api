@@ -1,20 +1,13 @@
+using App.Utility;
 using Serilog;
 
-Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()
-    .CreateBootstrapLogger();
-
-Log.Information("Starting up.");
-
-try
+LoggingUtility.Run(() =>
 {
     WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
     builder.Services.AddEndpointsApiExplorer();
 
     builder.Services.AddSwaggerGen();
-
-    builder.Logging.ClearProviders();
 
     builder.Host.UseSerilog((_, loggerConfiguration) =>
         loggerConfiguration
@@ -34,13 +27,4 @@ try
     app.UseHttpsRedirection();
 
     app.Run();
-}
-catch (Exception e)
-{
-    Log.Fatal(e, "Unhandled exception.");
-}
-finally
-{
-    Log.Information("Shutting down.");
-    Log.CloseAndFlush();
-}
+});

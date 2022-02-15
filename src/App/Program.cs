@@ -1,30 +1,46 @@
 using Serilog;
-using Serilog.Events;
-
-WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddEndpointsApiExplorer();
-
-builder.Services.AddSwaggerGen();
 
 Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-    .Enrich.FromLogContext()
     .WriteTo.Console()
-    .CreateLogger();
+    .CreateBootstrapLogger();
 
-builder.Logging.ClearProviders();
+Log.Information("Starting up.");
 
-builder.Logging.AddSerilog();
-
-WebApplication app = builder.Build();
-
-if (app.Environment.IsDevelopment())
+try
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+    builder.Services.AddEndpointsApiExplorer();
+
+    builder.Services.AddSwaggerGen();
+
+    builder.Logging.ClearProviders();
+
+    builder.Host.UseSerilog((_, loggerConfiguration) =>
+        loggerConfiguration
+            .ReadFrom
+            .Configuration(builder.Configuration));
+
+    WebApplication app = builder.Build();
+
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+
+    app.UseSerilogRequestLogging();
+
+    app.UseHttpsRedirection();
+
+    app.Run();
 }
-
-app.UseHttpsRedirection();
-
-app.Run();
+catch (Exception e)
+{
+    Log.Fatal(e, "Unhandled exception.");
+}
+finally
+{
+    Log.Information("Shutting down.");
+    Log.CloseAndFlush();
+}

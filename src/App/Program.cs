@@ -1,15 +1,12 @@
 using App.Extensions;
 using App.Utility;
 using Serilog;
-using Users.Infrastructure.Configuration;
 
 LoggingUtility.Run(() =>
 {
     WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
     builder.Services.InstallServicesFromAssembly(App.AssemblyReference.Assembly);
-
-    UsersStartup.Initialize(builder.Services);
 
     builder.Host.UseSerilog((_, loggerConfiguration) =>
         loggerConfiguration

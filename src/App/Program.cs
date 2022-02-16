@@ -6,7 +6,12 @@ LoggingUtility.Run(() =>
 {
     WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-    builder.Services.AddSwaggerGen(o => o.UseApiEndpoints());
+    builder.Services.AddSwaggerGen(o =>
+    {
+        o.UseApiEndpoints();
+
+        o.EnableAnnotations();
+    });
 
     builder.Services
         .AddControllers()

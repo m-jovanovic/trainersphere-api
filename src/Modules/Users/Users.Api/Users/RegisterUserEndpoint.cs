@@ -6,16 +6,19 @@ using Users.Application.Boundary.Users.Commands.RegisterUser;
 
 namespace Users.Api.Users;
 
-public sealed class RegisterUser : EndpointBaseAsync
+public sealed class RegisterUserEndpoint : EndpointBaseAsync
     .WithoutRequest
     .WithActionResult
 {
     private readonly ISender _sender;
 
-    public RegisterUser(ISender sender) => _sender = sender;
+    public RegisterUserEndpoint(ISender sender) => _sender = sender;
 
-    [HttpPost("users")]
-    [SwaggerOperation(Tags = new[] { "Users" })]
+    [HttpPost(Routes.Register)]
+    [SwaggerOperation(
+        Summary = "Registers a new user.",
+        Description = "Registers a new user based on the specified request.",
+        Tags = new[] { Routes.Tag })]
     public override async Task<ActionResult> HandleAsync(CancellationToken cancellationToken = default)
     {
         await _sender.Send(new RegisterUserCommand(string.Empty, string.Empty, string.Empty, string.Empty), cancellationToken);

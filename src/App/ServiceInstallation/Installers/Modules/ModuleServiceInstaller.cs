@@ -9,7 +9,10 @@ namespace App.ServiceInstallation.Installers.Modules;
 /// </summary>
 internal sealed class ModuleServiceInstaller : IServiceInstaller
 {
-    private static readonly Assembly[] ModuleAssemblies = Array.Empty<Assembly>();
+    private static readonly Assembly[] ModuleAssemblies =
+    {
+        Users.Infrastructure.AssemblyReference.Assembly
+    };
 
     /// <inheritdoc />
     void IServiceInstaller.Install(IServiceCollection services) =>

@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 using App.ServiceInstallation;
-using App.ServiceInstallation.Infrastructure;
+using Infrastructure.Configuration;
 using Shared.Extensions;
 
 namespace App.Extensions;
@@ -16,7 +16,7 @@ internal static class ServiceCollectionExtensions
     /// <param name="services">The services.</param>
     /// <param name="assembly">The assembly to scan for service installers implementations.</param>
     internal static void InstallServicesFromAssembly(this IServiceCollection services, Assembly assembly) =>
-        ServiceInstallerFactory
-            .CreateServiceInstallersFromAssembly(assembly)
+        InstanceFactory
+            .CreateFromAssemblies<IServiceInstaller>(assembly)
             .ForEach(serviceInstaller => serviceInstaller.Install(services));
 }

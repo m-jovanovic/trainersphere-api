@@ -1,5 +1,5 @@
 ﻿using System.Reflection;
-using App.ServiceInstallation.Infrastructure;
+using Infrastructure.Configuration;
 using Shared.Extensions;
 
 namespace App.ServiceInstallation.Installers.Modules;
@@ -16,7 +16,7 @@ internal sealed class ModuleServiceInstaller : IServiceInstaller
 
     /// <inheritdoc />
     void IServiceInstaller.Install(IServiceCollection services) =>
-        ModuleInstallerFactory
-            .CreateModuleInstallerFromAssemblies(ModuleAssemblies)
+        InstanceFactory
+            .CreateFromAssemblies<IModuleInstaller>(ModuleAssemblies)
             .ForEach(moduleInstaller => moduleInstaller.Install(services));
 }

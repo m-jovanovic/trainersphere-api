@@ -26,4 +26,18 @@ public static class FunctionalExtensions
             finallyAction();
         }
     }
+
+    /// <summary>
+    /// Invokes the specified action for each element in the collection.
+    /// </summary>
+    /// <typeparam name="T">The collection type.</typeparam>
+    /// <param name="collection">The collection.</param>
+    /// <param name="action">The action to invoke for each element.</param>
+    public static void ForEach<T>(this IEnumerable<T> collection, Action<T> action)
+    {
+        foreach (T element in collection)
+        {
+            action(element);
+        }
+    }
 }

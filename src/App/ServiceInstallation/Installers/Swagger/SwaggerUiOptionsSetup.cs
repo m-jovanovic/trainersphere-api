@@ -1,0 +1,12 @@
+﻿using Microsoft.Extensions.Options;
+using Swashbuckle.AspNetCore.SwaggerUI;
+
+namespace App.ServiceInstallation.Installers.Swagger;
+
+/// <summary>
+/// Represents the <see cref="SwaggerUIOptions"/> setup.
+/// </summary>
+internal sealed class SwaggerUiOptionsSetup : IConfigureOptions<SwaggerUIOptions>
+{
+    public void Configure(SwaggerUIOptions options) => options.DisplayRequestDuration();
+}

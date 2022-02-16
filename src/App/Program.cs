@@ -1,13 +1,18 @@
 using App.Utility;
+using MediatR;
 using Serilog;
 
 LoggingUtility.Run(() =>
 {
     WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen(o => o.UseApiEndpoints());
 
-    builder.Services.AddSwaggerGen();
+    builder.Services
+        .AddControllers()
+        .AddApplicationPart(Users.Api.AssemblyReference.Assembly);
+
+    builder.Services.AddMediatR(Users.Application.AssemblyReference.Assembly);
 
     builder.Host.UseSerilog((_, loggerConfiguration) =>
         loggerConfiguration
@@ -19,12 +24,18 @@ LoggingUtility.Run(() =>
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
-        app.UseSwaggerUI();
+        app.UseSwaggerUI(o => o.DisplayRequestDuration());
     }
 
     app.UseSerilogRequestLogging();
 
     app.UseHttpsRedirection();
+
+    app.UseAuthentication();
+
+    app.UseAuthorization();
+
+    app.MapControllers();
 
     app.Run();
 });

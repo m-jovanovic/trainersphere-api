@@ -7,10 +7,10 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 
 # Common
-COPY ["Shared/Shared.csproj", "Shared/"]
-COPY ["Domain/Domain.csproj", "Domain/"]
-COPY ["Application/Application.csproj", "Application/"]
-COPY ["Infrastructure/Infrastructure.csproj", "Infrastructure/"]
+COPY ["Common/Shared/Shared.csproj", "Common/Shared/"]
+COPY ["Common/Domain/Domain.csproj", "Common/Domain/"]
+COPY ["Common/Application/Application.csproj", "Common/Application/"]
+COPY ["Common/Infrastructure/Infrastructure.csproj", "Common/Infrastructure/"]
 
 # Modules
 

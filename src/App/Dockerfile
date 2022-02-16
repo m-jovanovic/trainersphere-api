@@ -17,6 +17,7 @@ COPY ["Modules/Users/Users.Domain.csproj", "Modules/Users/Users.Domain/"]
 COPY ["Modules/Users/Users.Application.Boundary.csproj", "Modules/Users/Application.Boundary/"]
 COPY ["Modules/Users/Users.Application.csproj", "Modules/Users/Users.Application/"]
 COPY ["Modules/Users/Users.Api.csproj", "Modules/Users/Users.Api/"]
+COPY ["Modules/Users/Users.Infrastructure.csproj", "Modules/Users/Users.Infrastructure/"]
 
 # Executable
 COPY ["App/App.csproj", "App/"]

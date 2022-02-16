@@ -1,5 +1,8 @@
 ﻿namespace App.ServiceInstallation;
 
+/// <summary>
+/// Represents the interface for installing services.
+/// </summary>
 internal interface IServiceInstaller
 {
     /// <summary>

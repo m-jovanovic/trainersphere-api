@@ -18,5 +18,5 @@ internal static class ServiceCollectionExtensions
     internal static void InstallServicesFromAssembly(this IServiceCollection services, Assembly assembly) =>
         ServiceInstallerFactory
             .CreateServiceInstallersFromAssembly(assembly)
-            .ForEach(serviceInstaller => serviceInstaller.InstallService(services));
+            .ForEach(serviceInstaller => serviceInstaller.Install(services));
 }

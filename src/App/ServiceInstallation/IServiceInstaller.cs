@@ -6,5 +6,5 @@ internal interface IServiceInstaller
     /// Installs the required services using the specified service collection.
     /// </summary>
     /// <param name="services">The service collection.</param>
-    internal void InstallService(IServiceCollection services);
+    internal void Install(IServiceCollection services);
 }

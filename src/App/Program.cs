@@ -1,21 +1,13 @@
+using App.Extensions;
 using App.Utility;
-using MediatR;
 using Serilog;
+using Users.Infrastructure.Configuration;
 
 LoggingUtility.Run(() =>
 {
     WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-    builder.Services.AddSwaggerGen(o =>
-    {
-        o.UseApiEndpoints();
-
-        o.EnableAnnotations();
-    });
-
-    builder.Services
-        .AddControllers()
-        .AddApplicationPart(Users.Api.AssemblyReference.Assembly);
+    builder.Services.InstallServicesFromAssembly(App.AssemblyReference.Assembly);
 
     UsersStartup.Initialize(builder.Services);
 
@@ -29,7 +21,7 @@ LoggingUtility.Run(() =>
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
-        app.UseSwaggerUI(o => o.DisplayRequestDuration());
+        app.UseSwaggerUI();
     }
 
     app.UseSerilogRequestLogging();

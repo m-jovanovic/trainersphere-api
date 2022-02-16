@@ -12,7 +12,7 @@ public sealed class UsersModuleInstaller : IModuleInstaller
     /// <inheritdoc />
     public void Install(IServiceCollection services)
     {
-        services.AddMediatR(AssemblyReference.Assembly);
+        services.AddMediatR(Application.AssemblyReference.Assembly);
 
         services.AddControllers().AddApplicationPart(Api.AssemblyReference.Assembly);
     }

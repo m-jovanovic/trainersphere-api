@@ -17,7 +17,7 @@ LoggingUtility.Run(() =>
         .AddControllers()
         .AddApplicationPart(Users.Api.AssemblyReference.Assembly);
 
-    builder.Services.AddMediatR(Users.Application.AssemblyReference.Assembly);
+    UsersStartup.Initialize(builder.Services);
 
     builder.Host.UseSerilog((_, loggerConfiguration) =>
         loggerConfiguration

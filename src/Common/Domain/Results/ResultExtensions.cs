@@ -53,6 +53,16 @@ public static class ResultExtensions
     /// Binds the success result based on the specified binding function, otherwise returns a failure result.
     /// </summary>
     /// <typeparam name="TIn">The input type.</typeparam>
+    /// <param name="result">The result.</param>
+    /// <param name="func">The binding function.</param>
+    /// <returns>The bound result.</returns>
+    public static async Task<Result> Bind<TIn>(this Result<TIn> result, Func<TIn, Task<Result>> func) =>
+        result.IsSuccess ? await func(result.Value) : Result.Failure(result.Error);
+
+    /// <summary>
+    /// Binds the success result based on the specified binding function, otherwise returns a failure result.
+    /// </summary>
+    /// <typeparam name="TIn">The input type.</typeparam>
     /// <typeparam name="TOut">The output type.</typeparam>
     /// <param name="resultTask">The result task.</param>
     /// <param name="func">The binding function.</param>

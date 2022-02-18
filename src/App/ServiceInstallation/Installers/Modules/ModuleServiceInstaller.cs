@@ -11,7 +11,7 @@ internal sealed class ModuleServiceInstaller : IServiceInstaller
 {
     private static readonly Assembly[] ModuleAssemblies =
     {
-        Users.Infrastructure.AssemblyReference.Assembly
+        Modules.Users.Infrastructure.AssemblyReference.Assembly
     };
 
     /// <inheritdoc />

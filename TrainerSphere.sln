@@ -31,15 +31,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{CAA0
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Users", "Users", "{B82A17B2-94DF-44C2-A459-EE6C6B68553C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Users.Domain", "src\Modules\Users\Users.Domain\Users.Domain.csproj", "{59205FD0-50B8-4559-9DE5-79E13D5EEEAF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Modules.Users.Domain", "src\Modules\Users\Modules.Users.Domain\Modules.Users.Domain.csproj", "{59205FD0-50B8-4559-9DE5-79E13D5EEEAF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Users.Application", "src\Modules\Users\Users.Application\Users.Application.csproj", "{2FD376AF-BCDA-4C3F-B257-88DB9009C5C9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Modules.Users.Application", "src\Modules\Users\Modules.Users.Application\Modules.Users.Application.csproj", "{2FD376AF-BCDA-4C3F-B257-88DB9009C5C9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Users.Application.Boundary", "src\Modules\Users\Users.Application.Boundary\Users.Application.Boundary.csproj", "{B6438F94-5A74-442D-B652-9B09881D222E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Modules.Users.Application.Boundary", "src\Modules\Users\Modules.Users.Application.Boundary\Modules.Users.Application.Boundary.csproj", "{B6438F94-5A74-442D-B652-9B09881D222E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Users.Api", "src\Modules\Users\Users.Api\Users.Api.csproj", "{7C1EC237-C13D-4B6D-920A-F6C3409427DC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Modules.Users.Endpoints", "src\Modules\Users\Modules.Users.Endpoints\Modules.Users.Endpoints.csproj", "{7C1EC237-C13D-4B6D-920A-F6C3409427DC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Users.Infrastructure", "src\Modules\Users\Users.Infrastructure\Users.Infrastructure.csproj", "{B2CB9041-BDDF-41D4-A466-453B9880A8CA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Modules.Users.Infrastructure", "src\Modules\Users\Modules.Users.Infrastructure\Modules.Users.Infrastructure.csproj", "{B2CB9041-BDDF-41D4-A466-453B9880A8CA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

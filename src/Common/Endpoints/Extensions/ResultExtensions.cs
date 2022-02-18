@@ -1,7 +1,7 @@
 ﻿using Domain.Results;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Modules.Users.Endpoints.Extensions;
+namespace Endpoints.Extensions;
 
 /// <summary>
 /// Contains extension methods for working with the <see cref="Result"/> class.

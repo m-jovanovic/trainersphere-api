@@ -1,4 +1,5 @@
 ﻿using Domain.Primitives;
+using Modules.Users.Domain.Users.Events;
 
 namespace Modules.Users.Domain.Users;
 
@@ -14,7 +15,7 @@ public sealed class User : Entity
     /// <param name="email">The email.</param>
     /// <param name="firstName">The first name.</param>
     /// <param name="lastName">The last name.</param>
-    public User(Guid id, string email, string firstName, string lastName)
+    private User(Guid id, string email, string firstName, string lastName)
         : base(id)
     {
         Email = email;
@@ -36,4 +37,21 @@ public sealed class User : Entity
     /// Gets the last name.
     /// </summary>
     public string LastName { get; private set; }
+
+    /// <summary>
+    /// Creates a new user with the specified parameters.
+    /// </summary>
+    /// <param name="id">The identifier.</param>
+    /// <param name="email">The email.</param>
+    /// <param name="firstName">The first name.</param>
+    /// <param name="lastName">The last name.</param>
+    /// <returns>The new user instance.</returns>
+    public static User Create(Guid id, string email, string firstName, string lastName)
+    {
+        var user = new User(id, email, firstName, lastName);
+
+        user.RaiseDomainEvent(new UserCreatedDomainEvent(user.Id, user.Email, user.FirstName, user.LastName));
+
+        return user;
+    }
 }

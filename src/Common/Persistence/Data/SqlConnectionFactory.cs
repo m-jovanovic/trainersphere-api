@@ -2,7 +2,7 @@
 using Application.Data;
 using Npgsql;
 
-namespace Infrastructure.Data;
+namespace Persistence.Data;
 
 /// <summary>
 /// Represents the SQL connection factory.

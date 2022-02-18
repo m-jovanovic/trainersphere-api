@@ -14,6 +14,6 @@ public sealed class UsersModuleInstaller : IModuleInstaller
     {
         services.AddMediatR(Application.AssemblyReference.Assembly);
 
-        services.AddControllers().AddApplicationPart(Api.AssemblyReference.Assembly);
+        services.AddControllers().AddApplicationPart(Endpoints.AssemblyReference.Assembly);
     }
 }

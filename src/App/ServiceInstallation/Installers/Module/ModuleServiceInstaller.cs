@@ -2,7 +2,7 @@
 using Infrastructure.Configuration;
 using Shared.Extensions;
 
-namespace App.ServiceInstallation.Installers.Modules;
+namespace App.ServiceInstallation.Installers.Module;
 
 /// <summary>
 /// Represents the modules service installer.

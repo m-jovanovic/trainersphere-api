@@ -2,11 +2,11 @@
 using Domain.Results;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Modules.Users.Application.Boundary.Users.Commands.RegisterUser;
 using Modules.Users.Endpoints.Constants.Routes;
 using Modules.Users.Endpoints.Contracts.Users;
+using Modules.Users.Endpoints.Extensions;
 using Swashbuckle.AspNetCore.Annotations;
-using Users.Api.Extensions;
-using Users.Application.Boundary.Users.Commands.RegisterUser;
 
 namespace Modules.Users.Endpoints.Users;
 

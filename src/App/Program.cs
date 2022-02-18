@@ -1,5 +1,6 @@
 using App.Extensions;
 using App.Utility;
+using Infrastructure.Configuration.Extensions;
 using Serilog;
 
 LoggingUtility.Run(() =>

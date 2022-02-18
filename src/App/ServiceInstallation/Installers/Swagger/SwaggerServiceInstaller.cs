@@ -1,4 +1,6 @@
-﻿namespace App.ServiceInstallation.Installers.Swagger;
+﻿using Infrastructure.Configuration;
+
+namespace App.ServiceInstallation.Installers.Swagger;
 
 /// <summary>
 /// Represents the swagger service installer.

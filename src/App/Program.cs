@@ -9,6 +9,8 @@ LoggingUtility.Run(() =>
 
     builder.Services.InstallServicesFromAssembly(App.AssemblyReference.Assembly);
 
+    builder.Services.InstallModulesFromAssemblies(Modules.Users.Infrastructure.AssemblyReference.Assembly);
+
     builder.Host.UseSerilogWithConfiguration();
 
     WebApplication app = builder.Build();

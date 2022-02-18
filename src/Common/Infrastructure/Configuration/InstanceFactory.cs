@@ -5,7 +5,7 @@ namespace Infrastructure.Configuration;
 /// <summary>
 /// Represents the instance factory.
 /// </summary>
-public static class InstanceFactory
+internal static class InstanceFactory
 {
     /// <summary>
     /// Creates the instances of the specified type defined in the specified assemblies.
@@ -13,7 +13,7 @@ public static class InstanceFactory
     /// <typeparam name="T">The type to instantiate.</typeparam>
     /// <param name="assemblies">The assemblies to scan for the instance of the specified type.</param>
     /// <returns>The enumerable collection of the instances of the specified type defined in the specified assemblies.</returns>
-    public static IEnumerable<T> CreateFromAssemblies<T>(params Assembly[] assemblies) =>
+    internal static IEnumerable<T> CreateFromAssemblies<T>(params Assembly[] assemblies) =>
         assemblies
             .SelectMany(assembly => assembly.DefinedTypes)
             .Where(IsAssignableToType<T>)

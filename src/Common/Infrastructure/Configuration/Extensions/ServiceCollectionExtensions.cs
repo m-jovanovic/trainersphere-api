@@ -18,4 +18,14 @@ public static class ServiceCollectionExtensions
         InstanceFactory
             .CreateFromAssemblies<IServiceInstaller>(assembly)
             .ForEach(serviceInstaller => serviceInstaller.Install(services));
+
+    /// <summary>
+    /// Installs the modules using the <see cref="IModuleInstaller"/> implementations defined in the specified assemblies.
+    /// </summary>
+    /// <param name="services">The services.</param>
+    /// <param name="assemblies">The assembly to scan for module installer implementations.</param>
+    public static void InstallModulesFromAssemblies(this IServiceCollection services, params Assembly[] assemblies) =>
+        InstanceFactory
+            .CreateFromAssemblies<IModuleInstaller>(assemblies)
+            .ForEach(moduleInstaller => moduleInstaller.Install(services));
 }

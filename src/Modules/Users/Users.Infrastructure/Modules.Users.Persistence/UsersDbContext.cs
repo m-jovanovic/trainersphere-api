@@ -5,7 +5,7 @@ namespace Modules.Users.Persistence;
 /// <summary>
 /// Represents the users module database context.
 /// </summary>
-internal sealed class UsersDbContext : DbContext
+public sealed class UsersDbContext : DbContext
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="UsersDbContext"/> class.

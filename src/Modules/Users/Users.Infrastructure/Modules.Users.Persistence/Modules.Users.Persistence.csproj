@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Common\Persistence\Persistence.csproj" />
+    <ProjectReference Include="..\..\..\..\Common\Shared\Shared.csproj" />
     <ProjectReference Include="..\..\Modules.Users.Domain\Modules.Users.Domain.csproj" />
   </ItemGroup>
 

@@ -1,11 +1,12 @@
 ﻿using Modules.Users.Domain;
+using Shared.ServiceLifetimes;
 
 namespace Modules.Users.Persistence;
 
 /// <summary>
 /// Represents the unit of work.
 /// </summary>
-internal sealed class UnitOfWork : IUnitOfWork
+internal sealed class UnitOfWork : IUnitOfWork, IScoped
 {
     private readonly UsersDbContext _dbContext;
 

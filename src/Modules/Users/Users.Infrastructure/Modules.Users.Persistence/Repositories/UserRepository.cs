@@ -1,11 +1,12 @@
 ﻿using Modules.Users.Domain.Users;
+using Shared.ServiceLifetimes;
 
 namespace Modules.Users.Persistence.Repositories;
 
 /// <summary>
 /// Represents the user repository.
 /// </summary>
-internal sealed class UserRepository : IUserRepository
+internal sealed class UserRepository : IUserRepository, IScoped
 {
     private readonly UsersDbContext _dbContext;
 

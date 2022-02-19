@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace App.ServiceInstallation.Installers.Swagger;
+namespace App.ServiceInstallers.Swagger;
 
 /// <summary>
 /// Represents the <see cref="SwaggerGenOptions"/> setup.

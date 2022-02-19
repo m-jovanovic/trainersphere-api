@@ -1,15 +1,15 @@
 using App.Extensions;
 using App.Utility;
-using Infrastructure.Configuration.Extensions;
+using Infrastructure.Extensions;
 using Serilog;
 
 LoggingUtility.Run(() =>
 {
     WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-    builder.Services.InstallServicesFromAssembly(App.AssemblyReference.Assembly);
-
-    builder.Services.InstallModulesFromAssemblies(Modules.Users.Infrastructure.AssemblyReference.Assembly);
+    builder.Services
+        .InstallServicesFromAssembly(App.AssemblyReference.Assembly)
+        .InstallModulesFromAssemblies(Modules.Users.Infrastructure.AssemblyReference.Assembly);
 
     builder.Host.UseSerilogWithConfiguration();
 
@@ -17,17 +17,13 @@ LoggingUtility.Run(() =>
 
     if (app.Environment.IsDevelopment())
     {
-        app.UseSwagger();
-        app.UseSwaggerUI();
+        app.UseSwagger().UseSwaggerUI();
     }
 
-    app.UseSerilogRequestLogging();
-
-    app.UseHttpsRedirection();
-
-    app.UseAuthentication();
-
-    app.UseAuthorization();
+    app.UseSerilogRequestLogging()
+        .UseHttpsRedirection()
+        .UseAuthentication()
+        .UseAuthorization();
 
     app.MapControllers();
 

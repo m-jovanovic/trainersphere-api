@@ -7,6 +7,8 @@ namespace Modules.Users.Persistence;
 /// </summary>
 public sealed class UsersDbContext : DbContext
 {
+    private const string UsersSchema = "users";
+
     /// <summary>
     /// Initializes a new instance of the <see cref="UsersDbContext"/> class.
     /// </summary>
@@ -19,7 +21,7 @@ public sealed class UsersDbContext : DbContext
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.HasDefaultSchema("users");
+        modelBuilder.HasDefaultSchema(UsersSchema);
 
         modelBuilder.ApplyConfigurationsFromAssembly(AssemblyReference.Assembly);
     }

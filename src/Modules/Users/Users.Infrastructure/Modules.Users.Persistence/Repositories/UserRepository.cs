@@ -7,5 +7,14 @@ namespace Modules.Users.Persistence.Repositories;
 /// </summary>
 internal sealed class UserRepository : IUserRepository
 {
-    public void Add(User user) => throw new NotImplementedException();
+    private readonly UsersDbContext _dbContext;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UserRepository"/> class.
+    /// </summary>
+    /// <param name="dbContext">The database context.</param>
+    public UserRepository(UsersDbContext dbContext) => _dbContext = dbContext;
+
+    /// <inheritdoc />
+    public void Add(User user) => _dbContext.Set<User>().Add(user);
 }

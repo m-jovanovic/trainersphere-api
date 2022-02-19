@@ -1,16 +1,16 @@
 version: '3.4'
 
 services:
-  app:
+  trainersphere-app:
     image: ${DOCKER_REGISTRY-}app
     container_name: App
     build:
       context: .
       dockerfile: src/App/Dockerfile
     depends_on:
-      - db
+      - trainersphere-db
 
-  db:
+  trainersphere-db:
     image: postgres:14.1
     container_name: Database
     environment:
@@ -22,14 +22,14 @@ services:
     ports:
       - 5100:5432
 
-  db_management:
+  trainersphere-db-management:
     image: dpage/pgadmin4:latest
-    container_name: Database-UI
+    container_name: Database_management
     depends_on:
-      - db
+      - trainersphere-db
     volumes:
       - ./.files/dev_servers.json:/pgadmin4/servers.json
-      - ./.containers/database_ui:/var/lib/pgadmin
+      - ./.containers/database_management:/var/lib/pgadmin
     ports:
       - "5101:80"
     environment:

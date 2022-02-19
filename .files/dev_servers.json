@@ -1,9 +1,9 @@
 {
   "Servers": {
     "1": {
-      "Name": "Dev Server",
+      "Name": "Development Server",
       "Group": "Servers",
-      "Host": "db",
+      "Host": "trainersphere-db",
       "Port": 5432,
       "MaintenanceDB": "postgres",
       "Username": "postgres",

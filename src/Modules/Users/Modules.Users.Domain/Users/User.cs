@@ -1,4 +1,5 @@
 ﻿using Domain.Primitives;
+using Domain.Results;
 using Modules.Users.Domain.Users.Events;
 
 namespace Modules.Users.Domain.Users;
@@ -46,7 +47,7 @@ public sealed class User : Entity
     /// <param name="firstName">The first name.</param>
     /// <param name="lastName">The last name.</param>
     /// <returns>The new user instance.</returns>
-    public static User Create(Guid id, string email, string firstName, string lastName)
+    public static Result<User> Create(Guid id, string email, string firstName, string lastName)
     {
         var user = new User(id, email, firstName, lastName);
 

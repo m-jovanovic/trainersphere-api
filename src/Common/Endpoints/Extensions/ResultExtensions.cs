@@ -21,4 +21,22 @@ public static class ResultExtensions
 
         return result.IsSuccess ? onSuccess() : onFailure(result.Error);
     }
+
+    /// <summary>
+    /// Matches the result status and returns the result of either the on success or on failure functions.
+    /// </summary>
+    /// <typeparam name="TResult">The result type.</typeparam>
+    /// <param name="resultTask">The result task.</param>
+    /// <param name="onSuccess">The on success function.</param>
+    /// <param name="onFailure">The on failure function.</param>
+    /// <returns>The action result based on the result status.</returns>
+    public static async Task<ActionResult> Match<TResult>(
+        this Task<Result<TResult>> resultTask,
+        Func<TResult, ActionResult> onSuccess,
+        Func<Error, ActionResult> onFailure)
+    {
+        Result<TResult> result = await resultTask;
+
+        return result.IsSuccess ? onSuccess(result.Value) : onFailure(result.Error);
+    }
 }

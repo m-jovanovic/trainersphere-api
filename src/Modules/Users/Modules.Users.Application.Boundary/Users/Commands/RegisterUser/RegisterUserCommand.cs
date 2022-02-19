@@ -2,4 +2,4 @@
 
 namespace Modules.Users.Application.Boundary.Users.Commands.RegisterUser;
 
-public sealed record RegisterUserCommand(string IdentityProviderId, string FirstName, string LastName, string Email) : ICommand;
+public sealed record RegisterUserCommand(string IdentityProviderId, string FirstName, string LastName, string Email) : ICommand<Guid>;

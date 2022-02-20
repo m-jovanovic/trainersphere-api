@@ -1,4 +1,6 @@
-﻿using Modules.Users.Domain.Users;
+﻿using Domain.Results;
+using Microsoft.EntityFrameworkCore;
+using Modules.Users.Domain.Users;
 using Shared.ServiceLifetimes;
 
 namespace Modules.Users.Persistence.Repositories;
@@ -15,6 +17,12 @@ internal sealed class UserRepository : IUserRepository, IScoped
     /// </summary>
     /// <param name="dbContext">The database context.</param>
     public UserRepository(UsersDbContext dbContext) => _dbContext = dbContext;
+
+    /// <inheritdoc />
+    public async Task<Result> IsEmailUniqueAsync(string email, CancellationToken cancellationToken = default) =>
+        await _dbContext.Set<User>().AnyAsync(user => user.Email == email, cancellationToken) ?
+            Result.Failure(UserErrors.EmailIsNotUnique) :
+            Result.Success();
 
     /// <inheritdoc />
     public void Add(User user) => _dbContext.Set<User>().Add(user);

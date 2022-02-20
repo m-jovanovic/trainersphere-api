@@ -8,6 +8,26 @@ public static class ResultExtensions
     /// <summary>
     /// Maps the success result based on the specified mapping function, otherwise returns a failure result.
     /// </summary>
+    /// <typeparam name="TOut">The output type.</typeparam>
+    /// <param name="result">The result.</param>
+    /// <param name="func">The mapping function.</param>
+    /// <returns>The mapped result.</returns>
+    public static Result<TOut> Map<TOut>(this Result result, Func<TOut> func) =>
+        result.IsSuccess ? func() : Result.Failure<TOut>(result.Error);
+
+    /// <summary>
+    /// Maps the success result based on the specified mapping function, otherwise returns a failure result.
+    /// </summary>
+    /// <typeparam name="TOut">The output type.</typeparam>
+    /// <param name="resultTask">The result task.</param>
+    /// <param name="func">The mapping function.</param>
+    /// <returns>The mapped result.</returns>
+    public static async Task<Result<TOut>> Map<TOut>(this Task<Result> resultTask, Func<TOut> func) =>
+        (await resultTask).Map(func);
+
+    /// <summary>
+    /// Maps the success result based on the specified mapping function, otherwise returns a failure result.
+    /// </summary>
     /// <typeparam name="TIn">The input type.</typeparam>
     /// <typeparam name="TOut">The output type.</typeparam>
     /// <param name="result">The result.</param>
@@ -30,6 +50,25 @@ public static class ResultExtensions
     /// <summary>
     /// Binds the success result based on the specified binding function, otherwise returns a failure result.
     /// </summary>
+    /// <param name="result">The result.</param>
+    /// <param name="func">The binding function.</param>
+    /// <returns>The bound result.</returns>
+    public static async Task<Result> Bind(this Result result, Func<Task<Result>> func) =>
+        result.IsSuccess ? await func() : Result.Failure(result.Error);
+
+    /// <summary>
+    /// Binds the success result based on the specified binding function, otherwise returns a failure result.
+    /// </summary>
+    /// <typeparam name="TIn">The input type.</typeparam>
+    /// <param name="result">The result.</param>
+    /// <param name="func">The binding function.</param>
+    /// <returns>The bound result.</returns>
+    public static async Task<Result> Bind<TIn>(this Result<TIn> result, Func<TIn, Task<Result>> func) =>
+        result.IsSuccess ? await func(result.Value) : Result.Failure(result.Error);
+
+    /// <summary>
+    /// Binds the success result based on the specified binding function, otherwise returns a failure result.
+    /// </summary>
     /// <typeparam name="TIn">The input type.</typeparam>
     /// <typeparam name="TOut">The output type.</typeparam>
     /// <param name="result">The result.</param>
@@ -48,16 +87,6 @@ public static class ResultExtensions
     /// <returns>The bound result.</returns>
     public static async Task<Result<TOut>> Bind<TIn, TOut>(this Result<TIn> result, Func<TIn, Task<Result<TOut>>> func) =>
         result.IsSuccess ? await func(result.Value) : Result.Failure<TOut>(result.Error);
-
-    /// <summary>
-    /// Binds the success result based on the specified binding function, otherwise returns a failure result.
-    /// </summary>
-    /// <typeparam name="TIn">The input type.</typeparam>
-    /// <param name="result">The result.</param>
-    /// <param name="func">The binding function.</param>
-    /// <returns>The bound result.</returns>
-    public static async Task<Result> Bind<TIn>(this Result<TIn> result, Func<TIn, Task<Result>> func) =>
-        result.IsSuccess ? await func(result.Value) : Result.Failure(result.Error);
 
     /// <summary>
     /// Binds the success result based on the specified binding function, otherwise returns a failure result.
@@ -123,15 +152,6 @@ public static class ResultExtensions
     /// <param name="action">The action.</param>
     /// <returns>The same result.</returns>
     public static async Task<Result<TIn>> Tap<TIn>(this Task<Result<TIn>> resultTask, Action action) => (await resultTask).Tap(action);
-
-    /// <summary>
-    /// Tap will execute the provided action if the result is successful.
-    /// </summary>
-    /// <typeparam name="TIn">The input type.</typeparam>
-    /// <param name="resultTask">The result task.</param>
-    /// <param name="action">The action.</param>
-    /// <returns>The same result.</returns>
-    public static async Task<Result<TIn>> Tap<TIn>(this Task<Result> resultTask, Action<TIn> action) => (await resultTask).Tap(action);
 
     /// <summary>
     /// Tap will execute the provided action if the result is successful.

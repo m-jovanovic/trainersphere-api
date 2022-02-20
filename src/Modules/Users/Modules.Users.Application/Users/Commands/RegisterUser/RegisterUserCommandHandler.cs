@@ -32,7 +32,13 @@ internal sealed class RegisterUserCommandHandler : ICommandHandler<RegisterUserC
                 request.Email,
                 request.FirstName,
                 request.LastName)
+            .Bind(user => IsEmailUnique(user, cancellationToken))
             .Tap(user => _userRepository.Add(user))
             .Tap(() => _unitOfWork.SaveChangesAsync(cancellationToken))
             .Map(user => user.Id);
+
+    private async Task<Result<User>> IsEmailUnique(User user, CancellationToken cancellationToken) =>
+        await Result.Success()
+            .Bind(() => _userRepository.IsEmailUniqueAsync(user.Email, cancellationToken))
+            .Map(() => user);
 }

@@ -24,6 +24,8 @@ public sealed class UsersModuleInstaller : IModuleInstaller
 
                 options.UseNpgsql(connectionString);
             })
+            .AddTransientAsMatchingInterfaces(AssemblyReference.Assembly)
+            .AddScopedAsMatchingInterfaces(AssemblyReference.Assembly)
             .AddTransientAsMatchingInterfaces(Persistence.AssemblyReference.Assembly)
             .AddScopedAsMatchingInterfaces(Persistence.AssemblyReference.Assembly)
             .AddControllers()

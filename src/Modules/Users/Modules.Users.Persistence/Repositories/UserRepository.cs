@@ -20,9 +20,9 @@ internal sealed class UserRepository : IUserRepository, IScoped
 
     /// <inheritdoc />
     public async Task<Result> IsEmailUniqueAsync(string email, CancellationToken cancellationToken = default) =>
-        await _dbContext.Set<User>().AnyAsync(user => user.Email == email, cancellationToken) ?
-            Result.Failure(UserErrors.EmailIsNotUnique) :
-            Result.Success();
+        !await _dbContext.Set<User>().AnyAsync(user => user.Email == email, cancellationToken) ?
+            Result.Success() :
+            Result.Failure(UserErrors.EmailIsNotUnique);
 
     /// <inheritdoc />
     public void Add(User user) => _dbContext.Set<User>().Add(user);

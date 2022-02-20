@@ -4,29 +4,30 @@ EXPOSE 80
 EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
-WORKDIR /src
+WORKDIR /root
 
 # Common
-COPY ["Common/Shared/Shared.csproj", "Common/Shared/"]
-COPY ["Common/Domain/Domain.csproj", "Common/Domain/"]
-COPY ["Common/Application/Application.csproj", "Common/Application/"]
-COPY ["Common/Infrastructure/Infrastructure.csproj", "Common/Infrastructure/"]
+COPY ["src/Common/Shared/Shared.csproj", "src/Common/Shared/"]
+COPY ["src/Common/Domain/Domain.csproj", "src/Common/Domain/"]
+COPY ["src/Common/Application/Application.csproj", "src/Common/Application/"]
+COPY ["src/Common/Infrastructure/Infrastructure.csproj", "src/Common/Infrastructure/"]
 
 # Modules - Users
-COPY ["Modules/Users/Modules.Users.Domain.csproj", "Modules/Users/Modules.Users.Domain/"]
-COPY ["Modules/Users/Modules.Users.Application.Boundary.csproj", "Modules/Users/Modules.Application.Boundary/"]
-COPY ["Modules/Users/Modules.Users.Application.csproj", "Modules/Users/Modules.Users.Application/"]
-COPY ["Modules/Users/Modules.Users.Endpoints.csproj", "Modules/Users/Modules.Users.Endpoints/"]
-COPY ["Modules/Users/Modules.Users.Infrastructure.csproj", "Modules/Users/Modules.Users.Infrastructure/"]
+COPY ["src/Modules/Users/Modules.Users.Domain/Modules.Users.Domain.csproj", "src/Modules/Users/Modules.Users.Domain/"]
+COPY ["src/Modules/Users/Modules.Users.Application.Boundary/Modules.Users.Application.Boundary.csproj", "src/Modules/Users/Modules.Application.Boundary/"]
+COPY ["src/Modules/Users/Modules.Users.Application/Modules.Users.Application.csproj", "src/Modules/Users/Modules.Users.Application/"]
+COPY ["src/Modules/Users/Modules.Users.Endpoints/Modules.Users.Endpoints.csproj", "src/Modules/Users/Modules.Users.Endpoints/"]
+COPY ["src/Modules/Users/Modules.Users.Infrastructure/Modules.Users.Infrastructure.csproj", "src/Modules/Users/Modules.Users.Infrastructure/"]
+COPY ["src/Modules/Users/Modules.Users.Persistence/Modules.Users.Persistence.csproj", "src/Modules/Users/Modules.Users.Persistence/"]
 
 # Executable
-COPY ["App/App.csproj", "App/"]
+COPY ["src/App/App.csproj", "src/App/"]
 
-RUN dotnet restore "App/App.csproj"
+RUN dotnet restore "src/App/App.csproj"
 
 COPY . .
 
-WORKDIR "/src/App"
+WORKDIR "/root/src/App"
 RUN dotnet build "App.csproj" -c Release -o /app/build
 
 FROM build AS publish

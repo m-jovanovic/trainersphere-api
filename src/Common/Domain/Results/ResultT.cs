@@ -13,9 +13,9 @@ public sealed class Result<TValue> : Result
     /// </summary>
     /// <param name="value">The result value.</param>
     /// <param name="isSuccess">The flag indicating if the result is successful.</param>
-    /// <param name="error">The error.</param>
-    internal Result(TValue? value, bool isSuccess, Error error)
-        : base(isSuccess, error) =>
+    /// <param name="errors">The errors.</param>
+    internal Result(TValue? value, bool isSuccess, Error[] errors)
+        : base(isSuccess, errors) =>
         _value = value;
 
     /// <summary>

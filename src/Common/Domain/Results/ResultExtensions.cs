@@ -13,7 +13,7 @@ public static class ResultExtensions
     /// <param name="func">The mapping function.</param>
     /// <returns>The mapped result.</returns>
     public static Result<TOut> Map<TOut>(this Result result, Func<TOut> func) =>
-        result.IsSuccess ? func() : Result.Failure<TOut>(result.Errors);
+        result.IsSuccess ? func() : Result.Failure<TOut>(result.Error);
 
     /// <summary>
     /// Maps the success result based on the specified mapping function, otherwise returns a failure result.
@@ -34,7 +34,7 @@ public static class ResultExtensions
     /// <param name="func">The mapping function.</param>
     /// <returns>The mapped result.</returns>
     public static Result<TOut> Map<TIn, TOut>(this Result<TIn> result, Func<TIn, TOut> func) =>
-        result.IsSuccess ? func(result.Value) : Result.Failure<TOut>(result.Errors);
+        result.IsSuccess ? func(result.Value) : Result.Failure<TOut>(result.Error);
 
     /// <summary>
     /// Maps the success result based on the specified mapping function, otherwise returns a failure result.
@@ -54,7 +54,7 @@ public static class ResultExtensions
     /// <param name="func">The binding function.</param>
     /// <returns>The bound result.</returns>
     public static async Task<Result> Bind(this Result result, Func<Task<Result>> func) =>
-        result.IsSuccess ? await func() : Result.Failure(result.Errors);
+        result.IsSuccess ? await func() : Result.Failure(result.Error);
 
     /// <summary>
     /// Binds the success result based on the specified binding function, otherwise returns a failure result.
@@ -64,7 +64,7 @@ public static class ResultExtensions
     /// <param name="func">The binding function.</param>
     /// <returns>The bound result.</returns>
     public static async Task<Result> Bind<TIn>(this Result<TIn> result, Func<TIn, Task<Result>> func) =>
-        result.IsSuccess ? await func(result.Value) : Result.Failure(result.Errors);
+        result.IsSuccess ? await func(result.Value) : Result.Failure(result.Error);
 
     /// <summary>
     /// Binds the success result based on the specified binding function, otherwise returns a failure result.
@@ -75,7 +75,7 @@ public static class ResultExtensions
     /// <param name="func">The binding function.</param>
     /// <returns>The bound result.</returns>
     public static Result<TOut> Bind<TIn, TOut>(this Result<TIn> result, Func<TIn, Result<TOut>> func) =>
-        result.IsSuccess ? func(result.Value) : Result.Failure<TOut>(result.Errors);
+        result.IsSuccess ? func(result.Value) : Result.Failure<TOut>(result.Error);
 
     /// <summary>
     /// Binds the success result based on the specified binding function, otherwise returns a failure result.
@@ -86,7 +86,7 @@ public static class ResultExtensions
     /// <param name="func">The binding function.</param>
     /// <returns>The bound result.</returns>
     public static async Task<Result<TOut>> Bind<TIn, TOut>(this Result<TIn> result, Func<TIn, Task<Result<TOut>>> func) =>
-        result.IsSuccess ? await func(result.Value) : Result.Failure<TOut>(result.Errors);
+        result.IsSuccess ? await func(result.Value) : Result.Failure<TOut>(result.Error);
 
     /// <summary>
     /// Binds the success result based on the specified binding function, otherwise returns a failure result.

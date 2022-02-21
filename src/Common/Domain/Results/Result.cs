@@ -9,21 +9,21 @@ public class Result
     /// Initializes a new instance of the <see cref="Result"/> class with the specified parameters.
     /// </summary>
     /// <param name="isSuccess">The flag indicating if the result is successful.</param>
-    /// <param name="errors">The error that occurred.</param>
-    protected internal Result(bool isSuccess, Error[] errors)
+    /// <param name="error">The error that occurred.</param>
+    protected internal Result(bool isSuccess, Error error)
     {
-        if (isSuccess && errors.Length != 0)
+        if (isSuccess && error != Error.None)
         {
             throw new InvalidOperationException();
         }
 
-        if (!isSuccess && errors.Contains(Error.None))
+        if (!isSuccess && error == Error.None)
         {
             throw new InvalidOperationException();
         }
 
         IsSuccess = isSuccess;
-        Errors = errors;
+        Error = error;
     }
 
     /// <summary>
@@ -37,15 +37,15 @@ public class Result
     public bool IsFailure => !IsSuccess;
 
     /// <summary>
-    /// Gets the errors.
+    /// Gets the error.
     /// </summary>
-    public Error[] Errors { get; }
+    public Error Error { get; }
 
     /// <summary>
     /// Returns a success <see cref="Result"/>.
     /// </summary>
     /// <returns>A new instance of <see cref="Result"/>.</returns>
-    public static Result Success() => new(true, Array.Empty<Error>());
+    public static Result Success() => new(true, Error.None);
 
     /// <summary>
     /// Returns a success <see cref="Result{TValue}"/> with the specified value.
@@ -53,37 +53,22 @@ public class Result
     /// <typeparam name="TValue">The result type.</typeparam>
     /// <param name="value">The result value.</param>
     /// <returns>A new instance of <see cref="Result{TValue}"/> with the specified value.</returns>
-    public static Result<TValue> Success<TValue>(TValue value) => new(value, true, Array.Empty<Error>());
-
-    /// <summary>
-    /// Returns a failure <see cref="Result"/> with the specified error.
-    /// </summary>
-    /// <param name="errors">The errors.</param>
-    /// <returns>A new instance of <see cref="Result"/> with the specified error.</returns>
-    public static Result Failure(Error[] errors) => new(false, errors);
+    public static Result<TValue> Success<TValue>(TValue value) => new(value, true, Error.None);
 
     /// <summary>
     /// Returns a failure <see cref="Result"/> with the specified error.
     /// </summary>
     /// <param name="error">The error.</param>
     /// <returns>A new instance of <see cref="Result"/> with the specified error.</returns>
-    public static Result Failure(Error error) => Failure(new[] { error });
+    public static Result Failure(Error error) => new(false, error);
 
     /// <summary>
     /// Returns a failure <see cref="Result{TValue}"/> with the specified error.
     /// </summary>
     /// <typeparam name="TValue">The result type.</typeparam>
-    /// <param name="errors">The errors.</param>
+    /// <param name="error">The error.</param>
     /// <returns>A new instance of <see cref="Result{TValue}"/> with the specified error and failure flag set.</returns>
-    public static Result<TValue> Failure<TValue>(Error[] errors) => new(default, false, errors);
-
-    /// <summary>
-    /// Returns a failure <see cref="Result{TValue}"/> with the specified error.
-    /// </summary>
-    /// <typeparam name="TValue">The result type.</typeparam>
-    /// <param name="error">The errors.</param>
-    /// <returns>A new instance of <see cref="Result{TValue}"/> with the specified error and failure flag set.</returns>
-    public static Result<TValue> Failure<TValue>(Error error) => Failure<TValue>(new[] { error });
+    public static Result<TValue> Failure<TValue>(Error error) => new(default, false, error);
 
     /// <summary>
     /// Creates a new <see cref="Result{TValue}"/> with the specified nullable value and the specified error.

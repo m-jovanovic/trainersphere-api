@@ -13,7 +13,7 @@ public sealed class Error : IEquatable<Error>
     /// <summary>
     /// The null value error instance.
     /// </summary>
-    public static readonly Error NullValue = new(string.Empty, string.Empty);
+    public static readonly Error NullValue = new("Result.NullValue", "The specified result value is null.");
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Error"/> class.

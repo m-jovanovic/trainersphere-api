@@ -1,4 +1,5 @@
-﻿using Infrastructure.Configuration;
+using FluentValidation;
+using Infrastructure.Configuration;
 using Infrastructure.Extensions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +19,7 @@ public sealed class UsersModuleInstaller : IModuleInstaller
     public void Install(IServiceCollection services) =>
         services
             .AddMediatR(Application.AssemblyReference.Assembly)
+            .AddValidatorsFromAssembly(Application.AssemblyReference.Assembly, includeInternalTypes: true)
             .AddDbContextPool<UsersDbContext>((serviceProvider, options) =>
             {
                 ConnectionString connectionString = serviceProvider.GetService<IOptions<ConnectionString>>()!.Value;

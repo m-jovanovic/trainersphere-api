@@ -11,8 +11,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{1E209A81-EC84-4080-BA3F-6FCCBBEC41DF}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{AB603149-4B96-4005-AF79-884EB73820AB}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E6DA5872-FE3A-4254-90B4-1D9AF638B17C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App", "src\App\App.csproj", "{7B2759EB-9E5C-40F9-B732-CB43FF475E4C}"
@@ -45,7 +43,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Modules.Users.Endpoints", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Modules.Users.Infrastructure", "src\Modules\Users\Modules.Users.Infrastructure\Modules.Users.Infrastructure.csproj", "{B2CB9041-BDDF-41D4-A466-453B9880A8CA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Modules.Users.Persistence", "src\Modules\Users\Modules.Users.Persistence\Modules.Users.Persistence.csproj", "{2F03C65B-4A3F-42A8-8FEA-83B367AE973F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Modules.Users.Persistence", "src\Modules\Users\Modules.Users.Persistence\Modules.Users.Persistence.csproj", "{2F03C65B-4A3F-42A8-8FEA-83B367AE973F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{AB603149-4B96-4005-AF79-884EB73820AB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{4BABECA4-9E06-4829-BB7C-3A271CC8BE88}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Users", "Users", "{28A8DAB9-7E58-4CD4-B90A-368AB2558466}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Modules.Users.Application.UnitTests", "test\Modules\Users\Modules.Users.Application.UnitTests\Modules.Users.Application.UnitTests.csproj", "{884CA9CD-319A-49EB-91FF-005C2A60EBB0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -109,6 +115,10 @@ Global
 		{2F03C65B-4A3F-42A8-8FEA-83B367AE973F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2F03C65B-4A3F-42A8-8FEA-83B367AE973F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2F03C65B-4A3F-42A8-8FEA-83B367AE973F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{884CA9CD-319A-49EB-91FF-005C2A60EBB0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{884CA9CD-319A-49EB-91FF-005C2A60EBB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{884CA9CD-319A-49EB-91FF-005C2A60EBB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{884CA9CD-319A-49EB-91FF-005C2A60EBB0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -130,6 +140,9 @@ Global
 		{7C1EC237-C13D-4B6D-920A-F6C3409427DC} = {B82A17B2-94DF-44C2-A459-EE6C6B68553C}
 		{B2CB9041-BDDF-41D4-A466-453B9880A8CA} = {B82A17B2-94DF-44C2-A459-EE6C6B68553C}
 		{2F03C65B-4A3F-42A8-8FEA-83B367AE973F} = {B82A17B2-94DF-44C2-A459-EE6C6B68553C}
+		{4BABECA4-9E06-4829-BB7C-3A271CC8BE88} = {AB603149-4B96-4005-AF79-884EB73820AB}
+		{28A8DAB9-7E58-4CD4-B90A-368AB2558466} = {4BABECA4-9E06-4829-BB7C-3A271CC8BE88}
+		{884CA9CD-319A-49EB-91FF-005C2A60EBB0} = {28A8DAB9-7E58-4CD4-B90A-368AB2558466}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E932D6BE-FFD3-41C9-BB8C-521F664B8A39}

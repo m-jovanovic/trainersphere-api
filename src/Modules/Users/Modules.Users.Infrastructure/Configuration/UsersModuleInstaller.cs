@@ -1,3 +1,4 @@
+﻿using Application.Behaviors;
 using FluentValidation;
 using Infrastructure.Configuration;
 using Infrastructure.Extensions;
@@ -19,6 +20,7 @@ public sealed class UsersModuleInstaller : IModuleInstaller
     public void Install(IServiceCollection services) =>
         services
             .AddMediatR(Application.AssemblyReference.Assembly)
+            .AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBehavior<,>))
             .AddValidatorsFromAssembly(Application.AssemblyReference.Assembly, includeInternalTypes: true)
             .AddDbContextPool<UsersDbContext>((serviceProvider, options) =>
             {

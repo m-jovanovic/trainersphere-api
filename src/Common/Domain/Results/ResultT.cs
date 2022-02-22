@@ -4,7 +4,7 @@
 /// Represents the result of some operation, with status information and possibly a value and an error.
 /// </summary>
 /// <typeparam name="TValue">The result value type.</typeparam>
-public sealed class Result<TValue> : Result
+public class Result<TValue> : Result
 {
     private readonly TValue? _value;
 
@@ -14,7 +14,7 @@ public sealed class Result<TValue> : Result
     /// <param name="value">The result value.</param>
     /// <param name="isSuccess">The flag indicating if the result is successful.</param>
     /// <param name="error">The error.</param>
-    internal Result(TValue? value, bool isSuccess, Error error)
+    protected internal Result(TValue? value, bool isSuccess, Error error)
         : base(isSuccess, error) =>
         _value = value;
 

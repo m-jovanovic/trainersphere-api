@@ -5,9 +5,6 @@
 /// </summary>
 public interface IValidationResult
 {
-    /// <summary>
-    /// The validation error.
-    /// </summary>
     protected static readonly Error ValidationError = new("ValidationError.Default", "A validation problem occurred.");
 
     /// <summary>

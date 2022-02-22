@@ -33,10 +33,10 @@ public static class ResultExtensions
     public static async Task<ActionResult> Match<TResult>(
         this Task<Result<TResult>> resultTask,
         Func<TResult, ActionResult> onSuccess,
-        Func<Error, ActionResult> onFailure)
+        Func<Result, ActionResult> onFailure)
     {
         Result<TResult> result = await resultTask;
 
-        return result.IsSuccess ? onSuccess(result.Value) : onFailure(result.Error);
+        return result.IsSuccess ? onSuccess(result.Value) : onFailure(result);
     }
 }

@@ -31,5 +31,5 @@ public sealed class RegisterUserEndpoint : EndpointBaseAsync
                 registerUserRequest.LastName,
                 registerUserRequest.Email))
             .Bind(command => _sender.Send(command, cancellationToken))
-            .Match(userId => Ok(userId), BadRequest);
+            .Match(userId => Ok(userId), this.HandleFailure);
 }

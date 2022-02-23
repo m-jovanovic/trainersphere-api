@@ -24,6 +24,13 @@ public static class EndpointBaseExtensions
             {
                 validationResult.Errors
             }),
+            var notFound when notFound.Error.Code.EndsWith("NotFound", StringComparison.InvariantCulture) => endpoint.NotFound(new
+            {
+                Errors = new[]
+                {
+                    result.Error
+                }
+            }),
             _ => endpoint.BadRequest(new
             {
                 Errors = new[]

@@ -1,5 +1,6 @@
 ﻿using Ardalis.ApiEndpoints;
 using Domain.Results;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Endpoints.Extensions;
@@ -20,16 +21,20 @@ public static class EndpointBaseExtensions
         result switch
         {
             { IsSuccess: true } => throw new InvalidOperationException("This method should not be invoked for a success result."),
-            IValidationResult validationResult => endpoint.BadRequest(new
+            IValidationResult validationResult => endpoint.BadRequest(new ProblemDetails
             {
-                validationResult.Errors
+                Type = "Validation Error",
+                Title = "Validation failure occurred",
+                Detail = "There was a problem validating your request.",
+                Status = StatusCodes.Status400BadRequest,
+                Extensions = { { "errors", validationResult.Errors } }
             }),
-            var notFound when notFound.Error.Code.EndsWith("NotFound", StringComparison.InvariantCulture) => endpoint.NotFound(new
+            var notFound when notFound.Error.Code.EndsWith("NotFound", StringComparison.InvariantCulture) => endpoint.NotFound(new ProblemDetails
             {
-                Errors = new[]
-                {
-                    result.Error
-                }
+                Type = "Resource Not Found",
+                Title = result.Error.Code,
+                Detail = result.Error.Message,
+                Status = StatusCodes.Status404NotFound
             }),
             _ => endpoint.BadRequest(new
             {

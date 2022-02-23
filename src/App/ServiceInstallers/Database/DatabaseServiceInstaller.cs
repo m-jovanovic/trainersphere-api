@@ -1,4 +1,6 @@
-﻿using Infrastructure.Configuration;
+﻿using Application.Data;
+using Infrastructure.Configuration;
+using Persistence.Data;
 
 namespace App.ServiceInstallers.Database;
 
@@ -8,5 +10,8 @@ namespace App.ServiceInstallers.Database;
 internal sealed class DatabaseServiceInstaller : IServiceInstaller
 {
     /// <inheritdoc />
-    public void Install(IServiceCollection services) => services.ConfigureOptions<ConnectionStringSetup>();
+    public void Install(IServiceCollection services) =>
+        services
+            .ConfigureOptions<ConnectionStringSetup>()
+            .AddTransient<ISqlConnectionFactory, SqlConnectionFactory>();
 }

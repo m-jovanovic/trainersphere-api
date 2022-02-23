@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using Application.Data;
+using Microsoft.Extensions.Options;
 using Npgsql;
 
 namespace Persistence.Data;
@@ -7,12 +8,12 @@ namespace Persistence.Data;
 /// <summary>
 /// Represents the SQL connection factory.
 /// </summary>
-internal sealed class SqlConnectionFactory : ISqlConnectionFactory, IDisposable
+public sealed class SqlConnectionFactory : ISqlConnectionFactory, IDisposable
 {
-    private readonly string _connectionString;
+    private readonly ConnectionString _connectionString;
     private IDbConnection? _connection;
 
-    public SqlConnectionFactory(string connectionString) => _connectionString = connectionString;
+    public SqlConnectionFactory(IOptions<ConnectionString> connectionString) => _connectionString = connectionString.Value;
 
     /// <inheritdoc />
     public IDbConnection GetOpenConnection()

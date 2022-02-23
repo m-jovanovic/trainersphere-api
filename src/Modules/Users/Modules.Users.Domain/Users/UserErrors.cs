@@ -16,4 +16,9 @@ public static class UserErrors
     /// Gets the email is not unique error.
     /// </summary>
     public static Error EmailIsNotUnique => new("User.EmailIsNotUnique", "The user email is already in use.");
+
+    /// <summary>
+    /// Gets the not found error.
+    /// </summary>
+    public static Func<Guid, Error> NotFound => userId => new Error("User.NotFound", $"The user with the identifier {userId} was not found.");
 }

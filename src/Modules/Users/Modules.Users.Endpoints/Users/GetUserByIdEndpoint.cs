@@ -25,7 +25,9 @@ public sealed class GetUserByIdEndpoint : EndpointBaseAsync
         Summary = "Gets the user user by id.",
         Description = "Gets the user with the specified identifier.",
         Tags = new[] { UsersRoutes.Tag })]
-    public override async Task<ActionResult<UserResponse>> HandleAsync([FromRoute(Name = "userId")] Guid request, CancellationToken cancellationToken = default) =>
+    public override async Task<ActionResult<UserResponse>> HandleAsync(
+        [FromRoute(Name = "userId")] Guid request,
+        CancellationToken cancellationToken = default) =>
         await Result.Create(new GetUserByIdQuery(request))
             .Bind(query => _sender.Send(query, cancellationToken))
             .Match(Ok, this.HandleFailure);

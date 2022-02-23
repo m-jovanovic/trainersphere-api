@@ -2,6 +2,7 @@
 using Domain.Results;
 using Endpoints.Extensions;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Modules.Users.Application.Boundary.Users.Commands.RegisterUser;
 using Modules.Users.Endpoints.Constants.Routes;
@@ -19,6 +20,9 @@ public sealed class RegisterUserEndpoint : EndpointBaseAsync
     public RegisterUserEndpoint(ISender sender) => _sender = sender;
 
     [HttpPost(UsersRoutes.Register)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [SwaggerOperation(
         Summary = "Registers a new user.",
         Description = "Registers a new user based on the specified request.",

@@ -24,6 +24,12 @@ public static class EndpointBaseExtensions
             {
                 validationResult.Errors
             }),
-            _ => endpoint.BadRequest(result.Error)
+            _ => endpoint.BadRequest(new
+            {
+                Errors = new[]
+                {
+                    result.Error
+                }
+            })
         };
 }

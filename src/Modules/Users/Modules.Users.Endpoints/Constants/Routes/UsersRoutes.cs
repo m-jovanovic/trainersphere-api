@@ -7,4 +7,6 @@ internal static class UsersRoutes
     internal const string BaseUri = "users";
 
     internal const string Register = $"{BaseUri}/register";
+
+    internal const string GetById = $"{BaseUri}/{{userId:guid}}";
 }

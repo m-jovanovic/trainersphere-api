@@ -26,7 +26,7 @@ public sealed class RegisterUserEndpoint : EndpointBaseAsync
     public override async Task<ActionResult> HandleAsync(RegisterUserRequest request, CancellationToken cancellationToken = default) =>
         await Result.Create(request)
             .Map(registerUserRequest => new RegisterUserCommand(
-                registerUserRequest.IdentityProviderId,
+                string.Empty,
                 registerUserRequest.FirstName,
                 registerUserRequest.LastName,
                 registerUserRequest.Email))

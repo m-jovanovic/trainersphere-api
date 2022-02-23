@@ -48,6 +48,26 @@ public static class ResultExtensions
         (await resultTask).Map(func);
 
     /// <summary>
+    /// Maps the failure result based on the specified error function, otherwise returns a success result.
+    /// </summary>
+    /// <typeparam name="TIn">The input type.</typeparam>
+    /// <param name="result">The result.</param>
+    /// <param name="func">The error function.</param>
+    /// <returns>The mapped result.</returns>
+    public static Result<TIn> MapFailure<TIn>(this Result<TIn> result, Func<Error> func) =>
+        result.IsSuccess ? result : Result.Failure<TIn>(func());
+
+    /// <summary>
+    /// Maps the failure result based on the specified error function, otherwise returns a success result.
+    /// </summary>
+    /// <typeparam name="TIn">The input type.</typeparam>
+    /// <param name="resultTask">The result task.</param>
+    /// <param name="func">The error function.</param>
+    /// <returns>The mapped result.</returns>
+    public static async Task<Result<TIn>> MapFailure<TIn>(this Task<Result<TIn>> resultTask, Func<Error> func) =>
+        (await resultTask).MapFailure(func);
+
+    /// <summary>
     /// Binds the success result based on the specified binding function, otherwise returns a failure result.
     /// </summary>
     /// <param name="result">The result.</param>

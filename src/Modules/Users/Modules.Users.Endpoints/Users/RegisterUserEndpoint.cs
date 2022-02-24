@@ -2,6 +2,7 @@
 using Domain.Results;
 using Endpoints.Extensions;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Modules.Users.Application.Boundary.Users.Commands.RegisterUser;
@@ -19,6 +20,7 @@ public sealed class RegisterUserEndpoint : EndpointBaseAsync
 
     public RegisterUserEndpoint(ISender sender) => _sender = sender;
 
+    [Authorize]
     [HttpPost(UsersRoutes.Register)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

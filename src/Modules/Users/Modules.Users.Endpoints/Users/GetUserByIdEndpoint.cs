@@ -2,6 +2,7 @@
 using Domain.Results;
 using Endpoints.Extensions;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Modules.Users.Application.Boundary.Users.Queries.GetUserById;
@@ -18,6 +19,7 @@ public sealed class GetUserByIdEndpoint : EndpointBaseAsync
 
     public GetUserByIdEndpoint(ISender sender) => _sender = sender;
 
+    [Authorize]
     [HttpGet(UsersRoutes.GetById)]
     [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

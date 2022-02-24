@@ -20,5 +20,5 @@ internal sealed class AuthenticationServiceInstaller : IServiceInstaller
             .Tap(ReplaceSubClaimWithName);
 
     private static void ReplaceSubClaimWithName() =>
-        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap[JwtRegisteredClaimNames.Sub] = ClaimTypes.Name;
+        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap[JwtRegisteredClaimNames.Sub] = ClaimTypes.NameIdentifier;
 }

@@ -44,18 +44,5 @@ internal class AuthorizeOperationFilter : IOperationFilter
                     Description = statusCode.ToString()
                 });
         }
-
-        var jwtBearerScheme = new OpenApiSecurityScheme
-        {
-            Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "OAuth2" }
-        };
-
-        operation.Security = new List<OpenApiSecurityRequirement>
-        {
-            new()
-            {
-                [jwtBearerScheme] = Array.Empty<string>()
-            }
-        };
     }
 }

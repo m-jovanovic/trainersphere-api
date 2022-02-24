@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace App.ServiceInstallers.Swagger;
@@ -11,8 +12,19 @@ internal sealed class SwaggerGenOptionsSetup : IConfigureOptions<SwaggerGenOptio
     /// <inheritdoc />
     public void Configure(SwaggerGenOptions options)
     {
+        options.SwaggerDoc("v1", new OpenApiInfo
+        {
+            Version = "0.0.1",
+            Title = "TrainerSphere API",
+            Description = "This swagger document describes the available API endpoints."
+        });
+
         options.UseApiEndpoints();
 
         options.EnableAnnotations();
+
+        options.OperationFilter<AuthorizeOperationFilter>();
+
+        options.CustomSchemaIds(type => type.FullName);
     }
 }

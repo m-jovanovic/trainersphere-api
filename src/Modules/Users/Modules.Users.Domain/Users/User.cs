@@ -13,16 +13,23 @@ public sealed class User : Entity
     /// Initializes a new instance of the <see cref="User"/> class.
     /// </summary>
     /// <param name="id">The identifier.</param>
+    /// <param name="identityProviderId">The identity provider identifier.</param>
     /// <param name="email">The email.</param>
     /// <param name="firstName">The first name.</param>
     /// <param name="lastName">The last name.</param>
-    private User(Guid id, string email, string firstName, string lastName)
+    private User(Guid id, string identityProviderId, string email, string firstName, string lastName)
         : base(id)
     {
         Email = email;
         FirstName = firstName;
         LastName = lastName;
+        IdentityProviderId = identityProviderId;
     }
+
+    /// <summary>
+    /// Gets the identity provider identifier.
+    /// </summary>
+    public string IdentityProviderId { get; private set; }
 
     /// <summary>
     /// Gets the email.
@@ -43,13 +50,14 @@ public sealed class User : Entity
     /// Creates a new user with the specified parameters.
     /// </summary>
     /// <param name="id">The identifier.</param>
+    /// <param name="identityProviderId">The identity provider identifier.</param>
     /// <param name="email">The email.</param>
     /// <param name="firstName">The first name.</param>
     /// <param name="lastName">The last name.</param>
     /// <returns>The new user instance.</returns>
-    public static Result<User> Create(Guid id, string email, string firstName, string lastName)
+    public static Result<User> Create(Guid id, string identityProviderId, string email, string firstName, string lastName)
     {
-        var user = new User(id, email, firstName, lastName);
+        var user = new User(id, identityProviderId, email, firstName, lastName);
 
         user.RaiseDomainEvent(new UserCreatedDomainEvent(user.Id, user.Email, user.FirstName, user.LastName));
 

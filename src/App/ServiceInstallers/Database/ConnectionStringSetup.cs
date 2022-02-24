@@ -6,7 +6,7 @@ namespace App.ServiceInstallers.Database;
 /// <summary>
 /// Represents the <see cref="ConnectionString"/> setup.
 /// </summary>
-public class ConnectionStringSetup : IConfigureOptions<ConnectionString>
+internal class ConnectionStringSetup : IConfigureOptions<ConnectionString>
 {
     private const string ConnectionStringName = "Database";
     private readonly IConfiguration _configuration;

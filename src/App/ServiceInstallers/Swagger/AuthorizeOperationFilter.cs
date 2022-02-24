@@ -6,6 +6,9 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace App.ServiceInstallers.Swagger;
 
+/// <summary>
+/// Represents the authorize operation filter.
+/// </summary>
 internal class AuthorizeOperationFilter : IOperationFilter
 {
     private static readonly HttpStatusCode[] ResponseStatusCodes =
@@ -14,6 +17,7 @@ internal class AuthorizeOperationFilter : IOperationFilter
         HttpStatusCode.Forbidden
     };
 
+    /// <inheritdoc />
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
         object[] customAttributes = context.MethodInfo.GetCustomAttributes(true);

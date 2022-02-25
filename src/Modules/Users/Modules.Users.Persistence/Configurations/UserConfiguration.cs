@@ -30,6 +30,10 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(user => user.FirstName).IsRequired().HasMaxLength(100);
 
         builder.Property(user => user.LastName).IsRequired().HasMaxLength(100);
+
+        builder.Property(user => user.CreatedOnUtc).IsRequired();
+
+        builder.Property(user => user.ModifiedOnUtc).IsRequired(false);
     }
 
     private static void ConfigureIndexes(EntityTypeBuilder<User> builder)

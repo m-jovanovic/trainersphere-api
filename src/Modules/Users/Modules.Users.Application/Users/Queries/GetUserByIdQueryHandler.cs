@@ -1,6 +1,5 @@
 ﻿using Application.Data;
 using Application.Messaging;
-using Dapper;
 using Domain.Results;
 using Modules.Users.Application.Boundary.Users.Queries.GetUserById;
 using Modules.Users.Domain.Users;
@@ -12,13 +11,13 @@ namespace Modules.Users.Application.Users.Queries;
 /// </summary>
 internal sealed class GetUserByIdQueryHandler : IQueryHandler<GetUserByIdQuery, UserResponse>
 {
-    private readonly ISqlConnectionFactory _sqlConnectionFactory;
+    private readonly ISqlQueryExecutor _sqlQueryExecutor;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GetUserByIdQueryHandler"/> class.
     /// </summary>
-    /// <param name="sqlConnectionFactory">The SQL connection factory.</param>
-    public GetUserByIdQueryHandler(ISqlConnectionFactory sqlConnectionFactory) => _sqlConnectionFactory = sqlConnectionFactory;
+    /// <param name="sqlQueryExecutor">The SQL connection factory.</param>
+    public GetUserByIdQueryHandler(ISqlQueryExecutor sqlQueryExecutor) => _sqlQueryExecutor = sqlQueryExecutor;
 
     /// <inheritdoc />
     public async Task<Result<UserResponse>> Handle(GetUserByIdQuery request, CancellationToken cancellationToken) =>
@@ -27,8 +26,7 @@ internal sealed class GetUserByIdQueryHandler : IQueryHandler<GetUserByIdQuery, 
             .MapFailure(() => UserErrors.NotFound(request.UserId));
 
     private async Task<UserResponse?> GetUserById(GetUserByIdQuery query) =>
-        await _sqlConnectionFactory.GetOpenConnection()
-            .QueryFirstOrDefaultAsync<UserResponse>(
+        await _sqlQueryExecutor.FirstOrDefaultAsync<UserResponse>(
                 @"SELECT * FROM users.""Users"" WHERE ""Id"" = @UserId",
                 new { query.UserId });
 }

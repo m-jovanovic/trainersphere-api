@@ -1,5 +1,4 @@
 ﻿using System.Data;
-using Application.Data;
 using Microsoft.Extensions.Options;
 using Npgsql;
 

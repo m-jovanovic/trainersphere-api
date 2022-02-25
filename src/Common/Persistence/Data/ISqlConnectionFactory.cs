@@ -1,6 +1,6 @@
 ﻿using System.Data;
 
-namespace Application.Data;
+namespace Persistence.Data;
 
 /// <summary>
 /// Represents the SQL connection factory interface.

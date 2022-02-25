@@ -1,5 +1,4 @@
-﻿using Application.Data;
-using Infrastructure.Configuration;
+﻿using Infrastructure.Configuration;
 using Persistence.Data;
 
 namespace App.ServiceInstallers.Database;

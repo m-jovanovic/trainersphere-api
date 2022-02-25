@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using Modules.Users.Persistence;
 using Modules.Users.Persistence.Constants;
 using Persistence.Data;
+using Persistence.Extensions;
 
 namespace Modules.Users.Infrastructure.Configuration;
 
@@ -29,7 +30,7 @@ public sealed class UsersModuleInstaller : IModuleInstaller
 
                 options.UseNpgsql(
                     connectionString,
-                    dbContextOptionsBuilder => dbContextOptionsBuilder.MigrationsHistoryTable("__EFMigrationsHistory", Schemas.Users));
+                    dbContextOptionsBuilder => dbContextOptionsBuilder.WithMigrationHistoryInSchema(Schemas.Users));
             })
             .AddTransientAsMatchingInterfaces(AssemblyReference.Assembly)
             .AddScopedAsMatchingInterfaces(AssemblyReference.Assembly)

@@ -6,7 +6,7 @@
 internal static class TableNames
 {
     /// <summary>
-    /// The users table name.
+    /// The users table.
     /// </summary>
     internal const string Users = nameof(Users);
 }

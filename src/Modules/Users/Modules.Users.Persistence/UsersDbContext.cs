@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Modules.Users.Persistence.Constants;
 
 namespace Modules.Users.Persistence;
 
@@ -7,8 +8,6 @@ namespace Modules.Users.Persistence;
 /// </summary>
 public sealed class UsersDbContext : DbContext
 {
-    private const string UsersSchema = "users";
-
     /// <summary>
     /// Initializes a new instance of the <see cref="UsersDbContext"/> class.
     /// </summary>
@@ -21,7 +20,7 @@ public sealed class UsersDbContext : DbContext
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.HasDefaultSchema(UsersSchema);
+        modelBuilder.HasDefaultSchema(Schemas.Users);
 
         modelBuilder.ApplyConfigurationsFromAssembly(AssemblyReference.Assembly);
     }

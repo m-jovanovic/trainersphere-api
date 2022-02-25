@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Modules.Users.Persistence;
+using Modules.Users.Persistence.Constants;
 using Persistence.Data;
 
 namespace Modules.Users.Infrastructure.Configuration;
@@ -26,7 +27,9 @@ public sealed class UsersModuleInstaller : IModuleInstaller
             {
                 ConnectionString connectionString = serviceProvider.GetService<IOptions<ConnectionString>>()!.Value;
 
-                options.UseNpgsql(connectionString);
+                options.UseNpgsql(
+                    connectionString,
+                    dbContextOptionsBuilder => dbContextOptionsBuilder.MigrationsHistoryTable("__EFMigrationsHistory", Schemas.Users));
             })
             .AddTransientAsMatchingInterfaces(AssemblyReference.Assembly)
             .AddScopedAsMatchingInterfaces(AssemblyReference.Assembly)

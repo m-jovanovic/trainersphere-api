@@ -20,6 +20,20 @@ public static class FunctionalExtensions
     }
 
     /// <summary>
+    /// Performs the specified action with the current instance and returns the same instance.
+    /// </summary>
+    /// <typeparam name="T">The instance type.</typeparam>
+    /// <param name="instance">The instance.</param>
+    /// <param name="action">The action to perform.</param>
+    /// <returns>The same instance.</returns>
+    public static T Tap<T>(this T instance, Action<T> action)
+    {
+        action(instance);
+
+        return instance;
+    }
+
+    /// <summary>
     /// Invokes the specified action for each element in the collection.
     /// </summary>
     /// <typeparam name="T">The collection type.</typeparam>

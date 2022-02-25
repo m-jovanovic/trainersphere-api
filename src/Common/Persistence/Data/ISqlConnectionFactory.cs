@@ -5,7 +5,7 @@ namespace Persistence.Data;
 /// <summary>
 /// Represents the SQL connection factory interface.
 /// </summary>
-public interface ISqlConnectionFactory
+internal interface ISqlConnectionFactory
 {
     /// <summary>
     /// Gets the open database connection instance.

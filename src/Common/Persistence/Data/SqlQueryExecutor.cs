@@ -1,12 +1,13 @@
 ﻿using Application.Data;
 using Dapper;
+using Shared.ServiceLifetimes;
 
 namespace Persistence.Data;
 
 /// <summary>
 /// Represents the SQL query executor.
 /// </summary>
-internal sealed class SqlQueryExecutor : ISqlQueryExecutor
+internal sealed class SqlQueryExecutor : ISqlQueryExecutor, ITransient
 {
     private readonly ISqlConnectionFactory _sqlConnectionFactory;
 

@@ -1,5 +1,5 @@
 ﻿using Infrastructure.Configuration;
-using Persistence.Data;
+using Infrastructure.Extensions;
 
 namespace App.ServiceInstallers.Database;
 
@@ -12,5 +12,5 @@ internal sealed class DatabaseServiceInstaller : IServiceInstaller
     public void Install(IServiceCollection services) =>
         services
             .ConfigureOptions<ConnectionStringSetup>()
-            .AddTransient<ISqlConnectionFactory, SqlConnectionFactory>();
+            .AddTransientAsMatchingInterfaces(Persistence.AssemblyReference.Assembly);
 }

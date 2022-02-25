@@ -1,13 +1,14 @@
 ﻿using System.Data;
 using Microsoft.Extensions.Options;
 using Npgsql;
+using Shared.ServiceLifetimes;
 
 namespace Persistence.Data;
 
 /// <summary>
 /// Represents the SQL connection factory.
 /// </summary>
-public sealed class SqlConnectionFactory : ISqlConnectionFactory, IDisposable
+internal sealed class SqlConnectionFactory : ISqlConnectionFactory, IDisposable, ITransient
 {
     private readonly ConnectionString _connectionString;
     private IDbConnection? _connection;

@@ -27,6 +27,8 @@ internal sealed class GetUserByIdQueryHandler : IQueryHandler<GetUserByIdQuery, 
 
     private async Task<UserResponse?> GetUserById(GetUserByIdQuery query) =>
         await _sqlQueryExecutor.FirstOrDefaultAsync<UserResponse>(
-                @"SELECT * FROM users.""Users"" WHERE ""Id"" = @UserId",
+                @"SELECT ""Id"", ""Email"", ""FirstName"", ""LastName""
+                  FROM users.""Users""
+                  WHERE ""Id"" = @UserId",
                 new { query.UserId });
 }

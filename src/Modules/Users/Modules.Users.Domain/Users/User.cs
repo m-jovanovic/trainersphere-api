@@ -7,7 +7,7 @@ namespace Modules.Users.Domain.Users;
 /// <summary>
 /// Represents the user entity.
 /// </summary>
-public sealed class User : Entity
+public sealed class User : Entity, IAuditable
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="User"/> class.
@@ -45,6 +45,12 @@ public sealed class User : Entity
     /// Gets the last name.
     /// </summary>
     public string LastName { get; private set; }
+
+    /// <inheritdoc />
+    public DateTime CreatedOnUtc { get; private set; }
+
+    /// <inheritdoc />
+    public DateTime? ModifiedOnUtc { get; private set; }
 
     /// <summary>
     /// Creates a new user with the specified parameters.

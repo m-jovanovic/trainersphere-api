@@ -4,7 +4,7 @@ using Domain.Results;
 using Modules.Users.Application.Boundary.Users.Queries.GetUserById;
 using Modules.Users.Domain.Users;
 
-namespace Modules.Users.Application.Users.Queries;
+namespace Modules.Users.Application.Users.Queries.GetUserById;
 
 /// <summary>
 /// Represents the <see cref="GetUserByIdQuery"/> handler.

@@ -91,4 +91,39 @@ public class RegisterUserCommandTests
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeEmpty();
     }
+
+    [Theory]
+    [ClassData(typeof(RegisterUserCommandData))]
+    public async Task Handle_ShouldCreateUser_WhenIdentityExistsAndEmailIsUnique(RegisterUserCommand command)
+    {
+        // Arrange
+        var identityProviderServiceMock = new Mock<IIdentityProviderService>();
+        identityProviderServiceMock
+            .Setup(x => x.ExistsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success);
+
+        var userRepositoryMock = new Mock<IUserRepository>();
+        userRepositoryMock
+            .Setup(x => x.IsEmailUniqueAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success);
+
+        var handler = new RegisterUserCommandHandler(
+            identityProviderServiceMock.Object,
+            userRepositoryMock.Object,
+            Mock.Of<IUnitOfWork>());
+
+        // Act
+        Result<Guid> result = await handler.Handle(command, default);
+
+        // Assert
+        userRepositoryMock.Verify(
+            x => x.Add(
+                It.Is<User>(
+                    u => u.Id == result.Value &&
+                         u.IdentityProviderId == command.IdentityProviderId &&
+                         u.Email == command.Email &&
+                         u.FirstName == command.FirstName &&
+                         u.LastName == command.LastName)),
+            Times.Once);
+    }
 }

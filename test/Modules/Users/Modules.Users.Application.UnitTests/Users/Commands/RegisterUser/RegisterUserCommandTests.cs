@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Domain.Results;
 using FluentAssertions;
 using Modules.Users.Application.Boundary.Users.Commands.RegisterUser;
+using Modules.Users.Application.UnitTests.Data.Users;
 using Modules.Users.Application.Users.Commands.RegisterUser;
 using Modules.Users.Domain;
 using Modules.Users.Domain.Users;
@@ -14,12 +15,11 @@ namespace Modules.Users.Application.UnitTests.Users.Commands.RegisterUser;
 
 public class RegisterUserCommandTests
 {
-    [Fact]
-    public async Task Handle_ShouldFail_WhenIdentityDoesNotExist()
+    [Theory]
+    [ClassData(typeof(RegisterUserCommandData))]
+    public async Task Handle_ShouldFail_WhenIdentityDoesNotExist(RegisterUserCommand command)
     {
         // Arrange
-        var command = new RegisterUserCommand(string.Empty, string.Empty, string.Empty, string.Empty);
-
         var identityProviderServiceMock = new Mock<IIdentityProviderService>();
         identityProviderServiceMock
             .Setup(x => x.ExistsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -37,12 +37,11 @@ public class RegisterUserCommandTests
         result.Error.Should().Be(UserErrors.IdentityNotFound);
     }
 
-    [Fact]
-    public async Task Handle_ShouldFail_WhenEmailIsNotUnique()
+    [Theory]
+    [ClassData(typeof(RegisterUserCommandData))]
+    public async Task Handle_ShouldFail_WhenEmailIsNotUnique(RegisterUserCommand command)
     {
         // Arrange
-        var command = new RegisterUserCommand(string.Empty, string.Empty, string.Empty, string.Empty);
-
         var identityProviderServiceMock = new Mock<IIdentityProviderService>();
         identityProviderServiceMock
             .Setup(x => x.ExistsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -65,12 +64,11 @@ public class RegisterUserCommandTests
         result.Error.Should().Be(UserErrors.EmailIsNotUnique);
     }
 
-    [Fact]
-    public async Task Handle_ShouldSucceed_WhenIdentityExistsAndEmailIsUnique()
+    [Theory]
+    [ClassData(typeof(RegisterUserCommandData))]
+    public async Task Handle_ShouldSucceed_WhenIdentityExistsAndEmailIsUnique(RegisterUserCommand command)
     {
         // Arrange
-        var command = new RegisterUserCommand(string.Empty, string.Empty, string.Empty, string.Empty);
-
         var identityProviderServiceMock = new Mock<IIdentityProviderService>();
         identityProviderServiceMock
             .Setup(x => x.ExistsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))

@@ -69,4 +69,15 @@ public sealed class User : Entity, IAuditable
 
         return user;
     }
+
+    /// <summary>
+    /// Changes the user's basic information.
+    /// </summary>
+    /// <param name="firstName">The first name.</param>
+    /// <param name="lastName">The last name.</param>
+    public void ChangeBasicInformation(string firstName, string lastName)
+    {
+        FirstName = firstName;
+        LastName = lastName;
+    }
 }

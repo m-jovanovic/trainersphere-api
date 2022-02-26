@@ -8,6 +8,14 @@ namespace Modules.Users.Domain.Users;
 public interface IUserRepository
 {
     /// <summary>
+    /// Gets the user with the specified identifier, if it exists.
+    /// </summary>
+    /// <param name="userId">The user identifier.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The user with the specified identifier if it exists, otherwise null.</returns>
+    Task<Result<User>> GetByIdAsync(Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Checks if the specified email is unique.
     /// </summary>
     /// <param name="email">The email.</param>

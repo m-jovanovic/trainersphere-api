@@ -33,9 +33,9 @@ public sealed class RegisterUserEndpoint : EndpointBaseAsync
         await Result.Create(request)
             .Map(registerUserRequest => new RegisterUserCommand(
                 User.GetIdentityProviderId(),
+                registerUserRequest.Email,
                 registerUserRequest.FirstName,
-                registerUserRequest.LastName,
-                registerUserRequest.Email))
+                registerUserRequest.LastName))
             .Bind(command => _sender.Send(command, cancellationToken))
             .Match(userId => Ok(userId), this.HandleFailure);
 }

@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 env:
-  DOTNET_VERSION: ${{ secrets.DOTNET_VERSION }}
+  DOTNET_VERSION: "6.0.x"
 
 jobs:
   build:

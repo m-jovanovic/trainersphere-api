@@ -29,7 +29,7 @@ public static class EndpointBaseExtensions
                 Status = StatusCodes.Status400BadRequest,
                 Extensions = { { "errors", validationResult.Errors } }
             }),
-            var notFound when notFound.Error.Code.EndsWith("NotFound", StringComparison.InvariantCulture) => endpoint.NotFound(new ProblemDetails
+            var notFound when notFound.Error.Code.Contains("NotFound", StringComparison.InvariantCulture) => endpoint.NotFound(new ProblemDetails
             {
                 Type = "Resource Not Found",
                 Title = result.Error.Code,

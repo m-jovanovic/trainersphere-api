@@ -28,10 +28,10 @@ RUN dotnet restore "src/App/App.csproj"
 COPY . .
 
 WORKDIR "/root/src/App"
-RUN dotnet build "App.csproj" -c Release -o /app/build
+RUN dotnet build "App.csproj" --configuration Release --output /app/build
 
 FROM build AS publish
-RUN dotnet publish "App.csproj" -c Release -o /app/publish
+RUN dotnet publish "App.csproj" --configuration Release --output /app/publish
 
 FROM base AS final
 WORKDIR /app

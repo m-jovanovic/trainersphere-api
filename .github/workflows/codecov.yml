@@ -28,9 +28,9 @@ jobs:
 
       - name: Test 🧪
         run: |
-          # dotnet test ./test/Modules/Users/Modules.Users.Application.UnitTests --configuration Release --no-restore --verbosity normal /p:CollectCoverage=true /p:CoverletOutput=. /p:CoverletOutputFormat=json
-          # dotnet test ./test/Modules/Users/Modules.Users.Application.UnitTests --configuration Release --no-restore --verbosity normal /p:CollectCoverage=true /p:CoverletOutput=. /p:CoverletOutputFormat=cobertura /p:MergeWith=../coverage.json
-            dotnet test ./test/Modules/Users/Modules.Users.Application.UnitTests --configuration Release --no-restore --verbosity normal /p:CollectCoverage=true /p:CoverletOutput=../../../../ /p:CoverletOutputFormat=cobertura
+          # dotnet test ./test/Modules/Users/Modules.Users.Application.UnitTests --configuration Release --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutput=. /p:CoverletOutputFormat=json
+          # dotnet test ./test/Modules/Users/Modules.Users.Application.UnitTests --configuration Release --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutput=. /p:CoverletOutputFormat=cobertura /p:MergeWith=../coverage.json
+            dotnet test ./test/Modules/Users/Modules.Users.Application.UnitTests --configuration Release --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutput=../../../../ /p:CoverletOutputFormat=cobertura
 
       - name: Publish Codecov 📢
         uses: codecov/codecov-action@v2

@@ -1,5 +1,6 @@
 ﻿using Infrastructure.Configuration;
 using Infrastructure.Extensions;
+using Shared.Extensions;
 
 namespace App.ServiceInstallers.Database;
 
@@ -12,5 +13,6 @@ internal sealed class DatabaseServiceInstaller : IServiceInstaller
     public void Install(IServiceCollection services) =>
         services
             .ConfigureOptions<ConnectionStringSetup>()
-            .AddTransientAsMatchingInterfaces(Persistence.AssemblyReference.Assembly);
+            .AddTransientAsMatchingInterfaces(Persistence.AssemblyReference.Assembly)
+            .Tap(() => Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true);
 }

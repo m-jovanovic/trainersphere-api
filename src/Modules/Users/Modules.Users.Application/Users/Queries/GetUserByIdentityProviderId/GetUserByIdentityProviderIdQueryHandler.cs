@@ -27,7 +27,7 @@ internal sealed class GetUserByIdentityProviderIdQueryHandler : IQueryHandler<Ge
 
     private async Task<UserResponse?> GetUserByIdentityProviderId(GetUserByIdentityProviderIdQuery query) =>
         await _sqlQueryExecutor.FirstOrDefaultAsync<UserResponse>(
-                @"SELECT id, email, first_name AS FirstName, last_name AS LastName
+                @"SELECT id, email, first_name, last_name
                   FROM users.users
                   WHERE identity_provider_id = @IdentityProviderId",
                 new { query.IdentityProviderId });

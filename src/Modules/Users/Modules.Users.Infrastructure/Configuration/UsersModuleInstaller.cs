@@ -39,6 +39,7 @@ public sealed class UsersModuleInstaller : IModuleInstaller
                     .UseNpgsql(
                         connectionString,
                         dbContextOptionsBuilder => dbContextOptionsBuilder.WithMigrationHistoryInSchema(Schemas.Users))
+                    .UseSnakeCaseNamingConvention()
                     .AddInterceptors(
                         serviceProvider.GetService<UpdateAuditableEntitiesInterceptor>()!);
             })

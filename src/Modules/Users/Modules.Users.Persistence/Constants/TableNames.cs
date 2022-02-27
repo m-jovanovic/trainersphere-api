@@ -14,4 +14,9 @@ internal static class TableNames
     /// The roles table.
     /// </summary>
     internal const string Roles = "roles";
+
+    /// <summary>
+    /// The user roles table.
+    /// </summary>
+    internal const string UserRoles = "user_roles";
 }

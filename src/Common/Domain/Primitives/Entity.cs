@@ -3,41 +3,38 @@
 /// <summary>
 /// Represents the abstract entity primitive.
 /// </summary>
-public abstract class Entity : IEquatable<Entity>
+/// <typeparam name="TEntityId">The entity identifier type.</typeparam>
+public abstract class Entity<TEntityId> : IEquatable<Entity<TEntityId>>
+    where TEntityId : class, IEntityId
 {
     private readonly List<IDomainEvent> _domainEvents = new();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Entity"/> class.
+    /// Initializes a new instance of the <see cref="Entity{TEntityId}"/> class.
     /// </summary>
     /// <param name="id">The entity identifier.</param>
-    protected Entity(Guid id)
-        : this()
-    {
-        if (id == Guid.Empty)
-        {
-            throw new ArgumentException("The entity identifier is required.", nameof(id));
-        }
-
-        Id = id;
-    }
+    protected Entity(TEntityId id)
+        : this() =>
+        Id = id ?? throw new ArgumentException("The entity identifier is required.", nameof(id));
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Entity"/> class.
+    /// Initializes a new instance of the <see cref="Entity{TEntityId}"/> class.
     /// </summary>
     /// <remarks>
     /// Required for deserialization.
     /// </remarks>
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     protected Entity()
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     {
     }
 
     /// <summary>
     /// Gets the entity identifier.
     /// </summary>
-    public Guid Id { get; private init; }
+    public TEntityId Id { get; private init; }
 
-    public static bool operator ==(Entity? a, Entity? b)
+    public static bool operator ==(Entity<TEntityId>? a, Entity<TEntityId>? b)
     {
         if (a is null && b is null)
         {
@@ -52,7 +49,7 @@ public abstract class Entity : IEquatable<Entity>
         return a.Equals(b);
     }
 
-    public static bool operator !=(Entity? a, Entity? b) => !(a == b);
+    public static bool operator !=(Entity<TEntityId>? a, Entity<TEntityId>? b) => !(a == b);
 
     /// <summary>
     /// Gets the domain events.
@@ -61,7 +58,7 @@ public abstract class Entity : IEquatable<Entity>
     public IReadOnlyList<IDomainEvent> GetDomainEvents() => _domainEvents.ToList();
 
     /// <inheritdoc />
-    public virtual bool Equals(Entity? other)
+    public virtual bool Equals(Entity<TEntityId>? other)
     {
         if (other is null)
         {
@@ -89,12 +86,7 @@ public abstract class Entity : IEquatable<Entity>
             return true;
         }
 
-        if (obj is not Entity other)
-        {
-            return false;
-        }
-
-        if (Id == Guid.Empty || other.Id == Guid.Empty)
+        if (obj is not Entity<TEntityId> other)
         {
             return false;
         }

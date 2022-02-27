@@ -4,7 +4,7 @@ using Shared.ServiceLifetimes;
 namespace Modules.Users.Persistence;
 
 /// <summary>
-/// Represents the unit of work.
+/// Represents the user's module unit of work.
 /// </summary>
 internal sealed class UnitOfWork : IUnitOfWork, IScoped
 {

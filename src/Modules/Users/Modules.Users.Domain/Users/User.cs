@@ -65,7 +65,7 @@ public sealed class User : Entity<UserId>, IAuditable
     {
         var user = new User(id, identityProviderId, email, firstName, lastName);
 
-        user.RaiseDomainEvent(new UserCreatedDomainEvent(user.Id, user.Email, user.FirstName, user.LastName));
+        user.RaiseDomainEvent(new UserCreatedDomainEvent(user.Id));
 
         return user;
     }

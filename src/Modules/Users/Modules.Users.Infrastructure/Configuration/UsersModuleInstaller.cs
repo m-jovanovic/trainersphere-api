@@ -1,7 +1,9 @@
 ﻿using Application.Behaviors;
+using Application.Time;
 using FluentValidation;
 using Infrastructure.Configuration;
 using Infrastructure.Extensions;
+using Infrastructure.Time;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +23,7 @@ public sealed class UsersModuleInstaller : IModuleInstaller
     /// <inheritdoc />
     public void Install(IServiceCollection services) =>
         services
+            .AddTransient<ISystemTime, SystemTime>()
             .AddMediatR(Application.AssemblyReference.Assembly)
             .AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBehavior<,>))
             .AddValidatorsFromAssembly(Application.AssemblyReference.Assembly, includeInternalTypes: true)

@@ -1,7 +1,7 @@
 ﻿namespace Application.Time;
 
 /// <summary>
-/// Represents the system clock.
+/// Represents the system time interface.
 /// </summary>
 public interface ISystemTime
 {

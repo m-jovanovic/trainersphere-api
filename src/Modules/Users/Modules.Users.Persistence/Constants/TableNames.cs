@@ -8,5 +8,5 @@ internal static class TableNames
     /// <summary>
     /// The users table.
     /// </summary>
-    internal const string Users = nameof(Users);
+    internal const string Users = "users";
 }

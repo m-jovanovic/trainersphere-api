@@ -11,7 +11,7 @@ namespace App.ServiceInstallers.Authentication;
 internal sealed class AuthenticationServiceInstaller : IServiceInstaller
 {
     /// <inheritdoc />
-    public void Install(IServiceCollection services) =>
+    public void Install(IServiceCollection services, IConfiguration configuration) =>
         services
             .ConfigureOptions<AuthenticationOptionsSetup>()
             .ConfigureOptions<JwtBearerOptionsSetup>()

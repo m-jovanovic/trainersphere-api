@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Infrastructure.Configuration;
 
@@ -11,5 +12,6 @@ public interface IModuleInstaller
     /// Installs the module using the specified service collection.
     /// </summary>
     /// <param name="services">The service collection.</param>
-    public void Install(IServiceCollection services);
+    /// <param name="configuration">The configuration.</param>
+    public void Install(IServiceCollection services, IConfiguration configuration);
 }

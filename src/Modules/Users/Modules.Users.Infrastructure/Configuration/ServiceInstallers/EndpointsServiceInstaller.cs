@@ -1,4 +1,5 @@
 ﻿using Infrastructure.Configuration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Modules.Users.Infrastructure.Configuration.ServiceInstallers;
@@ -9,7 +10,7 @@ namespace Modules.Users.Infrastructure.Configuration.ServiceInstallers;
 internal sealed class EndpointsServiceInstaller : IServiceInstaller
 {
     /// <inheritdoc />
-    public void Install(IServiceCollection services) =>
+    public void Install(IServiceCollection services, IConfiguration configuration) =>
         services
             .AddControllers()
             .AddApplicationPart(Endpoints.AssemblyReference.Assembly);

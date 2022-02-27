@@ -8,7 +8,7 @@ namespace App.ServiceInstallers.Swagger;
 internal sealed class SwaggerServiceInstaller : IServiceInstaller
 {
     /// <inheritdoc />
-    void IServiceInstaller.Install(IServiceCollection services)
+    void IServiceInstaller.Install(IServiceCollection services, IConfiguration configuration)
     {
         services.ConfigureOptions<SwaggerGenOptionsSetup>();
 

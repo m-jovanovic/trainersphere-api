@@ -2,6 +2,7 @@
 using FluentValidation;
 using Infrastructure.Configuration;
 using MediatR;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Modules.Users.Infrastructure.Configuration.ServiceInstallers;
@@ -12,7 +13,7 @@ namespace Modules.Users.Infrastructure.Configuration.ServiceInstallers;
 internal sealed class ApplicationServiceInstaller : IServiceInstaller
 {
     /// <inheritdoc />
-    public void Install(IServiceCollection services) =>
+    public void Install(IServiceCollection services, IConfiguration configuration) =>
         services
             .AddMediatR(Application.AssemblyReference.Assembly)
             .AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBehavior<,>))

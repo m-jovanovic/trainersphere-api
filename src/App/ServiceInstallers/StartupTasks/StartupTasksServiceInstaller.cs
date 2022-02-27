@@ -9,5 +9,5 @@ namespace App.ServiceInstallers.StartupTasks;
 internal sealed class StartupTasksServiceInstaller : IServiceInstaller
 {
     /// <inheritdoc />
-    public void Install(IServiceCollection services) => services.AddHostedService<MigrateDatabaseStartupTask>();
+    public void Install(IServiceCollection services, IConfiguration configuration) => services.AddHostedService<MigrateDatabaseStartupTask>();
 }

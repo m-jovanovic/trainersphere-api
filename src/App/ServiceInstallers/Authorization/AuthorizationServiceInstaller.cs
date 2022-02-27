@@ -8,5 +8,5 @@ namespace App.ServiceInstallers.Authorization;
 internal sealed class AuthorizationServiceInstaller : IServiceInstaller
 {
     /// <inheritdoc />
-    public void Install(IServiceCollection services) => services.AddAuthorization();
+    public void Install(IServiceCollection services, IConfiguration configuration) => services.AddAuthorization();
 }

@@ -1,5 +1,6 @@
 ﻿using Infrastructure.Configuration;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -18,7 +19,7 @@ namespace Modules.Users.Infrastructure.Configuration.ServiceInstallers;
 internal sealed class PersistenceServiceInstaller : IServiceInstaller
 {
     /// <inheritdoc />
-    public void Install(IServiceCollection services) =>
+    public void Install(IServiceCollection services, IConfiguration configuration) =>
         services
             .Tap(serviceCollection => serviceCollection.TryAddSingleton<UpdateAuditableEntitiesInterceptor>())
             .AddDbContextPool<UsersDbContext>((serviceProvider, options) =>

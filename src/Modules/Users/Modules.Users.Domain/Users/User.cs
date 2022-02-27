@@ -9,6 +9,8 @@ namespace Modules.Users.Domain.Users;
 /// </summary>
 public sealed class User : Entity<UserId>, IAuditable
 {
+    private readonly HashSet<Role> _roles = new();
+
     /// <summary>
     /// Initializes a new instance of the <see cref="User"/> class.
     /// </summary>
@@ -46,6 +48,11 @@ public sealed class User : Entity<UserId>, IAuditable
     /// </summary>
     public string LastName { get; private set; }
 
+    /// <summary>
+    /// Gets the roles.
+    /// </summary>
+    public IReadOnlyCollection<Role> Roles => _roles.ToList().AsReadOnly();
+
     /// <inheritdoc />
     public DateTime CreatedOnUtc { get; private set; }
 
@@ -64,6 +71,8 @@ public sealed class User : Entity<UserId>, IAuditable
     public static Result<User> Create(UserId id, string identityProviderId, string email, string firstName, string lastName)
     {
         var user = new User(id, identityProviderId, email, firstName, lastName);
+
+        user._roles.Add(Role.Registered);
 
         user.RaiseDomainEvent(new UserCreatedDomainEvent(user.Id));
 

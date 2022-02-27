@@ -28,4 +28,9 @@ public sealed class Role : Enumeration<Role>
     private Role()
     {
     }
+
+    /// <summary>
+    /// Gets the users.
+    /// </summary>
+    public IReadOnlyCollection<User> Users { get; } = Array.Empty<User>();
 }

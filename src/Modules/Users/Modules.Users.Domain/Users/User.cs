@@ -7,7 +7,7 @@ namespace Modules.Users.Domain.Users;
 /// <summary>
 /// Represents the user entity.
 /// </summary>
-public sealed class User : Entity, IAuditable
+public sealed class User : Entity<UserId>, IAuditable
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="User"/> class.
@@ -17,7 +17,7 @@ public sealed class User : Entity, IAuditable
     /// <param name="email">The email.</param>
     /// <param name="firstName">The first name.</param>
     /// <param name="lastName">The last name.</param>
-    private User(Guid id, string identityProviderId, string email, string firstName, string lastName)
+    private User(UserId id, string identityProviderId, string email, string firstName, string lastName)
         : base(id)
     {
         Email = email;
@@ -61,7 +61,7 @@ public sealed class User : Entity, IAuditable
     /// <param name="firstName">The first name.</param>
     /// <param name="lastName">The last name.</param>
     /// <returns>The new user instance.</returns>
-    public static Result<User> Create(Guid id, string identityProviderId, string email, string firstName, string lastName)
+    public static Result<User> Create(UserId id, string identityProviderId, string email, string firstName, string lastName)
     {
         var user = new User(id, identityProviderId, email, firstName, lastName);
 

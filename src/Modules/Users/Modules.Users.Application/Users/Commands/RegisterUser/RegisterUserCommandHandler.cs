@@ -34,7 +34,7 @@ internal sealed class RegisterUserCommandHandler : ICommandHandler<RegisterUserC
     /// <inheritdoc />
     public async Task<Result<Guid>> Handle(RegisterUserCommand request, CancellationToken cancellationToken) =>
         await User.Create(
-                Guid.NewGuid(),
+                new UserId(Guid.NewGuid()),
                 request.IdentityProviderId,
                 request.Email,
                 request.FirstName,
@@ -43,7 +43,7 @@ internal sealed class RegisterUserCommandHandler : ICommandHandler<RegisterUserC
             .Bind(user => EmailIsUnique(user, cancellationToken))
             .Tap(user => _userRepository.Add(user))
             .Tap(() => _unitOfWork.SaveChangesAsync(cancellationToken))
-            .Map(user => user.Id);
+            .Map(user => user.Id.Value);
 
     private async Task<Result<User>> IdentityExists(User user, CancellationToken cancellationToken) =>
         await Result.Success()

@@ -9,4 +9,4 @@ namespace Modules.Users.Domain.Users.Events;
 /// <param name="Email">The email.</param>
 /// <param name="FirstName">The first name.</param>
 /// <param name="LastName">The last name.</param>
-public sealed record UserCreatedDomainEvent(Guid Id, string Email, string FirstName, string LastName) : IDomainEvent;
+public sealed record UserCreatedDomainEvent(UserId Id, string Email, string FirstName, string LastName) : IDomainEvent;

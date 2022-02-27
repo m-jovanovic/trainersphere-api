@@ -119,7 +119,7 @@ public class RegisterUserCommandTests
         userRepositoryMock.Verify(
             x => x.Add(
                 It.Is<User>(
-                    u => u.Id == result.Value &&
+                    u => u.Id.Value == result.Value &&
                          u.IdentityProviderId == command.IdentityProviderId &&
                          u.Email == command.Email &&
                          u.FirstName == command.FirstName &&

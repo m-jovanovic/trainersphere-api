@@ -10,10 +10,10 @@ public interface IUserRepository
     /// <summary>
     /// Gets the user with the specified identifier, if it exists.
     /// </summary>
-    /// <param name="userId">The user identifier.</param>
+    /// <param name="id">The user identifier.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The user with the specified identifier if it exists, otherwise null.</returns>
-    Task<Result<User>> GetByIdAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<Result<User>> GetByIdAsync(UserId id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Checks if the specified email is unique.

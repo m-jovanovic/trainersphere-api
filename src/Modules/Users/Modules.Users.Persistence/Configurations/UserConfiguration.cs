@@ -23,6 +23,8 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.HasKey(user => user.Id);
 
+        builder.Property(user => user.Id).ValueGeneratedNever().HasConversion(userId => userId.Value, value => new UserId(value));
+
         builder.Property(user => user.IdentityProviderId).IsRequired().HasMaxLength(500);
 
         builder.Property(user => user.Email).IsRequired().HasMaxLength(300);

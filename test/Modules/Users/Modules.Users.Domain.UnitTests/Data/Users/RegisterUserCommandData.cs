@@ -1,4 +1,5 @@
 ﻿using Bogus;
+using Modules.Users.Domain.Users;
 using Xunit;
 
 namespace Modules.Users.Domain.UnitTests.Data.Users;
@@ -10,7 +11,7 @@ internal sealed class CreateUserRequestData : TheoryData<CreateUserRequest>
         var faker = new Faker();
 
         Add(new CreateUserRequest(
-            faker.Random.Guid(),
+            new UserId(faker.Random.Guid()),
             faker.Internet.Ip(),
             faker.Name.FirstName(),
             faker.Name.LastName(),

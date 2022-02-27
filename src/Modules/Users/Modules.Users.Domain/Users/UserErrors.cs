@@ -20,7 +20,9 @@ public static class UserErrors
     /// <summary>
     /// Gets the not found error.
     /// </summary>
-    public static Func<Guid, Error> NotFound => userId => new Error("User.NotFound", $"The user with the identifier '{userId}' was not found.");
+    public static Func<UserId, Error> NotFound => userId => new Error(
+        "User.NotFound",
+        $"The user with the identifier '{userId.Value}' was not found.");
 
     /// <summary>
     /// Gets the not found by identity error.

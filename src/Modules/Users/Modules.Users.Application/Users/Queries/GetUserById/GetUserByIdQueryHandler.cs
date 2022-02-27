@@ -23,7 +23,7 @@ internal sealed class GetUserByIdQueryHandler : IQueryHandler<GetUserByIdQuery, 
     public async Task<Result<UserResponse>> Handle(GetUserByIdQuery request, CancellationToken cancellationToken) =>
         await Result.Success(request)
             .Bind(async query => Result.Create(await GetUserById(query)))
-            .MapFailure(() => UserErrors.NotFound(request.UserId));
+            .MapFailure(() => UserErrors.NotFound(new UserId(request.UserId)));
 
     private async Task<UserResponse?> GetUserById(GetUserByIdQuery query) =>
         await _sqlQueryExecutor.FirstOrDefaultAsync<UserResponse>(

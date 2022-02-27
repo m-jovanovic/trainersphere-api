@@ -9,7 +9,7 @@ namespace Persistence.Interceptors;
 /// <summary>
 /// Represents the interceptor for updating auditable entity values.
 /// </summary>
-internal sealed class UpdateAuditableEntitiesInterceptor : SaveChangesInterceptor
+public sealed class UpdateAuditableEntitiesInterceptor : SaveChangesInterceptor
 {
     private readonly ISystemTime _systemTime;
 

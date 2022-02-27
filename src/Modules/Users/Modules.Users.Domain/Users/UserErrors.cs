@@ -15,7 +15,7 @@ public static class UserErrors
     /// <summary>
     /// Gets the email is not unique error.
     /// </summary>
-    public static Error EmailIsNotUnique => new("User.EmailIsNotUnique", "The user email is already in use.");
+    public static Error EmailIsNotUnique => new("User.EmailIsNotUnique", "The specified email is already in use.");
 
     /// <summary>
     /// Gets the not found error.

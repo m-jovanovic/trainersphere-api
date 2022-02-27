@@ -32,5 +32,5 @@ public sealed class Role : Enumeration<Role>
     /// <summary>
     /// Gets the users.
     /// </summary>
-    public IReadOnlyCollection<User> Users { get; } = Array.Empty<User>();
+    public IReadOnlyCollection<User> Users { get; } = new List<User>();
 }

@@ -30,5 +30,9 @@ internal sealed class UserRepository : IUserRepository, IScoped
             Result.Failure(UserErrors.EmailIsNotUnique);
 
     /// <inheritdoc />
-    public void Add(User user) => _dbContext.Set<User>().Add(user);
+    public void Add(User user)
+    {
+        _dbContext.Set<Role>().Attach(Role.Registered);
+        _dbContext.Set<User>().Add(user);
+    }
 }

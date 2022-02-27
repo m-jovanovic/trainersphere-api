@@ -9,4 +9,9 @@ internal static class TableNames
     /// The users table.
     /// </summary>
     internal const string Users = "users";
+
+    /// <summary>
+    /// The roles table.
+    /// </summary>
+    internal const string Roles = "roles";
 }

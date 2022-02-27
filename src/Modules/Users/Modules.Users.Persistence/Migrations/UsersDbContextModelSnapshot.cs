@@ -23,10 +23,49 @@ namespace Modules.Users.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Modules.Users.Domain.Users.Role", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_roles");
+
+                    b.ToTable("roles", "users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Registered"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Coach"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Client"
+                        },
+                        new
+                        {
+                            Id = 100,
+                            Name = "Administrator"
+                        });
+                });
+
             modelBuilder.Entity("Modules.Users.Domain.Users.User", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 

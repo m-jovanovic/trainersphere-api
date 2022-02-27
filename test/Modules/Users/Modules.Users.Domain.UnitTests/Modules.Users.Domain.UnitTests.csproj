@@ -26,4 +26,8 @@
 	  </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\src\Modules\Users\Modules.Users.Domain\Modules.Users.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

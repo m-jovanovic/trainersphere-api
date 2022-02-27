@@ -22,7 +22,7 @@ public sealed class RegisterUserEndpoint : EndpointBaseAsync
 
     [Authorize]
     [HttpPost(UsersRoutes.Register)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [SwaggerOperation(
@@ -37,5 +37,5 @@ public sealed class RegisterUserEndpoint : EndpointBaseAsync
                 registerUserRequest.FirstName,
                 registerUserRequest.LastName))
             .Bind(command => _sender.Send(command, cancellationToken))
-            .Match(userId => Ok(userId), this.HandleFailure);
+            .Match(userId => CreatedAtRoute(nameof(GetUserByIdEndpoint), new { userId }, userId), this.HandleFailure);
 }

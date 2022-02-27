@@ -20,7 +20,7 @@ public sealed class GetUserByIdEndpoint : EndpointBaseAsync
     public GetUserByIdEndpoint(ISender sender) => _sender = sender;
 
     [Authorize]
-    [HttpGet(UsersRoutes.GetById)]
+    [HttpGet(UsersRoutes.GetById, Name = nameof(GetUserByIdEndpoint))]
     [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [SwaggerOperation(

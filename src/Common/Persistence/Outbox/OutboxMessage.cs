@@ -9,12 +9,12 @@ public sealed class OutboxMessage
     /// Initializes a new instance of the <see cref="OutboxMessage"/> class.
     /// </summary>
     /// <param name="id">The identifier.</param>
-    /// <param name="occurredOn">The occurred on date.</param>
+    /// <param name="occurredOnUtc">The occurred on date and time.</param>
     /// <param name="content">The content.</param>
-    public OutboxMessage(Guid id, DateOnly occurredOn, string content)
+    public OutboxMessage(Guid id, DateTime occurredOnUtc, string content)
     {
         Id = id;
-        OccurredOn = occurredOn;
+        OccurredOnUtc = occurredOnUtc;
         Content = content;
     }
 
@@ -24,9 +24,9 @@ public sealed class OutboxMessage
     public Guid Id { get; private set; }
 
     /// <summary>
-    /// Gets the occurred on date.
+    /// Gets the occurred on date and time.
     /// </summary>
-    public DateOnly OccurredOn { get; private set; }
+    public DateTime OccurredOnUtc { get; private set; }
 
     /// <summary>
     /// Gets the content.
@@ -34,7 +34,7 @@ public sealed class OutboxMessage
     public string Content { get; private set; }
 
     /// <summary>
-    /// Gets the processed on date and time in UTC format.
+    /// Gets the processed on date and time, if it exists.
     /// </summary>
     public DateTime? ProcessedOnUtc { get; private set; }
 }

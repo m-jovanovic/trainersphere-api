@@ -19,4 +19,9 @@ internal static class TableNames
     /// The user roles table.
     /// </summary>
     internal const string UserRoles = "user_roles";
+
+    /// <summary>
+    /// The outbox messages table.
+    /// </summary>
+    internal const string OutboxMessages = "outbox_messages";
 }

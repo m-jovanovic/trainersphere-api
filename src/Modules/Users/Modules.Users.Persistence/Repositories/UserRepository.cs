@@ -32,7 +32,8 @@ internal sealed class UserRepository : IUserRepository, IScoped
     /// <inheritdoc />
     public void Add(User user)
     {
-        _dbContext.Set<Role>().Attach(Role.Registered);
         _dbContext.Set<User>().Add(user);
+
+        _dbContext.AttachRange(user.Roles);
     }
 }

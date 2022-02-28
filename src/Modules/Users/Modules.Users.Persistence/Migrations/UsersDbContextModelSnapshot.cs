@@ -137,6 +137,31 @@ namespace Modules.Users.Persistence.Migrations
                     b.ToTable("user_roles", "users");
                 });
 
+            modelBuilder.Entity("Persistence.Outbox.OutboxMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("json")
+                        .HasColumnName("content");
+
+                    b.Property<DateTime>("OccurredOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_on_utc");
+
+                    b.Property<DateTime?>("ProcessedOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("processed_on_utc");
+
+                    b.HasKey("Id")
+                        .HasName("pk_outbox_messages");
+
+                    b.ToTable("outbox_messages", "users");
+                });
+
             modelBuilder.Entity("Modules.Users.Domain.Users.UserRole", b =>
                 {
                     b.HasOne("Modules.Users.Domain.Users.Role", null)

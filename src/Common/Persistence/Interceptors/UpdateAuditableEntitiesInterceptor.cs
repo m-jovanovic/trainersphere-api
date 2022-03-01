@@ -25,11 +25,14 @@ public sealed class UpdateAuditableEntitiesInterceptor : SaveChangesInterceptor
         InterceptionResult<int> result,
         CancellationToken cancellationToken = default)
     {
-        IEnumerable<EntityEntry<IAuditable>> auditableEntities =
-            eventData.Context?.ChangeTracker.Entries<IAuditable>() ?? Array.Empty<EntityEntry<IAuditable>>();
+        if (eventData.Context is null)
+        {
+            return base.SavingChangesAsync(eventData, result, cancellationToken);
+        }
 
         DateTime utcNow = _systemTime.UtcNow;
-        foreach (EntityEntry<IAuditable> auditable in auditableEntities)
+
+        foreach (EntityEntry<IAuditable> auditable in GetAuditableEntities(eventData.Context))
         {
             if (auditable.State == EntityState.Added)
             {
@@ -44,4 +47,6 @@ public sealed class UpdateAuditableEntitiesInterceptor : SaveChangesInterceptor
 
         return base.SavingChangesAsync(eventData, result, cancellationToken);
     }
+
+    private static IEnumerable<EntityEntry<IAuditable>> GetAuditableEntities(DbContext dbContext) => dbContext.ChangeTracker.Entries<IAuditable>();
 }

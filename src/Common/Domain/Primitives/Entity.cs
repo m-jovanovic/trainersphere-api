@@ -4,7 +4,7 @@
 /// Represents the abstract entity primitive.
 /// </summary>
 /// <typeparam name="TEntityId">The entity identifier type.</typeparam>
-public abstract class Entity<TEntityId> : IEquatable<Entity<TEntityId>>
+public abstract class Entity<TEntityId> : IEquatable<Entity<TEntityId>>, IEntity
     where TEntityId : class, IEntityId
 {
     private readonly List<IDomainEvent> _domainEvents = new();
@@ -51,10 +51,7 @@ public abstract class Entity<TEntityId> : IEquatable<Entity<TEntityId>>
 
     public static bool operator !=(Entity<TEntityId>? a, Entity<TEntityId>? b) => !(a == b);
 
-    /// <summary>
-    /// Gets the domain events.
-    /// </summary>
-    /// <returns>The readonly list of domain events.</returns>
+    /// <inheritdoc />
     public IReadOnlyList<IDomainEvent> GetDomainEvents() => _domainEvents.ToList();
 
     /// <inheritdoc />
@@ -97,9 +94,7 @@ public abstract class Entity<TEntityId> : IEquatable<Entity<TEntityId>>
     /// <inheritdoc />
     public override int GetHashCode() => Id.GetHashCode() * 41;
 
-    /// <summary>
-    /// Clears the list of domain events.
-    /// </summary>
+    /// <inheritdoc />
     public void ClearDomainEvents() => _domainEvents.Clear();
 
     /// <summary>

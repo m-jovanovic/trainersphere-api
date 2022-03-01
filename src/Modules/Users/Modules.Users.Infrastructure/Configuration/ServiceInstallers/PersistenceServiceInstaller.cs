@@ -23,7 +23,7 @@ internal sealed class PersistenceServiceInstaller : IServiceInstaller
         services
             .Tap(serviceCollection => serviceCollection.TryAddSingleton<ConvertDomainEventsToOutboxMessagesInterceptor>())
             .Tap(serviceCollection => serviceCollection.TryAddSingleton<UpdateAuditableEntitiesInterceptor>())
-            .AddDbContextPool<UsersDbContext>((serviceProvider, options) =>
+            .AddDbContext<UsersDbContext>((serviceProvider, options) =>
             {
                 ConnectionString connectionString = serviceProvider.GetService<IOptions<ConnectionString>>()!.Value;
 

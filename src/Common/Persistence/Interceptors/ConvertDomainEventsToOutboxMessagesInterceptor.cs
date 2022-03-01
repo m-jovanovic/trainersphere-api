@@ -3,6 +3,7 @@ using Domain.Primitives;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Persistence.Outbox;
+using Shared.Extensions;
 
 namespace Persistence.Interceptors;
 
@@ -22,27 +23,26 @@ public sealed class ConvertDomainEventsToOutboxMessagesInterceptor : SaveChanges
             return base.SavingChangesAsync(eventData, result, cancellationToken);
         }
 
-        List<IEntity> entities = GetEntities(eventData.Context);
+        IEnumerable<IEntity> entities = GetEntities(eventData.Context);
 
         IEnumerable<OutboxMessage> outboxMessages = CreateOutboxMessages(entities);
 
-        entities.ForEach(entity => entity.ClearDomainEvents());
-
-        eventData.Context.AddRange(outboxMessages);
+        eventData.Context.Set<OutboxMessage>().AddRange(outboxMessages);
 
         return base.SavingChangesAsync(eventData, result, cancellationToken);
     }
 
-    private static List<IEntity> GetEntities(DbContext dbContext) =>
+    private static IEnumerable<IEntity> GetEntities(DbContext dbContext) =>
         dbContext
             .ChangeTracker
             .Entries<IEntity>()
-            .Select(entityEntry => entityEntry.Entity)
-            .ToList();
+            .Select(entityEntry => entityEntry.Entity);
 
     private static IEnumerable<OutboxMessage> CreateOutboxMessages(IEnumerable<IEntity> entities) =>
         entities
-            .SelectMany(entity => entity.GetDomainEvents())
+            .SelectMany(entity =>
+                entity.GetDomainEvents()
+                    .Tap(entity.ClearDomainEvents))
             .Select(domainEvent => new OutboxMessage(
                 domainEvent.Id,
                 domainEvent.OccurredOnUtc,

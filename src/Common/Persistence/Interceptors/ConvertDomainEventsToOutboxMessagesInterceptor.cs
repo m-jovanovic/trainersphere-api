@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using Domain.Primitives;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Persistence.Outbox;
 
@@ -21,19 +22,9 @@ public sealed class ConvertDomainEventsToOutboxMessagesInterceptor : SaveChanges
             return base.SavingChangesAsync(eventData, result, cancellationToken);
         }
 
-        var entities = eventData.Context
-            .ChangeTracker
-            .Entries<IEntity>()
-            .Select(entityEntry => entityEntry.Entity)
-            .ToList();
+        List<IEntity> entities = GetEntities(eventData.Context);
 
-        var outboxMessages = entities
-            .SelectMany(entity => entity.GetDomainEvents())
-            .Select(domainEvent => new OutboxMessage(
-                domainEvent.Id,
-                domainEvent.OccurredOnUtc,
-                JsonSerializer.Serialize(domainEvent)))
-            .ToList();
+        IEnumerable<OutboxMessage> outboxMessages = CreateOutboxMessages(entities);
 
         entities.ForEach(entity => entity.ClearDomainEvents());
 
@@ -41,4 +32,19 @@ public sealed class ConvertDomainEventsToOutboxMessagesInterceptor : SaveChanges
 
         return base.SavingChangesAsync(eventData, result, cancellationToken);
     }
+
+    private static List<IEntity> GetEntities(DbContext dbContext) =>
+        dbContext
+            .ChangeTracker
+            .Entries<IEntity>()
+            .Select(entityEntry => entityEntry.Entity)
+            .ToList();
+
+    private static IEnumerable<OutboxMessage> CreateOutboxMessages(IEnumerable<IEntity> entities) =>
+        entities
+            .SelectMany(entity => entity.GetDomainEvents())
+            .Select(domainEvent => new OutboxMessage(
+                domainEvent.Id,
+                domainEvent.OccurredOnUtc,
+                JsonSerializer.Serialize(domainEvent)));
 }

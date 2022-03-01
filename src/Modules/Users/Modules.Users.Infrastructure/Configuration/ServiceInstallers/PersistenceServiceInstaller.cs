@@ -21,6 +21,7 @@ internal sealed class PersistenceServiceInstaller : IServiceInstaller
     /// <inheritdoc />
     public void Install(IServiceCollection services, IConfiguration configuration) =>
         services
+            .Tap(serviceCollection => serviceCollection.TryAddSingleton<ConvertDomainEventsToOutboxMessagesInterceptor>())
             .Tap(serviceCollection => serviceCollection.TryAddSingleton<UpdateAuditableEntitiesInterceptor>())
             .AddDbContextPool<UsersDbContext>((serviceProvider, options) =>
             {
@@ -32,6 +33,7 @@ internal sealed class PersistenceServiceInstaller : IServiceInstaller
                         dbContextOptionsBuilder => dbContextOptionsBuilder.WithMigrationHistoryInSchema(Schemas.Users))
                     .UseSnakeCaseNamingConvention()
                     .AddInterceptors(
+                        serviceProvider.GetService<ConvertDomainEventsToOutboxMessagesInterceptor>()!,
                         serviceProvider.GetService<UpdateAuditableEntitiesInterceptor>()!);
             });
 }

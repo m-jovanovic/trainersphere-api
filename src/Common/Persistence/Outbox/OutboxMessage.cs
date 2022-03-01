@@ -1,9 +1,11 @@
-﻿namespace Persistence.Outbox;
+﻿using Domain.Primitives;
+
+namespace Persistence.Outbox;
 
 /// <summary>
 /// Represents the outbox message.
 /// </summary>
-public sealed class OutboxMessage
+public sealed class OutboxMessage : IAuditable
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="OutboxMessage"/> class.
@@ -37,4 +39,10 @@ public sealed class OutboxMessage
     /// Gets the processed on date and time, if it exists.
     /// </summary>
     public DateTime? ProcessedOnUtc { get; private set; }
+
+    /// <inheritdoc />
+    public DateTime CreatedOnUtc { get; private set; }
+
+    /// <inheritdoc />
+    public DateTime? ModifiedOnUtc { get; private set; }
 }

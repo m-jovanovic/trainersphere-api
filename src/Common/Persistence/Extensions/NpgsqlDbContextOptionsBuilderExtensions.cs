@@ -14,7 +14,7 @@ public static class NpgsqlDbContextOptionsBuilderExtensions
     /// <param name="dbContextOptionsBuilder">The database context options builder.</param>
     /// <param name="schema">The schema.</param>
     /// <returns>The same database context options builder.</returns>
-    public static NpgsqlDbContextOptionsBuilder WithMigrationHistoryInSchema(
+    public static NpgsqlDbContextOptionsBuilder WithMigrationHistoryTableInSchema(
         this NpgsqlDbContextOptionsBuilder dbContextOptionsBuilder,
         string schema) =>
         dbContextOptionsBuilder.MigrationsHistoryTable(TableNames.MigrationHistory, schema);

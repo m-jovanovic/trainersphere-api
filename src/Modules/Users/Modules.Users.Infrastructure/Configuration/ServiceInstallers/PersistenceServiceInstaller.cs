@@ -21,8 +21,8 @@ internal sealed class PersistenceServiceInstaller : IServiceInstaller
     /// <inheritdoc />
     public void Install(IServiceCollection services, IConfiguration configuration) =>
         services
-            .Tap(serviceCollection => serviceCollection.TryAddSingleton<ConvertDomainEventsToOutboxMessagesInterceptor>())
-            .Tap(serviceCollection => serviceCollection.TryAddSingleton<UpdateAuditableEntitiesInterceptor>())
+            .Tap(services.TryAddSingleton<ConvertDomainEventsToOutboxMessagesInterceptor>)
+            .Tap(services.TryAddSingleton<UpdateAuditableEntitiesInterceptor>)
             .AddDbContext<UsersDbContext>((serviceProvider, options) =>
             {
                 ConnectionString connectionString = serviceProvider.GetService<IOptions<ConnectionString>>()!.Value;
@@ -30,10 +30,9 @@ internal sealed class PersistenceServiceInstaller : IServiceInstaller
                 options
                     .UseNpgsql(
                         connectionString,
-                        dbContextOptionsBuilder => dbContextOptionsBuilder.WithMigrationHistoryInSchema(Schemas.Users))
+                        dbContextOptionsBuilder => dbContextOptionsBuilder.WithMigrationHistoryTableInSchema(Schemas.Users))
                     .UseSnakeCaseNamingConvention()
-                    .AddInterceptors(
-                        serviceProvider.GetService<ConvertDomainEventsToOutboxMessagesInterceptor>()!,
-                        serviceProvider.GetService<UpdateAuditableEntitiesInterceptor>()!);
+                    .AddInterceptors(serviceProvider.GetService<ConvertDomainEventsToOutboxMessagesInterceptor>()!)
+                    .AddInterceptors(serviceProvider.GetService<UpdateAuditableEntitiesInterceptor>()!);
             });
 }

@@ -32,7 +32,8 @@ internal sealed class PersistenceServiceInstaller : IServiceInstaller
                         connectionString,
                         dbContextOptionsBuilder => dbContextOptionsBuilder.WithMigrationHistoryTableInSchema(Schemas.Users))
                     .UseSnakeCaseNamingConvention()
-                    .AddInterceptors(serviceProvider.GetService<ConvertDomainEventsToOutboxMessagesInterceptor>()!)
-                    .AddInterceptors(serviceProvider.GetService<UpdateAuditableEntitiesInterceptor>()!);
+                    .AddInterceptors(
+                        serviceProvider.GetService<ConvertDomainEventsToOutboxMessagesInterceptor>()!,
+                        serviceProvider.GetService<UpdateAuditableEntitiesInterceptor>()!);
             });
 }

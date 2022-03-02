@@ -23,23 +23,18 @@ public sealed class ConvertDomainEventsToOutboxMessagesInterceptor : SaveChanges
             return base.SavingChangesAsync(eventData, result, cancellationToken);
         }
 
-        IEnumerable<IEntity> entities = GetEntities(eventData.Context);
-
-        IEnumerable<OutboxMessage> outboxMessages = CreateOutboxMessages(entities);
+        IEnumerable<OutboxMessage> outboxMessages = CreateOutboxMessages(eventData.Context);
 
         eventData.Context.Set<OutboxMessage>().AddRange(outboxMessages);
 
         return base.SavingChangesAsync(eventData, result, cancellationToken);
     }
 
-    private static IEnumerable<IEntity> GetEntities(DbContext dbContext) =>
+    private static IEnumerable<OutboxMessage> CreateOutboxMessages(DbContext dbContext) =>
         dbContext
             .ChangeTracker
             .Entries<IEntity>()
-            .Select(entityEntry => entityEntry.Entity);
-
-    private static IEnumerable<OutboxMessage> CreateOutboxMessages(IEnumerable<IEntity> entities) =>
-        entities
+            .Select(entityEntry => entityEntry.Entity)
             .SelectMany(entity =>
                 entity.GetDomainEvents()
                     .Tap(entity.ClearDomainEvents))

@@ -1,5 +1,7 @@
-﻿using Application.Messaging;
+﻿using Application.EventBus;
+using Application.Messaging;
 using Modules.Users.Domain.Users.Events;
+using Modules.Users.IntegrationEvents;
 
 namespace Modules.Users.Application.Users.Commands.RegisterUser;
 
@@ -8,11 +10,23 @@ namespace Modules.Users.Application.Users.Commands.RegisterUser;
 /// </summary>
 internal sealed class UserCreatedDomainEventHandler : IDomainEventHandler<UserCreatedDomainEvent>
 {
-    /// <inheritdoc />
-    public Task Handle(UserCreatedDomainEvent notification, CancellationToken cancellationToken)
-    {
-        Console.WriteLine(notification.UserId);
+    private readonly IEventBus _eventBus;
 
-        return Task.CompletedTask;
-    }
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UserCreatedDomainEventHandler"/> class.
+    /// </summary>
+    /// <param name="eventBus">The event bus.</param>
+    public UserCreatedDomainEventHandler(IEventBus eventBus) => _eventBus = eventBus;
+
+    /// <inheritdoc />
+    public async Task Handle(UserCreatedDomainEvent notification, CancellationToken cancellationToken) =>
+        await _eventBus.PublishAsync(
+            new UserRegisteredIntegrationEvent(
+                notification.Id,
+                notification.OccurredOnUtc,
+                notification.UserId.Value,
+                notification.Email,
+                notification.FirstName,
+                notification.LastName),
+            cancellationToken);
 }

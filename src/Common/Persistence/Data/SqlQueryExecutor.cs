@@ -18,6 +18,14 @@ internal sealed class SqlQueryExecutor : ISqlQueryExecutor, ITransient
     public SqlQueryExecutor(ISqlConnectionFactory sqlConnectionFactory) => _sqlConnectionFactory = sqlConnectionFactory;
 
     /// <inheritdoc />
-    public async Task<T?> FirstOrDefaultAsync<T>(string sql, object parameters) =>
+    public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object? parameters = default) =>
+        await _sqlConnectionFactory.GetOpenConnection().QueryAsync<T>(sql, parameters);
+
+    /// <inheritdoc />
+    public async Task<T?> FirstOrDefaultAsync<T>(string sql, object? parameters = default) =>
         await _sqlConnectionFactory.GetOpenConnection().QueryFirstOrDefaultAsync<T>(sql, parameters);
+
+    /// <inheritdoc />
+    public async Task ExecuteAsync(string sql, object? parameters = default) =>
+        await _sqlConnectionFactory.GetOpenConnection().ExecuteAsync(sql, parameters);
 }

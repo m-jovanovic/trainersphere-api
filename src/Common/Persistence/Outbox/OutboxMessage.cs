@@ -12,12 +12,14 @@ public sealed class OutboxMessage : IAuditable
     /// </summary>
     /// <param name="id">The identifier.</param>
     /// <param name="occurredOnUtc">The occurred on date and time.</param>
+    /// <param name="type">The type.</param>
     /// <param name="content">The content.</param>
-    public OutboxMessage(Guid id, DateTime occurredOnUtc, string content)
+    public OutboxMessage(Guid id, DateTime occurredOnUtc, string type, string content)
     {
         Id = id;
         OccurredOnUtc = occurredOnUtc;
         Content = content;
+        Type = type;
     }
 
     /// <summary>
@@ -29,6 +31,11 @@ public sealed class OutboxMessage : IAuditable
     /// Gets the occurred on date and time.
     /// </summary>
     public DateTime OccurredOnUtc { get; private set; }
+
+    /// <summary>
+    /// Gets the type.
+    /// </summary>
+    public string Type { get; private set; }
 
     /// <summary>
     /// Gets the content.

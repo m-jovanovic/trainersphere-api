@@ -1,7 +1,7 @@
-﻿using System.Text.Json;
-using Domain.Primitives;
+﻿using Domain.Primitives;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Newtonsoft.Json;
 using Persistence.Outbox;
 using Shared.Extensions;
 
@@ -12,6 +12,11 @@ namespace Persistence.Interceptors;
 /// </summary>
 public sealed class ConvertDomainEventsToOutboxMessagesInterceptor : SaveChangesInterceptor
 {
+    private static readonly JsonSerializerSettings JsonSerializerSettings = new()
+    {
+        TypeNameHandling = TypeNameHandling.All
+    };
+
     /// <inheritdoc />
     public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
         DbContextEventData eventData,
@@ -41,6 +46,7 @@ public sealed class ConvertDomainEventsToOutboxMessagesInterceptor : SaveChanges
             .Select(domainEvent => new OutboxMessage(
                 domainEvent.Id,
                 domainEvent.OccurredOnUtc,
-                JsonSerializer.Serialize(domainEvent)))
+                domainEvent.GetType().Name,
+                JsonConvert.SerializeObject(domainEvent, JsonSerializerSettings)))
             .ToList();
 }

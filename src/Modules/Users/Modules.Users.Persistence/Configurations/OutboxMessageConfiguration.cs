@@ -23,6 +23,8 @@ internal sealed class OutboxMessageConfiguration : IEntityTypeConfiguration<Outb
 
         builder.Property(outboxMessage => outboxMessage.OccurredOnUtc).IsRequired();
 
+        builder.Property(outboxMessage => outboxMessage.Type).IsRequired();
+
         builder.Property(outboxMessage => outboxMessage.Content).HasColumnType("json").IsRequired();
 
         builder.Property(outboxMessage => outboxMessage.ProcessedOnUtc).IsRequired(false);

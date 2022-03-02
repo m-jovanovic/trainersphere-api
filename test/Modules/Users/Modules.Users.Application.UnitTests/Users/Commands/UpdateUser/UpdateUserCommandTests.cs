@@ -1,12 +1,9 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Domain.Results;
 using FluentAssertions;
-using Modules.Users.Application.Boundary.Users.Commands.RegisterUser;
 using Modules.Users.Application.Boundary.Users.Commands.UpdateUser;
 using Modules.Users.Application.UnitTests.Data.Users;
-using Modules.Users.Application.Users.Commands.RegisterUser;
 using Modules.Users.Application.Users.Commands.UpdateUser;
 using Modules.Users.Domain;
 using Modules.Users.Domain.Users;

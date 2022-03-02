@@ -16,7 +16,7 @@ public interface IRecurringJobConfiguration
     Type Type { get; }
 
     /// <summary>
-    /// Gets the interval in milliseconds.
+    /// Gets the interval in seconds.
     /// </summary>
-    int IntervalInMilliseconds { get; }
+    int IntervalInSeconds { get; }
 }

@@ -1,11 +1,9 @@
-﻿using Domain.Primitives;
-
-namespace Persistence.Outbox;
+﻿namespace Persistence.Outbox;
 
 /// <summary>
 /// Represents the outbox message.
 /// </summary>
-public sealed class OutboxMessage : IAuditable
+public sealed class OutboxMessage
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="OutboxMessage"/> class.
@@ -51,10 +49,4 @@ public sealed class OutboxMessage : IAuditable
     /// Gets the error, if it exists.
     /// </summary>
     public string? Error { get; private set; }
-
-    /// <inheritdoc />
-    public DateTime CreatedOnUtc { get; private set; }
-
-    /// <inheritdoc />
-    public DateTime? ModifiedOnUtc { get; private set; }
 }

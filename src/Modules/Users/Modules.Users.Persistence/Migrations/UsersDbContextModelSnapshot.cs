@@ -148,17 +148,9 @@ namespace Modules.Users.Persistence.Migrations
                         .HasColumnType("json")
                         .HasColumnName("content");
 
-                    b.Property<DateTime>("CreatedOnUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_on_utc");
-
                     b.Property<string>("Error")
                         .HasColumnType("text")
                         .HasColumnName("error");
-
-                    b.Property<DateTime?>("ModifiedOnUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("modified_on_utc");
 
                     b.Property<DateTime>("OccurredOnUtc")
                         .HasColumnType("timestamp with time zone")

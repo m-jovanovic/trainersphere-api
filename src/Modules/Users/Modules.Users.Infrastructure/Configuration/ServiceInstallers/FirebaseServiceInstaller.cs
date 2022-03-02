@@ -20,7 +20,6 @@ internal sealed class FirebaseServiceInstaller : IServiceInstaller
         FirebaseApp.Create(new AppOptions
         {
             Credential = GoogleCredential.FromJson(
-                JsonSerializer.Serialize(
-                    configuration.GetSection(ConfigurationSettingName).Get<FirebaseConfiguration>()))
+                JsonSerializer.Serialize(configuration.GetSection(ConfigurationSettingName).Get<FirebaseConfiguration>()))
         });
 }

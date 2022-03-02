@@ -29,5 +29,8 @@ internal sealed class RecurringJobsSetup : IConfigureOptions<QuartzOptions>
                 .AddTrigger(triggerBuilder =>
                     triggerBuilder
                         .ForJob(configuration.Name)
-                        .WithSimpleSchedule(scheduleBuilder => scheduleBuilder.WithIntervalInSeconds(configuration.IntervalInSeconds))));
+                        .WithSimpleSchedule(scheduleBuilder =>
+                            scheduleBuilder
+                                .WithIntervalInSeconds(configuration.IntervalInSeconds)
+                                .RepeatForever())));
 }

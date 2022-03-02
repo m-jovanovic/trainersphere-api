@@ -24,7 +24,7 @@ internal sealed class InfrastructureServiceInstaller : IServiceInstaller
     private static void AddRecurringJobConfigurations(IServiceCollection services) =>
         services.Scan(scan =>
             scan.FromAssemblies(AssemblyReference.Assembly)
-                .AddClasses(filter => filter.Where(type => type.IsAssignableFrom(typeof(IRecurringJobConfiguration))), false)
+                .AddClasses(filter => filter.Where(type => type.IsAssignableTo(typeof(IRecurringJobConfiguration))), false)
                 .UsingRegistrationStrategy(RegistrationStrategy.Append)
                 .AsImplementedInterfaces()
                 .WithTransientLifetime());

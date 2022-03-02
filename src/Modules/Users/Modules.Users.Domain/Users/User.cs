@@ -74,7 +74,7 @@ public sealed class User : Entity<UserId>, IAuditable
 
         user._roles.Add(Role.Registered);
 
-        user.RaiseDomainEvent(new UserCreatedDomainEvent(user.Id));
+        user.RaiseDomainEvent(new UserCreatedDomainEvent(user.Id, user.Email, user.FirstName, user.LastName));
 
         return user;
     }

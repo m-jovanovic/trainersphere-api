@@ -2,6 +2,7 @@
 using Application.Time;
 using Domain.Primitives;
 using MediatR;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Polly;
 using Polly.Retry;
@@ -23,6 +24,7 @@ internal sealed class ProcessOutboxMessagesJob : IJob
     private readonly ISqlQueryExecutor _sqlQueryExecutor;
     private readonly IPublisher _publisher;
     private readonly ISystemTime _systemTime;
+    private readonly ProcessOutboxMessagesOptions _options;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessOutboxMessagesJob"/> class.
@@ -30,21 +32,28 @@ internal sealed class ProcessOutboxMessagesJob : IJob
     /// <param name="sqlQueryExecutor">The SQL query executor.</param>
     /// <param name="publisher">The publisher.</param>
     /// <param name="systemTime">The system time.</param>
-    public ProcessOutboxMessagesJob(ISqlQueryExecutor sqlQueryExecutor, IPublisher publisher, ISystemTime systemTime)
+    /// <param name="options">The options.</param>
+    public ProcessOutboxMessagesJob(
+        ISqlQueryExecutor sqlQueryExecutor,
+        IPublisher publisher,
+        ISystemTime systemTime,
+        IOptions<ProcessOutboxMessagesOptions> options)
     {
         _sqlQueryExecutor = sqlQueryExecutor;
         _publisher = publisher;
         _systemTime = systemTime;
+        _options = options.Value;
     }
 
     /// <inheritdoc />
     public async Task Execute(IJobExecutionContext context)
     {
-        const string getOutboxMessagesSql = @"
+        string getOutboxMessagesSql = $@"
             SELECT id, content
             FROM users.outbox_messages
             WHERE processed_on_utc IS NULL
-            ORDER BY occurred_on_utc";
+            ORDER BY occurred_on_utc
+            LIMIT {_options.BatchSize}";
 
         IEnumerable<OutboxMessageResponse> outboxMessages = await _sqlQueryExecutor.QueryAsync<OutboxMessageResponse>(getOutboxMessagesSql);
 
@@ -55,9 +64,7 @@ internal sealed class ProcessOutboxMessagesJob : IJob
             return;
         }
 
-        AsyncRetryPolicy policy = Policy
-            .Handle<Exception>()
-            .RetryAsync(3);
+        AsyncRetryPolicy policy = CreateRetryPolicy();
 
         const string updateOutboxMessageSql = @"
             UPDATE users.outbox_messages
@@ -81,6 +88,11 @@ internal sealed class ProcessOutboxMessagesJob : IJob
                 });
         }
     }
+
+    private AsyncRetryPolicy CreateRetryPolicy() =>
+        Policy
+            .Handle<Exception>()
+            .RetryAsync(_options.RetryCount);
 
     internal sealed record OutboxMessageResponse(Guid Id, string Content);
 }

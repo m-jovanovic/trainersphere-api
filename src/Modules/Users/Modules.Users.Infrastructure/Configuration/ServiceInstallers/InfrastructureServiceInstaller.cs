@@ -1,5 +1,7 @@
-﻿using Application.Time;
+﻿using Application.EventBus;
+using Application.Time;
 using Infrastructure.Configuration;
+using Infrastructure.EventBus;
 using Infrastructure.Time;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,5 +17,7 @@ internal sealed class InfrastructureServiceInstaller : IServiceInstaller
 {
     /// <inheritdoc />
     public void Install(IServiceCollection services, IConfiguration configuration) =>
-        services.Tap(services.TryAddTransient<ISystemTime, SystemTime>);
+        services
+            .Tap(services.TryAddTransient<ISystemTime, SystemTime>)
+            .Tap(services.TryAddTransient<IEventBus, EventBus>);
 }

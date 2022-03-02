@@ -47,6 +47,11 @@ public sealed class OutboxMessage : IAuditable
     /// </summary>
     public DateTime? ProcessedOnUtc { get; private set; }
 
+    /// <summary>
+    /// Gets the error, if it exists.
+    /// </summary>
+    public string? Error { get; private set; }
+
     /// <inheritdoc />
     public DateTime CreatedOnUtc { get; private set; }
 

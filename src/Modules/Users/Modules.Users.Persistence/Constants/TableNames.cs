@@ -24,4 +24,9 @@ internal static class TableNames
     /// The outbox messages table.
     /// </summary>
     internal const string OutboxMessages = "outbox_messages";
+
+    /// <summary>
+    /// The outbox message consumers table.
+    /// </summary>
+    internal const string OutboxMessageConsumers = "outbox_message_consumers";
 }

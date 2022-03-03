@@ -171,6 +171,22 @@ namespace Modules.Users.Persistence.Migrations
                     b.ToTable("outbox_messages", "users");
                 });
 
+            modelBuilder.Entity("Persistence.Outbox.OutboxMessageConsumer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id", "Name")
+                        .HasName("pk_outbox_message_consumers");
+
+                    b.ToTable("outbox_message_consumers", "users");
+                });
+
             modelBuilder.Entity("Modules.Users.Domain.Users.UserRole", b =>
                 {
                     b.HasOne("Modules.Users.Domain.Users.Role", null)

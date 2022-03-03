@@ -30,4 +30,13 @@ public interface ISqlQueryExecutor
     /// <param name="parameters">The parameters object.</param>
     /// <returns>The completed task.</returns>
     Task ExecuteAsync(string sql, object? parameters = default);
+
+    /// <summary>
+    /// Executes the provided SQL query with the provided parameters object.
+    /// </summary>
+    /// <typeparam name="T">The result type.</typeparam>
+    /// <param name="sql">The SQL query.</param>
+    /// <param name="parameters">The parameters object.</param>
+    /// <returns>The completed task.</returns>
+    Task<T> ExecuteScalarAsync<T>(string sql, object? parameters = default);
 }

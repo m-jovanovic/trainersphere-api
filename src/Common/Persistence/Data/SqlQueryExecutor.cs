@@ -28,4 +28,7 @@ internal sealed class SqlQueryExecutor : ISqlQueryExecutor, ITransient
     /// <inheritdoc />
     public async Task ExecuteAsync(string sql, object? parameters = default) =>
         await _sqlConnectionFactory.GetOpenConnection().ExecuteAsync(sql, parameters);
+
+    public async Task<T> ExecuteScalarAsync<T>(string sql, object? parameters = default) =>
+        await _sqlConnectionFactory.GetOpenConnection().ExecuteScalarAsync<T>(sql, parameters);
 }

@@ -1,0 +1,21 @@
+﻿using Infrastructure.Configuration;
+using MassTransit;
+
+namespace App.ServiceInstallers.EventBus;
+
+/// <summary>
+/// Represents the event bus service installer.
+/// </summary>
+internal sealed class EventBusServiceInstaller : IServiceInstaller
+{
+    /// <inheritdoc />
+    public void Install(IServiceCollection services, IConfiguration configuration) =>
+        services
+            .AddMassTransit(bussConfigurator =>
+            {
+                bussConfigurator.SetKebabCaseEndpointNameFormatter();
+
+                bussConfigurator.UsingInMemory((context, configurator) => configurator.ConfigureEndpoints(context));
+            })
+            .AddMassTransitHostedService(true);
+}

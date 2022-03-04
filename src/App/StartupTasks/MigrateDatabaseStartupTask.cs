@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Modules.Notifications.Persistence;
 using Modules.Users.Persistence;
 
 namespace App.StartupTasks;
@@ -32,8 +33,16 @@ internal sealed class MigrateDatabaseStartupTask : BackgroundService
 
         using IServiceScope scope = _serviceProvider.CreateScope();
 
-        UsersDbContext dbContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
+        await MigrateDatabaseAsync<UsersDbContext>(scope, stoppingToken);
 
-        await dbContext.Database.MigrateAsync(stoppingToken);
+        await MigrateDatabaseAsync<NotificationsDbContext>(scope, stoppingToken);
+    }
+
+    private static async Task MigrateDatabaseAsync<TDbContext>(IServiceScope scope, CancellationToken cancellationToken)
+        where TDbContext : DbContext
+    {
+        TDbContext dbContext = scope.ServiceProvider.GetRequiredService<TDbContext>();
+
+        await dbContext.Database.MigrateAsync(cancellationToken);
     }
 }

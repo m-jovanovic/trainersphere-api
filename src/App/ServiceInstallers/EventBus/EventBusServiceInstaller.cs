@@ -16,8 +16,7 @@ internal sealed class EventBusServiceInstaller : IServiceInstaller
             {
                 bussConfigurator.SetKebabCaseEndpointNameFormatter();
 
-                bussConfigurator.AddConsumersFromAssemblies(
-                    Modules.Users.Infrastructure.AssemblyReference.Assembly);
+                bussConfigurator.AddConsumersFromAssemblies();
 
                 bussConfigurator.UsingInMemory((context, configurator) => configurator.ConfigureEndpoints(context));
             })

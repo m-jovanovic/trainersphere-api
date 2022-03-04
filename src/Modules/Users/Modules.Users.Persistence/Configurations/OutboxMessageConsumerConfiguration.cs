@@ -10,7 +10,9 @@ namespace Modules.Users.Persistence.Configurations;
 /// </summary>
 internal sealed class OutboxMessageConsumerConfiguration : IEntityTypeConfiguration<OutboxMessageConsumer>
 {
-    public void Configure(EntityTypeBuilder<OutboxMessageConsumer> builder)
+    public void Configure(EntityTypeBuilder<OutboxMessageConsumer> builder) => ConfigureDataStructure(builder);
+
+    private static void ConfigureDataStructure(EntityTypeBuilder<OutboxMessageConsumer> builder)
     {
         builder.ToTable(TableNames.OutboxMessageConsumers);
 

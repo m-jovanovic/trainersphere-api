@@ -1,5 +1,7 @@
-﻿using FluentValidation;
+﻿using Application.Extensions;
+using FluentValidation;
 using Modules.Users.Application.Boundary.Users.Commands.UpdateUser;
+using Modules.Users.Application.ValidationErrors;
 
 namespace Modules.Users.Application.Users.Commands.UpdateUser;
 
@@ -13,10 +15,10 @@ internal sealed class UpdateUserCommandValidator : AbstractValidator<UpdateUserC
     /// </summary>
     public UpdateUserCommandValidator()
     {
-        RuleFor(x => x.UserId).NotEmpty();
+        RuleFor(x => x.UserId).NotEmpty().WithError(UserValidationErrors.IdentifierIsRequired);
 
-        RuleFor(x => x.FirstName).NotEmpty();
+        RuleFor(x => x.FirstName).NotEmpty().WithError(UserValidationErrors.FirstNameIsRequired);
 
-        RuleFor(x => x.LastName).NotEmpty();
+        RuleFor(x => x.LastName).NotEmpty().WithError(UserValidationErrors.LastNameIsRequired);
     }
 }

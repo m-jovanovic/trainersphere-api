@@ -1,5 +1,7 @@
-﻿using FluentValidation;
+﻿using Application.Extensions;
+using FluentValidation;
 using Modules.Users.Application.Boundary.Users.Commands.RegisterUser;
+using Modules.Users.Application.ValidationErrors;
 
 namespace Modules.Users.Application.Users.Commands.RegisterUser;
 
@@ -13,16 +15,12 @@ internal sealed class RegisterUserCommandValidator : AbstractValidator<RegisterU
     /// </summary>
     public RegisterUserCommandValidator()
     {
-        RuleFor(x => x.IdentityProviderId).NotEmpty()
-            .WithErrorCode("Validation.IdentityProviderId");
+        RuleFor(x => x.IdentityProviderId).NotEmpty().WithError(UserValidationErrors.IdentityIsRequired);
 
-        RuleFor(x => x.FirstName).NotEmpty()
-            .WithErrorCode("Validation.FirstName");
+        RuleFor(x => x.Email).NotEmpty().WithError(UserValidationErrors.EmailIsRequired);
 
-        RuleFor(x => x.LastName).NotEmpty()
-            .WithErrorCode("Validation.LastName");
+        RuleFor(x => x.FirstName).NotEmpty().WithError(UserValidationErrors.FirstNameIsRequired);
 
-        RuleFor(x => x.Email).NotEmpty()
-            .WithErrorCode("Validation.Email");
+        RuleFor(x => x.LastName).NotEmpty().WithError(UserValidationErrors.LastNameIsRequired);
     }
 }

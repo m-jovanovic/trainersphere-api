@@ -1,4 +1,4 @@
-﻿namespace Modules.Users.Persistence.Constants;
+﻿namespace Modules.Notifications.Persistence.Constants;
 
 /// <summary>
 /// Represents the table names in the users module.
@@ -6,27 +6,12 @@
 internal static class TableNames
 {
     /// <summary>
-    /// The users table.
+    /// The inbox messages table.
     /// </summary>
-    internal const string Users = "users";
+    internal const string InboxMessages = "inbox_messages";
 
     /// <summary>
-    /// The roles table.
+    /// The inbox message consumers table.
     /// </summary>
-    internal const string Roles = "roles";
-
-    /// <summary>
-    /// The user roles table.
-    /// </summary>
-    internal const string UserRoles = "user_roles";
-
-    /// <summary>
-    /// The outbox messages table.
-    /// </summary>
-    internal const string OutboxMessages = "outbox_messages";
-
-    /// <summary>
-    /// The outbox message consumers table.
-    /// </summary>
-    internal const string OutboxMessageConsumers = "outbox_message_consumers";
+    internal const string InboxMessageConsumers = "inbox_message_consumers";
 }

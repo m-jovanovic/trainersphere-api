@@ -1,7 +1,7 @@
 ﻿using Application.EventBus;
 using MassTransit;
 
-namespace Modules.Users.Infrastructure.Idempotence;
+namespace Modules.Notifications.Infrastructure.Idempotence;
 
 /// <summary>
 /// Represents the idempotent event bus message consumer.

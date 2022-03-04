@@ -10,7 +10,9 @@ namespace Modules.Users.Domain.Users.Events;
 /// <param name="FirstName">The first name.</param>
 /// <param name="LastName">The last name.</param>
 public sealed record UserCreatedDomainEvent(
+    Guid Id,
+    DateTime OccurredOnUtc,
     UserId UserId,
     string Email,
     string FirstName,
-    string LastName) : DomainEvent;
+    string LastName) : DomainEvent(Id, OccurredOnUtc);

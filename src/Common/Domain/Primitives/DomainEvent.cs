@@ -1,6 +1,4 @@
-﻿using Domain.Time;
-
-namespace Domain.Primitives;
+﻿namespace Domain.Primitives;
 
 /// <summary>
 /// Represents the abstract domain event primitive.
@@ -10,15 +8,25 @@ public abstract record DomainEvent : IDomainEvent
     /// <summary>
     /// Initializes a new instance of the <see cref="DomainEvent"/> class.
     /// </summary>
-    protected DomainEvent()
+    /// <param name="id">The identifier.</param>
+    /// <param name="occurredOnUtc">The occurred on date and time.</param>
+    protected DomainEvent(Guid id, DateTime occurredOnUtc)
+        : this()
     {
-        Id = Guid.NewGuid();
-        OccurredOnUtc = SystemTimeProvider.UtcNow();
+        Id = id;
+        OccurredOnUtc = occurredOnUtc;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DomainEvent"/> class.
+    /// </summary>
+    private DomainEvent()
+    {
     }
 
     /// <inheritdoc />
-    public Guid Id { get; }
+    public Guid Id { get; private set; }
 
     /// <inheritdoc />
-    public DateTime OccurredOnUtc { get; }
+    public DateTime OccurredOnUtc { get; private set; }
 }

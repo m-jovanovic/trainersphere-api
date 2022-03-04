@@ -1,5 +1,6 @@
 ﻿using Domain.Primitives;
 using Domain.Results;
+using Domain.Time;
 using Modules.Users.Domain.Users.Events;
 
 namespace Modules.Users.Domain.Users;
@@ -74,7 +75,13 @@ public sealed class User : Entity<UserId>, IAuditable
 
         user._roles.Add(Role.Registered);
 
-        user.RaiseDomainEvent(new UserCreatedDomainEvent(user.Id, user.Email, user.FirstName, user.LastName));
+        user.RaiseDomainEvent(new UserCreatedDomainEvent(
+            Guid.NewGuid(),
+            SystemTimeProvider.UtcNow(),
+            user.Id,
+            user.Email,
+            user.FirstName,
+            user.LastName));
 
         return user;
     }

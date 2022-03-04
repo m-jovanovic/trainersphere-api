@@ -48,6 +48,27 @@ internal sealed class ProcessOutboxMessagesJob : IJob
     /// <inheritdoc />
     public async Task Execute(IJobExecutionContext context)
     {
+        List<OutboxMessageResponse> outboxMessagesList = await GetOutboxMessagesAsync();
+
+        if (outboxMessagesList.Count == 0)
+        {
+            return;
+        }
+
+        AsyncRetryPolicy policy = CreateRetryPolicy();
+
+        foreach (OutboxMessageResponse outboxMessage in outboxMessagesList)
+        {
+            IDomainEvent domainEvent = JsonConvert.DeserializeObject<IDomainEvent>(outboxMessage.Content, JsonSerializerSettings)!;
+
+            PolicyResult result = await policy.ExecuteAndCaptureAsync(() => _publisher.Publish(domainEvent, context.CancellationToken));
+
+            await UpdateOutboxMessageAsync(outboxMessage, result.FinalException);
+        }
+    }
+
+    private async Task<List<OutboxMessageResponse>> GetOutboxMessagesAsync()
+    {
         string getOutboxMessagesSql = $@"
             SELECT id, content
             FROM users.outbox_messages
@@ -57,36 +78,25 @@ internal sealed class ProcessOutboxMessagesJob : IJob
 
         IEnumerable<OutboxMessageResponse> outboxMessages = await _sqlQueryExecutor.QueryAsync<OutboxMessageResponse>(getOutboxMessagesSql);
 
-        var outboxMessagesList = outboxMessages.ToList();
+        return outboxMessages.ToList();
+    }
 
-        if (!outboxMessagesList.Any())
-        {
-            return;
-        }
-
-        AsyncRetryPolicy policy = CreateRetryPolicy();
-
+    private async Task UpdateOutboxMessageAsync(OutboxMessageResponse outboxMessage, Exception? exception)
+    {
         const string updateOutboxMessageSql = @"
             UPDATE users.outbox_messages
             SET processed_on_utc = @ProcessedOnUtc,
                 error = @Error
             WHERE id = @Id";
 
-        foreach (OutboxMessageResponse outboxMessage in outboxMessagesList)
-        {
-            IDomainEvent domainEvent = JsonConvert.DeserializeObject<IDomainEvent>(outboxMessage.Content, JsonSerializerSettings)!;
-
-            PolicyResult result = await policy.ExecuteAndCaptureAsync(() => _publisher.Publish(domainEvent, context.CancellationToken));
-
-            await _sqlQueryExecutor.ExecuteAsync(
-                updateOutboxMessageSql,
-                new
-                {
-                    outboxMessage.Id,
-                    ProcessedOnUtc = _systemTime.UtcNow,
-                    Error = result.FinalException?.ToString()
-                });
-        }
+        await _sqlQueryExecutor.ExecuteAsync(
+            updateOutboxMessageSql,
+            new
+            {
+                outboxMessage.Id,
+                ProcessedOnUtc = _systemTime.UtcNow,
+                Error = exception?.ToString()
+            });
     }
 
     private AsyncRetryPolicy CreateRetryPolicy() =>

@@ -12,7 +12,7 @@ public sealed class NotificationsDbContext : DbContext
     /// Initializes a new instance of the <see cref="NotificationsDbContext"/> class.
     /// </summary>
     /// <param name="options">The database context options.</param>
-    public NotificationsDbContext(DbContextOptions options)
+    public NotificationsDbContext(DbContextOptions<NotificationsDbContext> options)
         : base(options)
     {
     }

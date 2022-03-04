@@ -12,7 +12,7 @@ public sealed class UsersDbContext : DbContext
     /// Initializes a new instance of the <see cref="UsersDbContext"/> class.
     /// </summary>
     /// <param name="options">The database context options.</param>
-    public UsersDbContext(DbContextOptions options)
+    public UsersDbContext(DbContextOptions<UsersDbContext> options)
         : base(options)
     {
     }

@@ -18,6 +18,6 @@ public static class RegistrationConfiguratorExtensions
     /// <param name="assemblies">The assemblies to scan for consumers.</param>
     public static void AddConsumersFromAssemblies(this IRegistrationConfigurator registrationConfigurator, params Assembly[] assemblies) =>
         InstanceFactory
-            .CreateFromAssemblies<IConsumerInstaller>(assemblies)
+            .CreateFromAssemblies<IConsumerConfiguration>(assemblies)
             .ForEach(consumerInstaller => consumerInstaller.AddConsumers(registrationConfigurator));
 }

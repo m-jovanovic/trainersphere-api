@@ -28,6 +28,20 @@ internal sealed class IdempotentDomainEventHandler<TEvent> : IDomainEventHandler
     /// <inheritdoc />
     public async Task Handle(TEvent notification, CancellationToken cancellationToken)
     {
+        var parameters = new OutboxConsumerParameters(notification.Id, _decorated.GetType().Name);
+
+        if (await IsOutboxMessageConsumedAsync(parameters))
+        {
+            return;
+        }
+
+        await _decorated.Handle(notification, cancellationToken);
+
+        await InsertOutboxMessageConsumerAsync(parameters);
+    }
+
+    private async Task<bool> IsOutboxMessageConsumedAsync(OutboxConsumerParameters parameters)
+    {
         const string checkIfConsumedSql = @"
             SELECT EXISTS(
                 SELECT 1
@@ -36,25 +50,17 @@ internal sealed class IdempotentDomainEventHandler<TEvent> : IDomainEventHandler
                       name = @Name
             )";
 
-        var parameters = new
-        {
-            notification.Id,
-            _decorated.GetType().Name
-        };
+        return await _sqlQueryExecutor.ExecuteScalarAsync<bool>(checkIfConsumedSql, parameters);
+    }
 
-        bool isConsumed = await _sqlQueryExecutor.ExecuteScalarAsync<bool>(checkIfConsumedSql, parameters);
-
-        if (isConsumed)
-        {
-            return;
-        }
-
-        await _decorated.Handle(notification, cancellationToken);
-
+    private async Task InsertOutboxMessageConsumerAsync(OutboxConsumerParameters parameters)
+    {
         const string insertConsumedSql = @"
             INSERT INTO users.outbox_message_consumers(id, name)
             VALUES (@Id, @Name)";
 
         await _sqlQueryExecutor.ExecuteAsync(insertConsumedSql, parameters);
     }
+
+    private sealed record OutboxConsumerParameters(Guid Id, string Name);
 }

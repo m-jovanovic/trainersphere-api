@@ -1,4 +1,5 @@
 ﻿using Infrastructure.Configuration;
+using Infrastructure.Extensions;
 using MassTransit;
 
 namespace App.ServiceInstallers.EventBus;
@@ -14,6 +15,9 @@ internal sealed class EventBusServiceInstaller : IServiceInstaller
             .AddMassTransit(bussConfigurator =>
             {
                 bussConfigurator.SetKebabCaseEndpointNameFormatter();
+
+                bussConfigurator.AddConsumersFromAssemblies(
+                    Modules.Users.Infrastructure.AssemblyReference.Assembly);
 
                 bussConfigurator.UsingInMemory((context, configurator) => configurator.ConfigureEndpoints(context));
             })

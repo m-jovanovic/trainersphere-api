@@ -1,0 +1,23 @@
+﻿using System.Reflection;
+using Infrastructure.Configuration;
+using Infrastructure.EventBus;
+using MassTransit;
+using Shared.Extensions;
+
+namespace Infrastructure.Extensions;
+
+/// <summary>
+/// Contains extension methods for the <see cref="IRegistrationConfigurator"/> interface.
+/// </summary>
+public static class RegistrationConfiguratorExtensions
+{
+    /// <summary>
+    /// Adds the consumers defined in the specified assemblies.
+    /// </summary>
+    /// <param name="registrationConfigurator">The registration configurator.</param>
+    /// <param name="assemblies">The assemblies to scan for consumers.</param>
+    public static void AddConsumersFromAssemblies(this IRegistrationConfigurator registrationConfigurator, params Assembly[] assemblies) =>
+        InstanceFactory
+            .CreateFromAssemblies<IConsumerInstaller>(assemblies)
+            .ForEach(consumerInstaller => consumerInstaller.AddConsumers(registrationConfigurator));
+}

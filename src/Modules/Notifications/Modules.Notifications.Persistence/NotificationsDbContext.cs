@@ -6,7 +6,7 @@ namespace Modules.Notifications.Persistence;
 /// <summary>
 /// Represents the notifications module database context.
 /// </summary>
-internal sealed class NotificationsDbContext : DbContext
+public sealed class NotificationsDbContext : DbContext
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="NotificationsDbContext"/> class.

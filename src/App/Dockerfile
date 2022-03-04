@@ -20,6 +20,12 @@ COPY ["src/Modules/Users/Modules.Users.Endpoints/Modules.Users.Endpoints.csproj"
 COPY ["src/Modules/Users/Modules.Users.Infrastructure/Modules.Users.Infrastructure.csproj", "src/Modules/Users/Modules.Users.Infrastructure/"]
 COPY ["src/Modules/Users/Modules.Users.Persistence/Modules.Users.Persistence.csproj", "src/Modules/Users/Modules.Users.Persistence/"]
 
+# Modules - Notifications
+COPY ["src/Modules/Notifications/Modules.Notifications.Domain/Modules.Notifications.Domain.csproj", "src/Modules/Notifications/Modules.Notifications.Domain/"]
+COPY ["src/Modules/Notifications/Modules.Notifications.Application/Modules.Notifications.Application.csproj", "src/Modules/Notifications/Modules.Notifications.Application/"]
+COPY ["src/Modules/Notifications/Modules.Notifications.Infrastructure/Modules.Notifications.Infrastructure.csproj", "src/Modules/Notifications/Modules.Notifications.Infrastructure/"]
+COPY ["src/Modules/Notifications/Modules.Notifications.Persistence/Modules.Notifications.Persistence.csproj", "src/Modules/Notifications/Modules.Notifications.Persistence/"]
+
 # Executable
 COPY ["src/App/App.csproj", "src/App/"]
 

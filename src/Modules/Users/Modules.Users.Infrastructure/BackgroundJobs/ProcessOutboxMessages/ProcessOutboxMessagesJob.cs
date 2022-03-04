@@ -25,6 +25,7 @@ internal sealed class ProcessOutboxMessagesJob : IJob
     private readonly IPublisher _publisher;
     private readonly ISystemTime _systemTime;
     private readonly ProcessOutboxMessagesOptions _options;
+    private readonly AsyncRetryPolicy _policy;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessOutboxMessagesJob"/> class.
@@ -43,6 +44,7 @@ internal sealed class ProcessOutboxMessagesJob : IJob
         _publisher = publisher;
         _systemTime = systemTime;
         _options = options.Value;
+        _policy = Policy.Handle<Exception>().RetryAsync(_options.RetryCount);
     }
 
     /// <inheritdoc />
@@ -55,13 +57,11 @@ internal sealed class ProcessOutboxMessagesJob : IJob
             return;
         }
 
-        AsyncRetryPolicy policy = CreateRetryPolicy();
-
         foreach (OutboxMessageResponse outboxMessage in outboxMessagesList)
         {
             IDomainEvent domainEvent = JsonConvert.DeserializeObject<IDomainEvent>(outboxMessage.Content, JsonSerializerSettings)!;
 
-            PolicyResult result = await policy.ExecuteAndCaptureAsync(() => _publisher.Publish(domainEvent, context.CancellationToken));
+            PolicyResult result = await _policy.ExecuteAndCaptureAsync(() => _publisher.Publish(domainEvent, context.CancellationToken));
 
             await UpdateOutboxMessageAsync(outboxMessage, result.FinalException);
         }
@@ -98,11 +98,6 @@ internal sealed class ProcessOutboxMessagesJob : IJob
                 Error = exception?.ToString()
             });
     }
-
-    private AsyncRetryPolicy CreateRetryPolicy() =>
-        Policy
-            .Handle<Exception>()
-            .RetryAsync(_options.RetryCount);
 
     internal sealed record OutboxMessageResponse(Guid Id, string Content);
 }

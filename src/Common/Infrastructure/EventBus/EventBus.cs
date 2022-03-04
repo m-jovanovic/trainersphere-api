@@ -1,4 +1,5 @@
 ﻿using Application.EventBus;
+using MassTransit;
 using Shared.ServiceLifetimes;
 
 namespace Infrastructure.EventBus;
@@ -8,6 +9,16 @@ namespace Infrastructure.EventBus;
 /// </summary>
 public sealed class EventBus : IEventBus, ITransient
 {
+    private readonly IBus _bus;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EventBus"/> class.
+    /// </summary>
+    /// <param name="bus">The bus.</param>
+    public EventBus(IBus bus) => _bus = bus;
+
     /// <inheritdoc />
-    public Task PublishAsync(IIntegrationEvent integrationEvent, CancellationToken cancellationToken = default) => Task.CompletedTask;
+    public async Task PublishAsync<TIntegrationEvent>(TIntegrationEvent integrationEvent, CancellationToken cancellationToken = default)
+        where TIntegrationEvent : IIntegrationEvent =>
+        await _bus.Publish(integrationEvent, cancellationToken);
 }

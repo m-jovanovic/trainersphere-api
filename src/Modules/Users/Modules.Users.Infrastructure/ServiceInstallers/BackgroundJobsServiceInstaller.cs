@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Scrutor;
 using Shared.Extensions;
 
-namespace Modules.Users.Infrastructure.Configuration.ServiceInstallers;
+namespace Modules.Users.Infrastructure.ServiceInstallers;
 
 /// <summary>
 /// Represents the background jobs service installer.

@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Modules.Users.Infrastructure.Configuration.ServiceInstallers;
+namespace Modules.Users.Infrastructure.ServiceInstallers;
 
 /// <summary>
 /// Represents the user's module endpoints service installer.

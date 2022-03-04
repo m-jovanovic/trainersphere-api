@@ -3,7 +3,7 @@ using Infrastructure.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Modules.Users.Infrastructure.Configuration;
+namespace Modules.Users.Infrastructure;
 
 /// <summary>
 /// Represents the users module installer.

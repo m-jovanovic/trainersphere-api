@@ -11,7 +11,7 @@ using Persistence.Extensions;
 using Persistence.Interceptors;
 using Shared.Extensions;
 
-namespace Modules.Users.Infrastructure.Configuration.ServiceInstallers;
+namespace Modules.Users.Infrastructure.ServiceInstallers;
 
 /// <summary>
 /// Represents the user's module persistence service installer.

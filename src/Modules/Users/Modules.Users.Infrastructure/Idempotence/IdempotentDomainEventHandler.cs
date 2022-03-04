@@ -2,7 +2,7 @@
 using Application.Messaging;
 using Domain.Primitives;
 
-namespace Modules.Users.Infrastructure.Idempotency;
+namespace Modules.Users.Infrastructure.Idempotence;
 
 /// <summary>
 /// Represents the idempotent domain event handler, which checks if the domain event has been handled previously.

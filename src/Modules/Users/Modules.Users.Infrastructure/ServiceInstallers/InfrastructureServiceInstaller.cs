@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Shared.Extensions;
 
-namespace Modules.Users.Infrastructure.Configuration.ServiceInstallers;
+namespace Modules.Users.Infrastructure.ServiceInstallers;
 
 /// <summary>
 /// Represents the user's module infrastructure service installer.

@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Options;
 using Modules.Users.Infrastructure.BackgroundJobs.ProcessOutboxMessages;
 
-namespace Modules.Users.Infrastructure.Configuration.ServiceInstallers;
+namespace Modules.Users.Infrastructure.ServiceInstallers;
 
 /// <summary>
 /// Represents the <see cref="ProcessOutboxMessagesOptions"/> setup.

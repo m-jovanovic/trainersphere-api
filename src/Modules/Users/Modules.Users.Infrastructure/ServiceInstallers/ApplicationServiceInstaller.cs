@@ -4,10 +4,10 @@ using Infrastructure.Configuration;
 using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Modules.Users.Infrastructure.Idempotency;
+using Modules.Users.Infrastructure.Idempotence;
 using Shared.Extensions;
 
-namespace Modules.Users.Infrastructure.Configuration.ServiceInstallers;
+namespace Modules.Users.Infrastructure.ServiceInstallers;
 
 /// <summary>
 /// Represents the user's module application service installer.

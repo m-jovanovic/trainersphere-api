@@ -1,6 +1,6 @@
 ﻿// ReSharper disable InconsistentNaming
 
-namespace Modules.Users.Infrastructure.Configuration.Contracts;
+namespace Modules.Users.Infrastructure.Contracts;
 
 /// <summary>
 /// Represents the Firebase configuration.

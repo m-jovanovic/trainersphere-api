@@ -4,9 +4,9 @@ using Google.Apis.Auth.OAuth2;
 using Infrastructure.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Modules.Users.Infrastructure.Configuration.Contracts;
+using Modules.Users.Infrastructure.Contracts;
 
-namespace Modules.Users.Infrastructure.Configuration.ServiceInstallers;
+namespace Modules.Users.Infrastructure.ServiceInstallers;
 
 /// <summary>
 /// Represents the Firebase service installer.

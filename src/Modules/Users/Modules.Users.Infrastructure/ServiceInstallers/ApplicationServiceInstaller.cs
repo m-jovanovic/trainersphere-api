@@ -10,7 +10,7 @@ using Shared.Extensions;
 namespace Modules.Users.Infrastructure.ServiceInstallers;
 
 /// <summary>
-/// Represents the user's module application service installer.
+/// Represents the users module application service installer.
 /// </summary>
 internal sealed class ApplicationServiceInstaller : IServiceInstaller
 {

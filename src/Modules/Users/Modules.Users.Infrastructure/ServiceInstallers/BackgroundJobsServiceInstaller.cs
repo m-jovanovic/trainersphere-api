@@ -8,7 +8,7 @@ using Shared.Extensions;
 namespace Modules.Users.Infrastructure.ServiceInstallers;
 
 /// <summary>
-/// Represents the background jobs service installer.
+/// Represents the users module background jobs service installer.
 /// </summary>
 internal sealed class BackgroundJobsServiceInstaller : IServiceInstaller
 {

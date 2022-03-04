@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Modules.Users.Infrastructure.ServiceInstallers;
 
 /// <summary>
-/// Represents the user's module endpoints service installer.
+/// Represents the users module endpoints service installer.
 /// </summary>
 internal sealed class EndpointsServiceInstaller : IServiceInstaller
 {

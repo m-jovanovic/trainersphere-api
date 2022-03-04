@@ -11,7 +11,7 @@ using Shared.Extensions;
 namespace Modules.Users.Infrastructure.ServiceInstallers;
 
 /// <summary>
-/// Represents the user's module infrastructure service installer.
+/// Represents the users module infrastructure service installer.
 /// </summary>
 internal sealed class InfrastructureServiceInstaller : IServiceInstaller
 {

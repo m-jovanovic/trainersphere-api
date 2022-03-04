@@ -14,7 +14,7 @@ using Shared.Extensions;
 namespace Modules.Users.Infrastructure.ServiceInstallers;
 
 /// <summary>
-/// Represents the user's module persistence service installer.
+/// Represents the users module persistence service installer.
 /// </summary>
 internal sealed class PersistenceServiceInstaller : IServiceInstaller
 {

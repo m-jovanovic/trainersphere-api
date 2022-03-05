@@ -1,4 +1,5 @@
 ﻿using Application.EventBus;
+using Modules.Notifications.Application.Abstractions.Email;
 using Modules.Users.IntegrationEvents;
 
 namespace Modules.Notifications.Application.Users;
@@ -8,11 +9,13 @@ namespace Modules.Notifications.Application.Users;
 /// </summary>
 internal sealed class UserRegisteredIntegrationEventHandler : IIntegrationEventHandler<UserRegisteredIntegrationEvent>
 {
-    /// <inheritdoc />
-    public Task Handle(UserRegisteredIntegrationEvent notification, CancellationToken cancellationToken)
-    {
-        Console.WriteLine($"User registered: {notification.UserId}");
+    private readonly IEmailSender _emailSender;
 
-        return Task.CompletedTask;
-    }
+    public UserRegisteredIntegrationEventHandler(IEmailSender emailSender) => _emailSender = emailSender;
+
+    /// <inheritdoc />
+    public async Task Handle(UserRegisteredIntegrationEvent notification, CancellationToken cancellationToken) =>
+        await _emailSender.SendWelcomeAsync(
+            new WelcomeEmailRequest(notification.Email, $"{notification.FirstName} {notification.LastName}"),
+            cancellationToken);
 }

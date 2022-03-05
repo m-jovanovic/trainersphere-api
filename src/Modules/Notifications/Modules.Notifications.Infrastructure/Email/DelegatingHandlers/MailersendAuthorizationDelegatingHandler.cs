@@ -1,7 +1,8 @@
 ﻿using System.Net.Http.Headers;
 using Microsoft.Extensions.Options;
+using Modules.Notifications.Infrastructure.Email.Configuration;
 
-namespace Modules.Notifications.Infrastructure.Email;
+namespace Modules.Notifications.Infrastructure.Email.DelegatingHandlers;
 
 /// <summary>
 /// Represents the Mailersend authorization delegating handler.

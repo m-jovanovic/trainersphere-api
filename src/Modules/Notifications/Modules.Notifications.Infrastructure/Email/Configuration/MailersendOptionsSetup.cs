@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
-namespace Modules.Notifications.Infrastructure.Email;
+namespace Modules.Notifications.Infrastructure.Email.Configuration;
 
 /// <summary>
 /// Represents the <see cref="MailersendOptions"/> setup.

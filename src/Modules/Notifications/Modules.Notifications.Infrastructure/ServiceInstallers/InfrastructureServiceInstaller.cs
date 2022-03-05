@@ -12,6 +12,8 @@ using Modules.Notifications.Infrastructure.Email;
 using Modules.Notifications.Infrastructure.Email.Abstractions;
 using Modules.Notifications.Infrastructure.Email.Configuration;
 using Modules.Notifications.Infrastructure.Email.DelegatingHandlers;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using Refit;
 using Shared.Extensions;
 
@@ -34,7 +36,17 @@ internal sealed class InfrastructureServiceInstaller : IServiceInstaller
             .ConfigureOptions<MailersendOptionsSetup>()
             .AddTransient<MailersendAuthorizationDelegatingHandler>()
             .AddTransient<IEmailSender, EmailSender>()
-            .AddRefitClient<IMailersendClient>()
+            .AddRefitClient<IMailersendClient>(new RefitSettings
+            {
+                ContentSerializer = new NewtonsoftJsonContentSerializer(
+                    new JsonSerializerSettings
+                    {
+                        ContractResolver = new DefaultContractResolver
+                        {
+                            NamingStrategy = new SnakeCaseNamingStrategy()
+                        }
+                    })
+            })
             .ConfigureHttpClient((serviceProvider, httpClient) =>
             {
                 MailersendOptions mailersendOptions = serviceProvider.GetService<IOptions<MailersendOptions>>()!.Value;

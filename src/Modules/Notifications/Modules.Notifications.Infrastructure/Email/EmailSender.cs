@@ -35,12 +35,15 @@ internal sealed class EmailSender : IEmailSender
             {
                 new Recipient(welcomeEmailRequest.Email)
             },
-            new Variables(
-                new Recipient(welcomeEmailRequest.Email),
-                new[]
-                {
-                    new Substitution("name", welcomeEmailRequest.Name)
-                }),
+            new[]
+            {
+                new Variable(
+                    welcomeEmailRequest.Email,
+                    new[]
+                    {
+                        new Substitution("name", welcomeEmailRequest.Name)
+                    })
+            },
             _options.Templates.WelcomeEmail);
 
         await _mailersendClient.SendEmailAsync(emailRequest, cancellationToken);

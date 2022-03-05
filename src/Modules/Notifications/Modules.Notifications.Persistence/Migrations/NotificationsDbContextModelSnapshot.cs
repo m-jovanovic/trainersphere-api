@@ -56,6 +56,22 @@ namespace Modules.Notifications.Persistence.Migrations
 
                     b.ToTable("inbox_messages", "notifications");
                 });
+
+            modelBuilder.Entity("Persistence.Inbox.InboxMessageConsumer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id", "Name")
+                        .HasName("pk_inbox_message_consumers");
+
+                    b.ToTable("inbox_message_consumers", "notifications");
+                });
 #pragma warning restore 612, 618
         }
     }

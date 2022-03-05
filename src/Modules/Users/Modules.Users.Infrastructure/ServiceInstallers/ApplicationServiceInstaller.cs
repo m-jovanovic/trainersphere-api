@@ -1,4 +1,5 @@
 ﻿using Application.Behaviors;
+using Application.Messaging;
 using FluentValidation;
 using Infrastructure.Configuration;
 using MediatR;
@@ -25,7 +26,9 @@ internal sealed class ApplicationServiceInstaller : IServiceInstaller
     private static void DecorateDomainEventHandlersWithIdempotency(IServiceCollection services) =>
         Application.AssemblyReference.Assembly
             .GetTypes()
-            .Where(type => type.GetInterfaces().Any(IsNotificationHandler))
+            .Where(type =>
+                type.GetInterfaces().Any(
+                    interfaceType => IsNotificationHandler(interfaceType) || IsDomainEventHandler(interfaceType)))
             .ForEach(type =>
             {
                 Type closedNotificationHandler = type.GetInterfaces().First(IsNotificationHandler);
@@ -40,4 +43,8 @@ internal sealed class ApplicationServiceInstaller : IServiceInstaller
     private static bool IsNotificationHandler(Type type) =>
         type.IsGenericType &&
         type.Name.StartsWith(typeof(INotificationHandler<>).Name, StringComparison.InvariantCulture);
+
+    private static bool IsDomainEventHandler(Type type) =>
+        type.IsGenericType &&
+        type.Name.StartsWith(typeof(IDomainEventHandler<>).Name, StringComparison.InvariantCulture);
 }

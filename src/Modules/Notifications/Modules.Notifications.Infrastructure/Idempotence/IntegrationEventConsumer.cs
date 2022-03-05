@@ -39,7 +39,7 @@ internal sealed class IntegrationEventConsumer<TIntegrationEvent> : IConsumer<TI
 
         const string insertInboxMessageSql = @"
             INSERT INTO notifications.inbox_messages(id, occurred_on_utc, type, content)
-            VALUES (@Id, @OccurredOnUtc, @Type, @Content)";
+            VALUES (@Id, @OccurredOnUtc, @Type, @Content::json)";
 
         await _sqlQueryExecutor.ExecuteAsync(insertInboxMessageSql, inboxMessage);
     }

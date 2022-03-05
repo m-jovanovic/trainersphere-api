@@ -7,4 +7,4 @@
 /// <param name="To">The to array.</param>
 /// <param name="Variables">The variables.</param>
 /// <param name="Template_Id">The template identifier.</param>
-internal sealed record EmailRequest(Sender From, Recipient[] To, Variables Variables, string Template_Id);
+internal sealed record EmailRequest(Sender From, Recipient[] To, Variable[] Variables, string Template_Id);

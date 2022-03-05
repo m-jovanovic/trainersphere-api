@@ -1,7 +1,6 @@
 ﻿using Application.Data;
 using Application.EventBus;
 using Application.Time;
-using Domain.Primitives;
 using MediatR;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;

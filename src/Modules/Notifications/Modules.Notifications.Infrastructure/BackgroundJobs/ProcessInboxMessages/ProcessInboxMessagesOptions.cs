@@ -1,9 +1,9 @@
-﻿namespace Modules.Notifications.Infrastructure.BackgroundJobs.ProcessOutboxMessages;
+﻿namespace Modules.Notifications.Infrastructure.BackgroundJobs.ProcessInboxMessages;
 
 /// <summary>
-/// Represents the <see cref="ProcessOutboxMessagesJob"/> options.
+/// Represents the <see cref="ProcessInboxMessagesJob"/> options.
 /// </summary>
-internal sealed class ProcessOutboxMessagesOptions
+internal sealed class ProcessInboxMessagesOptions
 {
     /// <summary>
     /// Gets the interval in seconds.

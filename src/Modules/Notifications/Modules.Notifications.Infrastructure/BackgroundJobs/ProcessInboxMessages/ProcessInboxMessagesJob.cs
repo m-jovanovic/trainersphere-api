@@ -8,13 +8,13 @@ using Polly;
 using Polly.Retry;
 using Quartz;
 
-namespace Modules.Notifications.Infrastructure.BackgroundJobs.ProcessOutboxMessages;
+namespace Modules.Notifications.Infrastructure.BackgroundJobs.ProcessInboxMessages;
 
 /// <summary>
-/// Represents the background job for processing outbox messages.
+/// Represents the background job for processing inbox messages.
 /// </summary>
 [DisallowConcurrentExecution]
-internal sealed class ProcessOutboxMessagesJob : IJob
+internal sealed class ProcessInboxMessagesJob : IJob
 {
     private static readonly JsonSerializerSettings JsonSerializerSettings = new()
     {
@@ -24,21 +24,21 @@ internal sealed class ProcessOutboxMessagesJob : IJob
     private readonly ISqlQueryExecutor _sqlQueryExecutor;
     private readonly IPublisher _publisher;
     private readonly ISystemTime _systemTime;
-    private readonly ProcessOutboxMessagesOptions _options;
+    private readonly ProcessInboxMessagesOptions _options;
     private readonly AsyncRetryPolicy _policy;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ProcessOutboxMessagesJob"/> class.
+    /// Initializes a new instance of the <see cref="ProcessInboxMessagesJob"/> class.
     /// </summary>
     /// <param name="sqlQueryExecutor">The SQL query executor.</param>
     /// <param name="publisher">The publisher.</param>
     /// <param name="systemTime">The system time.</param>
     /// <param name="options">The options.</param>
-    public ProcessOutboxMessagesJob(
+    public ProcessInboxMessagesJob(
         ISqlQueryExecutor sqlQueryExecutor,
         IPublisher publisher,
         ISystemTime systemTime,
-        IOptions<ProcessOutboxMessagesOptions> options)
+        IOptions<ProcessInboxMessagesOptions> options)
     {
         _sqlQueryExecutor = sqlQueryExecutor;
         _publisher = publisher;
@@ -71,7 +71,7 @@ internal sealed class ProcessOutboxMessagesJob : IJob
     {
         string getOutboxMessagesSql = $@"
             SELECT id, content
-            FROM notifications.outbox_messages
+            FROM notifications.inbox_messages
             WHERE processed_on_utc IS NULL
             ORDER BY occurred_on_utc
             LIMIT {_options.BatchSize}";
@@ -84,7 +84,7 @@ internal sealed class ProcessOutboxMessagesJob : IJob
     private async Task UpdateOutboxMessageAsync(OutboxMessageResponse outboxMessage, Exception? exception)
     {
         const string updateOutboxMessageSql = @"
-            UPDATE notifications.outbox_messages
+            UPDATE notifications.inbox_messages
             SET processed_on_utc = @ProcessedOnUtc,
                 error = @Error
             WHERE id = @Id";

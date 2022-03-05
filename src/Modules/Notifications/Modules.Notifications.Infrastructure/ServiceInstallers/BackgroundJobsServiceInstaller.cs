@@ -15,7 +15,7 @@ internal sealed class BackgroundJobsServiceInstaller : IServiceInstaller
     /// <inheritdoc />
     public void Install(IServiceCollection services, IConfiguration configuration) =>
         services
-            .ConfigureOptions<ProcessOutboxMessagesOptionsSetup>()
+            .ConfigureOptions<ProcessInboxMessagesOptionsSetup>()
             .Tap(AddRecurringJobConfigurations);
 
     private static void AddRecurringJobConfigurations(IServiceCollection services) =>

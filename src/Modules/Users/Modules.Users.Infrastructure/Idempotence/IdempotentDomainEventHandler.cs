@@ -5,7 +5,7 @@ using Domain.Primitives;
 namespace Modules.Users.Infrastructure.Idempotence;
 
 /// <summary>
-/// Represents the idempotent domain event handler, which checks if the domain event has been handled previously.
+/// Represents the idempotent domain event handler, which checks if the domain event has already been handled previously.
 /// </summary>
 /// <typeparam name="TEvent">The domain event type.</typeparam>
 internal sealed class IdempotentDomainEventHandler<TEvent> : IDomainEventHandler<TEvent>

@@ -1,4 +1,5 @@
 ﻿using Application.Data;
+using Application.EventBus;
 using Application.Time;
 using Domain.Primitives;
 using MediatR;
@@ -50,54 +51,54 @@ internal sealed class ProcessInboxMessagesJob : IJob
     /// <inheritdoc />
     public async Task Execute(IJobExecutionContext context)
     {
-        List<OutboxMessageResponse> outboxMessagesList = await GetOutboxMessagesAsync();
+        List<InboxMessageResponse> inboxMessagesList = await GetInboxMessagesAsync();
 
-        if (outboxMessagesList.Count == 0)
+        if (inboxMessagesList.Count == 0)
         {
             return;
         }
 
-        foreach (OutboxMessageResponse outboxMessage in outboxMessagesList)
+        foreach (InboxMessageResponse inboxMessage in inboxMessagesList)
         {
-            IDomainEvent domainEvent = JsonConvert.DeserializeObject<IDomainEvent>(outboxMessage.Content, JsonSerializerSettings)!;
+            IIntegrationEvent integrationEvent = JsonConvert.DeserializeObject<IIntegrationEvent>(inboxMessage.Content, JsonSerializerSettings)!;
 
-            PolicyResult result = await _policy.ExecuteAndCaptureAsync(() => _publisher.Publish(domainEvent, context.CancellationToken));
+            PolicyResult result = await _policy.ExecuteAndCaptureAsync(() => _publisher.Publish(integrationEvent, context.CancellationToken));
 
-            await UpdateOutboxMessageAsync(outboxMessage, result.FinalException);
+            await UpdateInboxMessageAsync(inboxMessage, result.FinalException);
         }
     }
 
-    private async Task<List<OutboxMessageResponse>> GetOutboxMessagesAsync()
+    private async Task<List<InboxMessageResponse>> GetInboxMessagesAsync()
     {
-        string getOutboxMessagesSql = $@"
+        string getInboxMessagesSql = $@"
             SELECT id, content
             FROM notifications.inbox_messages
             WHERE processed_on_utc IS NULL
             ORDER BY occurred_on_utc
             LIMIT {_options.BatchSize}";
 
-        IEnumerable<OutboxMessageResponse> outboxMessages = await _sqlQueryExecutor.QueryAsync<OutboxMessageResponse>(getOutboxMessagesSql);
+        IEnumerable<InboxMessageResponse> inboxMessages = await _sqlQueryExecutor.QueryAsync<InboxMessageResponse>(getInboxMessagesSql);
 
-        return outboxMessages.ToList();
+        return inboxMessages.ToList();
     }
 
-    private async Task UpdateOutboxMessageAsync(OutboxMessageResponse outboxMessage, Exception? exception)
+    private async Task UpdateInboxMessageAsync(InboxMessageResponse inboxMessage, Exception? exception)
     {
-        const string updateOutboxMessageSql = @"
+        const string updateInboxMessageSql = @"
             UPDATE notifications.inbox_messages
             SET processed_on_utc = @ProcessedOnUtc,
                 error = @Error
             WHERE id = @Id";
 
         await _sqlQueryExecutor.ExecuteAsync(
-            updateOutboxMessageSql,
+            updateInboxMessageSql,
             new
             {
-                outboxMessage.Id,
+                inboxMessage.Id,
                 ProcessedOnUtc = _systemTime.UtcNow,
                 Error = exception?.ToString()
             });
     }
 
-    internal sealed record OutboxMessageResponse(Guid Id, string Content);
+    internal sealed record InboxMessageResponse(Guid Id, string Content);
 }

@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Users\Modules.Users.IntegrationEvents\Modules.Users.IntegrationEvents.csproj" />
+  </ItemGroup>
+
 </Project>

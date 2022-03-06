@@ -1,13 +1,13 @@
 ﻿using Ardalis.ApiEndpoints;
 using Domain.Results;
+using Endpoints.Authorization;
 using Endpoints.Extensions;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Modules.Users.Application.Boundary.Users.Commands.UpdateUser;
-using Modules.Users.Endpoints.Constants.Routes;
 using Modules.Users.Endpoints.Contracts.Users;
+using Modules.Users.Endpoints.Routes;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Modules.Users.Endpoints.Users;
@@ -20,7 +20,7 @@ public sealed class UpdateUserEndpoint : EndpointBaseAsync
 
     public UpdateUserEndpoint(ISender sender) => _sender = sender;
 
-    [Authorize]
+    [HasPermission(UsersPermissions.UserModify)]
     [HttpPut(UsersRoutes.Update)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

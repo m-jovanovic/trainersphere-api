@@ -1,12 +1,12 @@
 ﻿using Ardalis.ApiEndpoints;
 using Domain.Results;
+using Endpoints.Authorization;
 using Endpoints.Extensions;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Modules.Users.Application.Boundary.Users.Queries.GetUserById;
-using Modules.Users.Endpoints.Constants.Routes;
+using Modules.Users.Endpoints.Routes;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Modules.Users.Endpoints.Users;
@@ -19,7 +19,7 @@ public sealed class GetUserByIdEndpoint : EndpointBaseAsync
 
     public GetUserByIdEndpoint(ISender sender) => _sender = sender;
 
-    [Authorize]
+    [HasPermission(UsersPermissions.UserRead)]
     [HttpGet(UsersRoutes.GetById, Name = nameof(GetUserByIdEndpoint))]
     [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

@@ -11,14 +11,19 @@ internal static class TableNames
     internal const string Users = "users";
 
     /// <summary>
+    /// The user roles table.
+    /// </summary>
+    internal const string UserRoles = "user_roles";
+
+    /// <summary>
     /// The roles table.
     /// </summary>
     internal const string Roles = "roles";
 
     /// <summary>
-    /// The user roles table.
+    /// The roles table.
     /// </summary>
-    internal const string UserRoles = "user_roles";
+    internal const string Permissions = "permissions";
 
     /// <summary>
     /// The outbox messages table.

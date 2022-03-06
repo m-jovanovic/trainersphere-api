@@ -19,7 +19,7 @@ internal sealed class RoleConfiguration : IEntityTypeConfiguration<Role>
     {
         builder.ToTable(TableNames.Roles);
 
-        builder.HasKey(user => user.Id);
+        builder.HasKey(role => role.Id);
 
         builder.Property(role => role.Id).ValueGeneratedNever();
 

@@ -20,4 +20,14 @@ public static class RegistrationConfiguratorExtensions
         InstanceFactory
             .CreateFromAssemblies<IConsumerConfiguration>(assemblies)
             .ForEach(consumerInstaller => consumerInstaller.AddConsumers(registrationConfigurator));
+
+    /// <summary>
+    /// Adds the request clients defined in the specified assemblies.
+    /// </summary>
+    /// <param name="registrationConfigurator">The registration configurator.</param>
+    /// <param name="assemblies">The assemblies to scan for request clients.</param>
+    public static void AddRequestClientsFromAssemblies(this IRegistrationConfigurator registrationConfigurator, params Assembly[] assemblies) =>
+        InstanceFactory
+            .CreateFromAssemblies<IRequestClientConfiguration>(assemblies)
+            .ForEach(consumerInstaller => consumerInstaller.AddRequestClients(registrationConfigurator));
 }

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 
-namespace Endpoints.Authorization;
+namespace Endpoints.Authorization.Permissions;
 
 /// <summary>
 /// Specifies that the method that this attribute is applied to requires the specified permission.

@@ -1,6 +1,7 @@
 ﻿using Ardalis.ApiEndpoints;
 using Domain.Results;
 using Endpoints.Authorization;
+using Endpoints.Authorization.Permissions;
 using Endpoints.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Http;

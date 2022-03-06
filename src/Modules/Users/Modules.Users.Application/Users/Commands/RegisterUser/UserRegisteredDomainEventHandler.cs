@@ -6,20 +6,20 @@ using Modules.Users.IntegrationEvents;
 namespace Modules.Users.Application.Users.Commands.RegisterUser;
 
 /// <summary>
-/// Represents the <see cref="UserCreatedDomainEvent"/> handler.
+/// Represents the <see cref="UserRegisteredDomainEvent"/> handler.
 /// </summary>
-internal sealed class UserCreatedDomainEventHandler : IDomainEventHandler<UserCreatedDomainEvent>
+internal sealed class UserRegisteredDomainEventHandler : IDomainEventHandler<UserRegisteredDomainEvent>
 {
     private readonly IEventBus _eventBus;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="UserCreatedDomainEventHandler"/> class.
+    /// Initializes a new instance of the <see cref="UserRegisteredDomainEventHandler"/> class.
     /// </summary>
     /// <param name="eventBus">The event bus.</param>
-    public UserCreatedDomainEventHandler(IEventBus eventBus) => _eventBus = eventBus;
+    public UserRegisteredDomainEventHandler(IEventBus eventBus) => _eventBus = eventBus;
 
     /// <inheritdoc />
-    public async Task Handle(UserCreatedDomainEvent notification, CancellationToken cancellationToken) =>
+    public async Task Handle(UserRegisteredDomainEvent notification, CancellationToken cancellationToken) =>
         await _eventBus.PublishAsync(
             new UserRegisteredIntegrationEvent(
                 notification.Id,

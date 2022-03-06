@@ -44,7 +44,7 @@ public class UserTests
 
         // Assert
         user.Value.GetDomainEvents().Single()
-            .Should().BeOfType<UserCreatedDomainEvent>()
+            .Should().BeOfType<UserRegisteredDomainEvent>()
             .Which.UserId.Should().Be(data.Id);
     }
 

@@ -75,7 +75,7 @@ public sealed class User : Entity<UserId>, IAuditable
 
         user._roles.Add(Role.Registered);
 
-        user.RaiseDomainEvent(new UserCreatedDomainEvent(
+        user.RaiseDomainEvent(new UserRegisteredDomainEvent(
             Guid.NewGuid(),
             SystemTimeProvider.UtcNow(),
             user.Id,

@@ -28,23 +28,14 @@ internal sealed class EmailSender : IEmailSender
     /// <inheritdoc />
     public async Task SendWelcomeAsync(WelcomeEmailRequest welcomeEmailRequest, CancellationToken cancellationToken = default)
     {
-        // Add some sort of builder pattern here.
-        var emailRequest = new EmailRequest(
-            new Sender(_options.SenderEmail),
-            new[]
-            {
-                new Recipient(welcomeEmailRequest.Email)
-            },
-            new[]
-            {
-                new Variable(
-                    welcomeEmailRequest.Email,
-                    new[]
-                    {
-                        new Substitution("name", welcomeEmailRequest.Name)
-                    })
-            },
-            _options.Templates.WelcomeEmail);
+        EmailRequest emailRequest = EmailRequest.Create()
+            .WithSender(_options.SenderEmail)
+            .WithRecipient(welcomeEmailRequest.Email)
+            .WithVariable(
+                Variable.Create()
+                    .WithEmail(welcomeEmailRequest.Email)
+                    .WithSubstitution("name", welcomeEmailRequest.Name))
+            .WithTemplateId(_options.Templates.WelcomeEmail);
 
         await _mailersendClient.SendEmailAsync(emailRequest, cancellationToken);
     }

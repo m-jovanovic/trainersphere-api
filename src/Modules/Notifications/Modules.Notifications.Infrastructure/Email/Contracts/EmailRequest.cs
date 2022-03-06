@@ -7,6 +7,9 @@ namespace Modules.Notifications.Infrastructure.Email.Contracts;
 /// </summary>
 internal sealed record EmailRequest
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EmailRequest"/> class.
+    /// </summary>
     private EmailRequest()
     {
     }
@@ -31,13 +34,31 @@ internal sealed record EmailRequest
     /// </summary>
     public string TemplateId { get; init; } = string.Empty;
 
-    public static EmailRequest Create() => new();
-
-    public EmailRequest WithSender(string sender) => this with
+    /// <summary>
+    /// Creates a new email request instance with the specified template identifier.
+    /// </summary>
+    /// <param name="templateId">The template identifier.</param>
+    /// <returns>The newly created email request instance.</returns>
+    public static EmailRequest Create(string templateId) => new()
     {
-        From = new Sender(sender)
+        TemplateId = templateId
     };
 
+    /// <summary>
+    /// Creates a new email request instance from the existing instance with the specified sender.
+    /// </summary>
+    /// <param name="email">The sender email.</param>
+    /// <returns>The newly created email request instance.</returns>
+    public EmailRequest WithSender(string email) => this with
+    {
+        From = new Sender(email)
+    };
+
+    /// <summary>
+    /// Creates a new email request instance from the existing instance with the specified recipient.
+    /// </summary>
+    /// <param name="email">The recipient email.</param>
+    /// <returns>The newly created email request instance.</returns>
     public EmailRequest WithRecipient(string email) => this with
     {
         To = new List<Recipient> { new(email) }
@@ -45,15 +66,15 @@ internal sealed record EmailRequest
             .ToArray()
     };
 
+    /// <summary>
+    /// Creates a new email request instance from the existing instance with the specified variable.
+    /// </summary>
+    /// <param name="variable">The variable.</param>
+    /// <returns>The newly created email request instance.</returns>
     public EmailRequest WithVariable(Variable variable) => this with
     {
         Variables = new List<Variable> { variable }
             .Tap(list => list.AddRange(Variables))
             .ToArray()
-    };
-
-    public EmailRequest WithTemplateId(string templateId) => this with
-    {
-        TemplateId = templateId
     };
 }

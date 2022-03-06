@@ -101,6 +101,40 @@ namespace Modules.Users.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Modules.Users.Domain.Users.RolePermission", b =>
+                {
+                    b.Property<int>("RoleId")
+                        .HasColumnType("integer")
+                        .HasColumnName("role_id");
+
+                    b.Property<int>("PermissionId")
+                        .HasColumnType("integer")
+                        .HasColumnName("permission_id");
+
+                    b.HasKey("RoleId", "PermissionId")
+                        .HasName("pk_role_permissions");
+
+                    b.HasIndex("PermissionId")
+                        .HasDatabaseName("ix_role_permissions_permission_id");
+
+                    b.HasIndex("RoleId")
+                        .HasDatabaseName("ix_role_permissions_role_id");
+
+                    b.ToTable("role_permissions", "users");
+
+                    b.HasData(
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 100
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 101
+                        });
+                });
+
             modelBuilder.Entity("Modules.Users.Domain.Users.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -223,6 +257,23 @@ namespace Modules.Users.Persistence.Migrations
                         .HasName("pk_outbox_message_consumers");
 
                     b.ToTable("outbox_message_consumers", "users");
+                });
+
+            modelBuilder.Entity("Modules.Users.Domain.Users.RolePermission", b =>
+                {
+                    b.HasOne("Modules.Users.Domain.Users.Permission", null)
+                        .WithMany()
+                        .HasForeignKey("PermissionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_role_permissions_permissions_permission_id");
+
+                    b.HasOne("Modules.Users.Domain.Users.Role", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_role_permissions_roles_role_id");
                 });
 
             modelBuilder.Entity("Modules.Users.Domain.Users.UserRole", b =>

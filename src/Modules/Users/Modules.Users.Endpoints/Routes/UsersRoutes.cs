@@ -1,4 +1,4 @@
-﻿namespace Modules.Users.Endpoints.Constants.Routes;
+﻿namespace Modules.Users.Endpoints.Routes;
 
 internal static class UsersRoutes
 {

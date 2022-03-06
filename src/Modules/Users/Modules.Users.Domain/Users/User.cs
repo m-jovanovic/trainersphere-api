@@ -91,7 +91,7 @@ public sealed class User : Entity<UserId>, IAuditable
     /// </summary>
     /// <param name="firstName">The first name.</param>
     /// <param name="lastName">The last name.</param>
-    public void ChangeBasicInformation(string firstName, string lastName)
+    public void Change(string firstName, string lastName)
     {
         bool basicInformationChanged = FirstName != firstName || LastName != lastName;
 
@@ -100,7 +100,7 @@ public sealed class User : Entity<UserId>, IAuditable
 
         if (basicInformationChanged)
         {
-            RaiseDomainEvent(new UserBasicInformationChangedDomainEvent(
+            RaiseDomainEvent(new UserChangedDomainEvent(
                 Guid.NewGuid(),
                 SystemTimeProvider.UtcNow(),
                 Id,

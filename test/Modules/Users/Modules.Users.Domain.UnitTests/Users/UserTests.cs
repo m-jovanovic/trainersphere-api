@@ -70,13 +70,13 @@ public class UserTests
 
     [Theory]
     [ClassData(typeof(CreateUserRequestData))]
-    public void ChangeBasicInformation_ShouldChangeBasicInformation(CreateUserRequest data)
+    public void Change_ShouldChangeBasicInformation(CreateUserRequest data)
     {
         // Arrange
         User user = User.Create(data.Id, data.IdentityProviderId, data.Email, string.Empty, string.Empty).Value;
 
         // Act
-        user.ChangeBasicInformation(data.FirstName, data.LastName);
+        user.Change(data.FirstName, data.LastName);
 
         // Assert
         user.FirstName.Should().Be(data.FirstName);
@@ -85,21 +85,21 @@ public class UserTests
 
     [Theory]
     [ClassData(typeof(CreateUserRequestData))]
-    public void ChangeBasicInformation_ShouldRaiseUserBasicInformationChangedDomainEvent(CreateUserRequest data)
+    public void Change_ShouldRaiseUserChangedDomainEvent(CreateUserRequest data)
     {
         // Arrange
         User user = User.Create(data.Id, data.IdentityProviderId, data.Email, string.Empty, string.Empty).Value;
         user.ClearDomainEvents();
 
         // Act
-        user.ChangeBasicInformation(data.FirstName, data.LastName);
+        user.Change(data.FirstName, data.LastName);
 
         // Assert
-        AndWhichConstraint<ObjectAssertions, UserBasicInformationChangedDomainEvent> domainEvent = user
+        AndWhichConstraint<ObjectAssertions, UserChangedDomainEvent> domainEvent = user
             .GetDomainEvents()
             .Single()
             .Should()
-            .BeOfType<UserBasicInformationChangedDomainEvent>();
+            .BeOfType<UserChangedDomainEvent>();
 
         domainEvent.Which.UserId.Should().Be(data.Id);
         domainEvent.Which.FirstName.Should().Be(data.FirstName);

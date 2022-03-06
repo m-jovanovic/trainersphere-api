@@ -10,7 +10,7 @@ namespace Modules.Users.Domain.Users.Events;
 /// <param name="UserId">The user identifier.</param>
 /// <param name="FirstName">The first name.</param>
 /// <param name="LastName">The last name.</param>
-public sealed record UserBasicInformationChangedDomainEvent(
+public sealed record UserChangedDomainEvent(
     Guid Id,
     DateTime OccurredOnUtc,
     UserId UserId,

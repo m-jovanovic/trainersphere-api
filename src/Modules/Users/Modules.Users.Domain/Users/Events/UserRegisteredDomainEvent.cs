@@ -3,7 +3,7 @@
 namespace Modules.Users.Domain.Users.Events;
 
 /// <summary>
-/// Represents the event that is raised then a new user is registered.
+/// Represents the domain event that is raised when a new user is registered.
 /// </summary>
 /// <param name="UserId">The user identifier.</param>
 /// <param name="Email">The email.</param>

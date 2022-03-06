@@ -93,7 +93,19 @@ public sealed class User : Entity<UserId>, IAuditable
     /// <param name="lastName">The last name.</param>
     public void ChangeBasicInformation(string firstName, string lastName)
     {
+        bool basicInformationChanged = FirstName != firstName || LastName != lastName;
+
         FirstName = firstName;
         LastName = lastName;
+
+        if (basicInformationChanged)
+        {
+            RaiseDomainEvent(new UserBasicInformationChangedDomainEvent(
+                Guid.NewGuid(),
+                SystemTimeProvider.UtcNow(),
+                Id,
+                FirstName,
+                LastName));
+        }
     }
 }

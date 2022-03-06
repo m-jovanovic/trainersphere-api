@@ -42,14 +42,7 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
     private static void ConfigureRelationships(EntityTypeBuilder<User> builder) =>
         builder.HasMany(user => user.Roles)
             .WithMany(role => role.Users)
-            .UsingEntity<UserRole>(relationshipBuilder =>
-            {
-                relationshipBuilder.ToTable(TableNames.UserRoles);
-
-                relationshipBuilder.HasKey(userRole => new { userRole.UserId, userRole.RoleId });
-
-                relationshipBuilder.HasIndex(userRole => userRole.UserId);
-            });
+            .UsingEntity<UserRole>();
 
     private static void ConfigureIndexes(EntityTypeBuilder<User> builder)
     {

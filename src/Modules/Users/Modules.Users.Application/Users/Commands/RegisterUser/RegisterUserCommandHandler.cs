@@ -1,8 +1,8 @@
 ﻿using Application.Messaging;
-using Domain.Results;
 using Modules.Users.Application.Boundary.Users.Commands.RegisterUser;
 using Modules.Users.Domain;
 using Modules.Users.Domain.Users;
+using Shared.Results;
 
 namespace Modules.Users.Application.Users.Commands.RegisterUser;
 

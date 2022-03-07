@@ -1,4 +1,4 @@
-﻿namespace Domain.Results;
+﻿namespace Shared.Results;
 
 /// <summary>
 /// Represents a result of some operation, with status information and possibly an error.

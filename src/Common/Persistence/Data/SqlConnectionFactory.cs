@@ -1,7 +1,7 @@
 ﻿using System.Data;
+using Application.ServiceLifetimes;
 using Microsoft.Extensions.Options;
 using Npgsql;
-using Shared.ServiceLifetimes;
 
 namespace Persistence.Data;
 

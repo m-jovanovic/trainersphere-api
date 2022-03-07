@@ -1,5 +1,5 @@
-﻿using Modules.Users.Domain;
-using Shared.ServiceLifetimes;
+﻿using Application.ServiceLifetimes;
+using Modules.Users.Domain;
 
 namespace Modules.Users.Persistence;
 

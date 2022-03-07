@@ -10,7 +10,10 @@ WORKDIR /root
 COPY ["src/Common/Shared/Shared.csproj", "src/Common/Shared/"]
 COPY ["src/Common/Domain/Domain.csproj", "src/Common/Domain/"]
 COPY ["src/Common/Application/Application.csproj", "src/Common/Application/"]
+COPY ["src/Common/Application.Contracts/Application.Contracts.csproj", "src/Common/Application.Contracts/"]
 COPY ["src/Common/Infrastructure/Infrastructure.csproj", "src/Common/Infrastructure/"]
+COPY ["src/Common/Persistence/Persistence.csproj", "src/Common/Persistence/"]
+COPY ["src/Common/Endpoints/Endpoints.csproj", "src/Common/Endpoints/"]
 
 # Modules - Users
 COPY ["src/Modules/Users/Modules.Users.Domain/Modules.Users.Domain.csproj", "src/Modules/Users/Modules.Users.Domain/"]

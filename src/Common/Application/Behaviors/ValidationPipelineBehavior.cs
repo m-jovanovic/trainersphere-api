@@ -1,7 +1,7 @@
 ﻿using Application.Infrastructure;
-using Domain.Results;
 using FluentValidation;
 using MediatR;
+using Shared.Results;
 
 namespace Application.Behaviors;
 

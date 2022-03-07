@@ -1,7 +1,7 @@
-﻿using Domain.Results;
-using MediatR;
+﻿using MediatR;
+using Shared.Results;
 
-namespace Application.Messaging;
+namespace Application.Contracts.Messaging;
 
 /// <summary>
 /// Represents the command interface.

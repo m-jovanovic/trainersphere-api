@@ -1,5 +1,5 @@
-﻿using Application.Time;
-using Shared.ServiceLifetimes;
+﻿using Application.ServiceLifetimes;
+using Application.Time;
 
 namespace Infrastructure.Time;
 

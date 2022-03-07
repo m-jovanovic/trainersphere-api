@@ -1,5 +1,5 @@
-﻿using Domain.Results;
-using FluentValidation;
+﻿using FluentValidation;
+using Shared.Results;
 
 namespace Application.Extensions;
 

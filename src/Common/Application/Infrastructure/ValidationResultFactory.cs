@@ -1,4 +1,4 @@
-﻿using Domain.Results;
+﻿using Shared.Results;
 
 namespace Application.Infrastructure;
 

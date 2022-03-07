@@ -1,4 +1,4 @@
-﻿using Application.Messaging;
+﻿using Application.Contracts.Messaging;
 
 namespace Modules.Users.Application.Boundary.Users.Commands.UpdateUser;
 

@@ -1,7 +1,7 @@
-﻿using Domain.Results;
+﻿using Application.ServiceLifetimes;
 using FirebaseAdmin.Auth;
 using Modules.Users.Domain.Users;
-using Shared.ServiceLifetimes;
+using Shared.Results;
 
 namespace Modules.Users.Infrastructure.IdentityProvider;
 

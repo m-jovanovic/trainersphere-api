@@ -1,5 +1,5 @@
-﻿using Domain.Results;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Shared.Results;
 
 namespace Endpoints.Extensions;
 

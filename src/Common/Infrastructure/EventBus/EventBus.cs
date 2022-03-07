@@ -1,6 +1,6 @@
 ﻿using Application.EventBus;
+using Application.ServiceLifetimes;
 using MassTransit;
-using Shared.ServiceLifetimes;
 
 namespace Infrastructure.EventBus;
 

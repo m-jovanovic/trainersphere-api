@@ -1,6 +1,6 @@
 ﻿using Application.Data;
+using Application.ServiceLifetimes;
 using Dapper;
-using Shared.ServiceLifetimes;
 
 namespace Persistence.Data;
 

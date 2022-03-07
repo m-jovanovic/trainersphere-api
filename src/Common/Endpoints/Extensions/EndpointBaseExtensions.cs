@@ -1,7 +1,7 @@
 ﻿using Ardalis.ApiEndpoints;
-using Domain.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Shared.Results;
 
 namespace Endpoints.Extensions;
 

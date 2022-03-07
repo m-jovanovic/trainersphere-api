@@ -1,8 +1,8 @@
 ﻿using Application.Data;
 using Application.Messaging;
-using Domain.Results;
 using Modules.Users.Application.Boundary.Users.Queries.GetUserById;
 using Modules.Users.Domain.Users;
+using Shared.Results;
 
 namespace Modules.Users.Application.Users.Queries.GetUserById;
 

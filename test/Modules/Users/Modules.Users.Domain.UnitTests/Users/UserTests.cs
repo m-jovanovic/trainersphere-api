@@ -1,10 +1,10 @@
 ﻿using System.Linq;
-using Domain.Results;
 using FluentAssertions;
 using FluentAssertions.Primitives;
 using Modules.Users.Domain.UnitTests.Data.Users;
 using Modules.Users.Domain.Users;
 using Modules.Users.Domain.Users.Events;
+using Shared.Results;
 using Xunit;
 
 namespace Modules.Users.Domain.UnitTests.Users;

@@ -1,4 +1,4 @@
-﻿namespace Shared.ServiceLifetimes;
+﻿namespace Application.ServiceLifetimes;
 
 /// <summary>
 /// Represents the scoped service lifetime.

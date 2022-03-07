@@ -1,7 +1,7 @@
-﻿using Domain.Results;
+﻿using Application.ServiceLifetimes;
 using Microsoft.EntityFrameworkCore;
 using Modules.Users.Domain.Users;
-using Shared.ServiceLifetimes;
+using Shared.Results;
 
 namespace Modules.Users.Persistence.Repositories;
 

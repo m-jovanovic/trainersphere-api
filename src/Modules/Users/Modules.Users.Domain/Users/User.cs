@@ -1,7 +1,7 @@
 ﻿using Domain.Primitives;
-using Domain.Results;
 using Domain.Time;
 using Modules.Users.Domain.Users.Events;
+using Shared.Results;
 
 namespace Modules.Users.Domain.Users;
 

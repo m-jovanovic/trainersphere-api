@@ -1,10 +1,10 @@
 ﻿using System.Reflection;
+using Application.ServiceLifetimes;
 using Infrastructure.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Scrutor;
 using Shared.Extensions;
-using Shared.ServiceLifetimes;
 
 namespace Infrastructure.Extensions;
 

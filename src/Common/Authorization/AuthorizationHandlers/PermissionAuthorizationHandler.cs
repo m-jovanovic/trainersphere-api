@@ -1,7 +1,7 @@
 ﻿using Authorization.Contracts;
 using Authorization.Extensions;
 using Authorization.Requirements;
-using MassTransit;
+using Authorization.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -25,23 +25,13 @@ internal sealed class PermissionAuthorizationHandler : AuthorizationHandler<Perm
     {
         using IServiceScope scope = _serviceScopeFactory.CreateScope();
 
-        IRequestClient<IUserPermissionsRequest> userRolesRequestClient = scope.ServiceProvider.GetService<IRequestClient<IUserPermissionsRequest>>()!;
+        IPermissionService permissionService = scope.ServiceProvider.GetService<IPermissionService>()!;
 
-        var request = new UserPermissionsRequest
-        {
-            UserIdentityProviderId = context.User.GetIdentityProviderId()
-        };
+        HashSet<string> permissions = await permissionService.GetPermissionsAsync(context.User.GetIdentityProviderId());
 
-        Response<IUserPermissionsResponse> response = await userRolesRequestClient.GetResponse<IUserPermissionsResponse>(request);
-
-        if (response.Message.Permissions.Contains(requirement.Permission))
+        if (permissions.Contains(requirement.Permission))
         {
             context.Succeed(requirement);
         }
-    }
-
-    private sealed class UserPermissionsRequest : IUserPermissionsRequest
-    {
-        public string UserIdentityProviderId { get; init; } = string.Empty;
     }
 }

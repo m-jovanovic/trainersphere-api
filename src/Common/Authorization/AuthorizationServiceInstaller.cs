@@ -1,5 +1,6 @@
 ﻿using Authorization.AuthorizationHandlers;
 using Authorization.AuthorizationPolicyProviders;
+using Authorization.Services;
 using Infrastructure.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
@@ -16,6 +17,7 @@ internal sealed class AuthorizationServiceInstaller : IServiceInstaller
     public void Install(IServiceCollection services, IConfiguration configuration) =>
         services
             .AddAuthorization()
+            .AddScoped<IPermissionService, PermissionService>()
             .AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>()
             .AddSingleton<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
 }

@@ -1,5 +1,4 @@
-﻿using Authorization.Contracts;
-using Authorization.Extensions;
+﻿using Authorization.Extensions;
 using Authorization.Requirements;
 using Authorization.Services;
 using Microsoft.AspNetCore.Authorization;

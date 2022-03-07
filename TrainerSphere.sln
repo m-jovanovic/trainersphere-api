@@ -25,6 +25,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application", "src\Common\A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application.Contracts", "src\Common\Application.Contracts\Application.Contracts.csproj", "{099B1F8A-30A7-4156-871A-B0F41238C5BC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Authorization", "src\Common\Authorization\Authorization.csproj", "{D578CE8A-CE9A-40C5-8F01-B3493DAE982F}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Endpoints", "src\Common\Endpoints\Endpoints.csproj", "{19AEC144-7200-40DD-A87E-AA81CB23348F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infrastructure", "src\Common\Infrastructure\Infrastructure.csproj", "{BE27EEAC-063C-450A-9476-779C47153254}"
@@ -71,8 +73,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Modules.Users.Application.UnitTests", "test\Modules\Users\Modules.Users.Application.UnitTests\Modules.Users.Application.UnitTests.csproj", "{884CA9CD-319A-49EB-91FF-005C2A60EBB0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Modules.Users.Domain.UnitTests", "test\Modules\Users\Modules.Users.Domain.UnitTests\Modules.Users.Domain.UnitTests.csproj", "{2B0B9B60-7113-44B0-9705-248B932F66D2}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Authorization", "src\Common\Authorization\Authorization.csproj", "{D578CE8A-CE9A-40C5-8F01-B3493DAE982F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

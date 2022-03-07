@@ -1,7 +1,8 @@
-﻿using System.Globalization;
-using Authorization.Contracts;
+﻿using Authorization.Contracts;
+using Authorization.Options;
 using MassTransit;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 
 namespace Authorization.Services;
 
@@ -10,19 +11,24 @@ namespace Authorization.Services;
 /// </summary>
 internal sealed class PermissionService : IPermissionService
 {
-    private const string CacheKeyFormat = "permissions-{0}";
     private readonly IRequestClient<IUserPermissionsRequest> _userPermissionsRequestClient;
     private readonly IMemoryCache _memoryCache;
+    private readonly PermissionAuthorizationOptions _options;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PermissionService"/> class.
     /// </summary>
     /// <param name="userPermissionsRequestClient">The user permissions request client.</param>
     /// <param name="memoryCache">The memory cache.</param>
-    public PermissionService(IRequestClient<IUserPermissionsRequest> userPermissionsRequestClient, IMemoryCache memoryCache)
+    /// <param name="options">The options.</param>
+    public PermissionService(
+        IRequestClient<IUserPermissionsRequest> userPermissionsRequestClient,
+        IMemoryCache memoryCache,
+        IOptions<PermissionAuthorizationOptions> options)
     {
         _userPermissionsRequestClient = userPermissionsRequestClient;
         _memoryCache = memoryCache;
+        _options = options.Value;
     }
 
     /// <inheritdoc />
@@ -31,15 +37,14 @@ internal sealed class PermissionService : IPermissionService
             CreateCacheKey(identityProviderId),
             async cacheEntry =>
             {
-                cacheEntry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
+                cacheEntry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(_options.CacheTimeInMinutes);
 
-                return await GetPermissions(identityProviderId, cancellationToken);
+                return await GetPermissionsInternalAsync(identityProviderId, cancellationToken);
             });
 
-    private static string CreateCacheKey(string identityProviderId) =>
-        string.Format(CultureInfo.InvariantCulture, CacheKeyFormat, identityProviderId);
+    private string CreateCacheKey(string identityProviderId) => $"{_options.CacheKeyPrefix}{identityProviderId}";
 
-    private async Task<HashSet<string>> GetPermissions(string identityProviderId, CancellationToken cancellationToken)
+    private async Task<HashSet<string>> GetPermissionsInternalAsync(string identityProviderId, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(identityProviderId))
         {

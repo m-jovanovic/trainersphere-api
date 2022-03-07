@@ -13,7 +13,7 @@ public sealed class NotificationsModuleInstaller : IModuleInstaller
     /// <inheritdoc />
     public void Install(IServiceCollection services, IConfiguration configuration) =>
         services
-            .InstallServicesFromAssembly(configuration, AssemblyReference.Assembly)
+            .InstallServicesFromAssemblies(configuration, AssemblyReference.Assembly)
             .AddTransientAsMatchingInterfaces(AssemblyReference.Assembly)
             .AddTransientAsMatchingInterfaces(Persistence.AssemblyReference.Assembly)
             .AddScopedAsMatchingInterfaces(AssemblyReference.Assembly)

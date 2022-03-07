@@ -1,4 +1,4 @@
-﻿namespace Endpoints.Authorization.Permissions;
+﻿namespace Authorization.Contracts;
 
 /// <summary>
 /// Represents the user permissions request interface.

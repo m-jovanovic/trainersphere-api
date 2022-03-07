@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace Endpoints;
+namespace Authorization;
 
 public static class AssemblyReference
 {

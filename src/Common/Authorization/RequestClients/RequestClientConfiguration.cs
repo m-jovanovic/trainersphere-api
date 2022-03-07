@@ -1,8 +1,8 @@
-﻿using Endpoints.Authorization.Permissions;
+﻿using Authorization.Contracts;
 using Infrastructure.EventBus;
 using MassTransit;
 
-namespace Endpoints.RequestClients;
+namespace Authorization.RequestClients;
 
 /// <summary>
 /// Represents the request client configuration.

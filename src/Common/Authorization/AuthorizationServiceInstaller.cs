@@ -1,8 +1,11 @@
-﻿using Endpoints.Authorization.Permissions;
+﻿using Authorization.AuthorizationHandlers;
+using Authorization.AuthorizationPolicyProviders;
 using Infrastructure.Configuration;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace App.ServiceInstallers.Authorization;
+namespace Authorization;
 
 /// <summary>
 /// Represents the authorization service installer.
@@ -13,7 +16,6 @@ internal sealed class AuthorizationServiceInstaller : IServiceInstaller
     public void Install(IServiceCollection services, IConfiguration configuration) =>
         services
             .AddAuthorization()
-            .ConfigureOptions<AuthorizationOptionsSetup>()
             .AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>()
             .AddSingleton<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
 }

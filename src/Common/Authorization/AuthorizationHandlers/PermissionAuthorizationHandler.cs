@@ -1,14 +1,16 @@
-﻿using Endpoints.Extensions;
+﻿using Authorization.Contracts;
+using Authorization.Extensions;
+using Authorization.Requirements;
 using MassTransit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Endpoints.Authorization.Permissions;
+namespace Authorization.AuthorizationHandlers;
 
 /// <summary>
 /// Represents the permission authorization handler.
 /// </summary>
-public sealed class PermissionAuthorizationHandler : AuthorizationHandler<PermissionRequirement>
+internal sealed class PermissionAuthorizationHandler : AuthorizationHandler<PermissionRequirement>
 {
     private readonly IServiceScopeFactory _serviceScopeFactory;
 

@@ -21,7 +21,7 @@ internal sealed class EventBusServiceInstaller : IServiceInstaller
                     Modules.Notifications.Infrastructure.AssemblyReference.Assembly);
 
                 bussConfigurator.AddRequestClientsFromAssemblies(
-                    Endpoints.AssemblyReference.Assembly);
+                    Authorization.AssemblyReference.Assembly);
 
                 bussConfigurator.UsingInMemory((context, configurator) => configurator.ConfigureEndpoints(context));
             })

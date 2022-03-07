@@ -1,4 +1,5 @@
 ﻿using Application.Data;
+using Authorization.Contracts;
 using Endpoints.Authorization.Permissions;
 using MassTransit;
 

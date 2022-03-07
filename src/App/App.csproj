@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Common\Authorization\Authorization.csproj" />
     <ProjectReference Include="..\Common\Infrastructure\Infrastructure.csproj" />
     <ProjectReference Include="..\Common\Shared\Shared.csproj" />
     <ProjectReference Include="..\Modules\Notifications\Modules.Notifications.Infrastructure\Modules.Notifications.Infrastructure.csproj" />

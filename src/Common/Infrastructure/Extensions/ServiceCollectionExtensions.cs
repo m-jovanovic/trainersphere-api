@@ -14,19 +14,19 @@ namespace Infrastructure.Extensions;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Installs the services using the <see cref="IServiceInstaller"/> implementations defined in the specified assembly.
+    /// Installs the services using the <see cref="IServiceInstaller"/> implementations defined in the specified assemblies.
     /// </summary>
     /// <param name="services">The services.</param>
     /// <param name="configuration">The configuration.</param>
-    /// <param name="assembly">The assembly to scan for service installer implementations.</param>
+    /// <param name="assemblies">The assemblies to scan for service installer implementations.</param>
     /// <returns>The same service collection so that multiple calls can be chained.</returns>
-    public static IServiceCollection InstallServicesFromAssembly(
+    public static IServiceCollection InstallServicesFromAssemblies(
         this IServiceCollection services,
         IConfiguration configuration,
-        Assembly assembly) =>
+        params Assembly[] assemblies) =>
         services.Tap(
             () => InstanceFactory
-                .CreateFromAssemblies<IServiceInstaller>(assembly)
+                .CreateFromAssemblies<IServiceInstaller>(assemblies)
                 .ForEach(serviceInstaller => serviceInstaller.Install(services, configuration)));
 
     /// <summary>
@@ -34,7 +34,7 @@ public static class ServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The services.</param>
     /// <param name="configuration">The configuration.</param>
-    /// <param name="assemblies">The assembly to scan for module installer implementations.</param>
+    /// <param name="assemblies">The assemblies to scan for module installer implementations.</param>
     /// <returns>The same service collection so that multiple calls can be chained.</returns>
     public static IServiceCollection InstallModulesFromAssemblies(
         this IServiceCollection services,

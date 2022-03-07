@@ -8,9 +8,10 @@ LoggingUtility.Run(() =>
     WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
     builder.Services
-        .InstallServicesFromAssembly(
+        .InstallServicesFromAssemblies(
             builder.Configuration,
-            App.AssemblyReference.Assembly)
+            App.AssemblyReference.Assembly,
+            Authorization.AssemblyReference.Assembly)
         .InstallModulesFromAssemblies(
             builder.Configuration,
             Modules.Users.Infrastructure.AssemblyReference.Assembly,

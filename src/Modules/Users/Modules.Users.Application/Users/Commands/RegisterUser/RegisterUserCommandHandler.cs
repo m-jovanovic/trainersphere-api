@@ -39,18 +39,18 @@ internal sealed class RegisterUserCommandHandler : ICommandHandler<RegisterUserC
                 request.Email,
                 request.FirstName,
                 request.LastName)
-            .Bind(user => IdentityExists(user, cancellationToken))
-            .Bind(user => EmailIsUnique(user, cancellationToken))
+            .Bind(user => CheckIfIdentityExistsAsync(user, cancellationToken))
+            .Bind(user => CheckIfEmailIsUniqueAsync(user, cancellationToken))
             .Tap(user => _userRepository.Add(user))
             .Tap(() => _unitOfWork.SaveChangesAsync(cancellationToken))
             .Map(user => user.Id.Value);
 
-    private async Task<Result<User>> IdentityExists(User user, CancellationToken cancellationToken) =>
+    private async Task<Result<User>> CheckIfIdentityExistsAsync(User user, CancellationToken cancellationToken) =>
         await Result.Success()
             .Bind(() => _identityProviderService.ExistsAsync(user.IdentityProviderId, cancellationToken))
             .Map(() => user);
 
-    private async Task<Result<User>> EmailIsUnique(User user, CancellationToken cancellationToken) =>
+    private async Task<Result<User>> CheckIfEmailIsUniqueAsync(User user, CancellationToken cancellationToken) =>
         await Result.Success()
             .Bind(() => _userRepository.IsEmailUniqueAsync(user.Email, cancellationToken))
             .Map(() => user);

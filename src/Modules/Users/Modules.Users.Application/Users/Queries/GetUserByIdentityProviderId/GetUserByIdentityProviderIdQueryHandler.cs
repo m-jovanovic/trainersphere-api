@@ -22,10 +22,10 @@ internal sealed class GetUserByIdentityProviderIdQueryHandler : IQueryHandler<Ge
     /// <inheritdoc />
     public async Task<Result<UserResponse>> Handle(GetUserByIdentityProviderIdQuery request, CancellationToken cancellationToken) =>
         await Result.Success(request)
-            .Bind(async query => Result.Create(await GetUserByIdentityProviderId(query)))
+            .Bind(async query => Result.Create(await GetUserByIdentityProviderIdAsync(query)))
             .MapFailure(() => UserErrors.NotFoundByIdentity(request.IdentityProviderId));
 
-    private async Task<UserResponse?> GetUserByIdentityProviderId(GetUserByIdentityProviderIdQuery query) =>
+    private async Task<UserResponse?> GetUserByIdentityProviderIdAsync(GetUserByIdentityProviderIdQuery query) =>
         await _sqlQueryExecutor.FirstOrDefaultAsync<UserResponse>(
                 @"SELECT id, email, first_name, last_name
                   FROM users.users

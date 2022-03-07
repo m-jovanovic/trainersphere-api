@@ -12,6 +12,7 @@ internal sealed class DatabaseServiceInstaller : IServiceInstaller
     /// <inheritdoc />
     public void Install(IServiceCollection services, IConfiguration configuration) =>
         services
+            .AddMemoryCache()
             .ConfigureOptions<ConnectionStringSetup>()
             .AddTransientAsMatchingInterfaces(Persistence.AssemblyReference.Assembly)
             .Tap(() => Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true);

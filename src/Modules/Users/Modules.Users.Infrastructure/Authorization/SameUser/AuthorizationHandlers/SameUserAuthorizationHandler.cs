@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Modules.Users.Infrastructure.Authorization.SameUser.Requirements;
+using Modules.Users.Infrastructure.Authorization.SameUser.Services;
 
-namespace Modules.Users.Infrastructure.Authorization.SameUser;
+namespace Modules.Users.Infrastructure.Authorization.SameUser.AuthorizationHandlers;
 
 /// <summary>
 /// Represents the same user policy authorization handler.

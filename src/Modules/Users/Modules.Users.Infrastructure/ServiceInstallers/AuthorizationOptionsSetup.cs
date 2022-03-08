@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Modules.Users.Endpoints;
-using Modules.Users.Infrastructure.Authorization.SameUser;
+using Modules.Users.Infrastructure.Authorization.SameUser.Requirements;
 
 namespace Modules.Users.Infrastructure.ServiceInstallers;
 

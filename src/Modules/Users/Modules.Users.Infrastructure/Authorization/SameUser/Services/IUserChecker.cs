@@ -1,4 +1,4 @@
-﻿namespace Modules.Users.Infrastructure.Authorization.SameUser;
+﻿namespace Modules.Users.Infrastructure.Authorization.SameUser.Services;
 
 /// <summary>
 /// Represents the user checker interface.

@@ -5,6 +5,7 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Modules.Users.Application.Boundary.Users.Queries.GetUserById;
+using Modules.Users.Endpoints.Attributes;
 using Modules.Users.Endpoints.Routes;
 using Shared.Results;
 using Swashbuckle.AspNetCore.Annotations;
@@ -19,6 +20,7 @@ public sealed class GetUserByIdEndpoint : EndpointBaseAsync
 
     public GetUserByIdEndpoint(ISender sender) => _sender = sender;
 
+    [SameUser]
     [HasPermission(UsersPermissions.UserRead)]
     [HttpGet(UsersRoutes.GetById, Name = nameof(GetUserByIdEndpoint))]
     [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]

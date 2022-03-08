@@ -5,6 +5,7 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Modules.Users.Application.Boundary.Users.Commands.UpdateUser;
+using Modules.Users.Endpoints.Attributes;
 using Modules.Users.Endpoints.Contracts.Users;
 using Modules.Users.Endpoints.Routes;
 using Shared.Results;
@@ -20,6 +21,7 @@ public sealed class UpdateUserEndpoint : EndpointBaseAsync
 
     public UpdateUserEndpoint(ISender sender) => _sender = sender;
 
+    [SameUser]
     [HasPermission(UsersPermissions.UserModify)]
     [HttpPut(UsersRoutes.Update)]
     [ProducesResponseType(StatusCodes.Status200OK)]

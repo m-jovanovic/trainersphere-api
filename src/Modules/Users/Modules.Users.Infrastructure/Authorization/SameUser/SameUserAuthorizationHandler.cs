@@ -1,11 +1,8 @@
 ﻿using Endpoints.Extensions;
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Modules.Users.Application.Boundary.Users.Queries.GetUserByIdentityProviderId;
-using Shared.Results;
 
 namespace Modules.Users.Infrastructure.Authorization.SameUser;
 
@@ -32,51 +29,50 @@ internal sealed class SameUserAuthorizationHandler : AuthorizationHandler<SameUs
     /// <inheritdoc />
     protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, SameUserRequirement requirement)
     {
-        string? identityProviderId = _httpContextAccessor.HttpContext?.User.GetIdentityProviderId();
-
-        if (string.IsNullOrWhiteSpace(identityProviderId))
+        if (!TryGetUserIdentifiers(out (Guid UserId, string IdentityProviderId) userIdentifiers))
         {
             return;
         }
 
-        Guid? userIdFromRoute = GetUserIdFromRoute();
+        using IServiceScope scope = _serviceScopeFactory.CreateScope();
 
-        if (!userIdFromRoute.HasValue)
-        {
-            return;
-        }
+        IUserChecker userChecker = scope.ServiceProvider.GetService<IUserChecker>()!;
 
-        Result<UserResponse> userResult = await GetUserAsync(identityProviderId);
-
-        if (userResult.IsSuccess && userResult.Value.Id == userIdFromRoute)
+        if (await userChecker.ExistsAsync(userIdentifiers.UserId, userIdentifiers.IdentityProviderId))
         {
             context.Succeed(requirement);
         }
     }
 
-    private async Task<Result<UserResponse>> GetUserAsync(string identityProviderId)
+    private bool TryGetUserIdentifiers(out (Guid UserId, string IdentityProviderId) userIdentifiers)
     {
-        using IServiceScope scope = _serviceScopeFactory.CreateScope();
+        string? identityProviderId = _httpContextAccessor.HttpContext?.User.GetIdentityProviderId();
 
-        ISender sender = scope.ServiceProvider.GetService<ISender>()!;
+        Guid? userIdFromRoute = GetUserIdFromRoute();
 
-        var query = new GetUserByIdentityProviderIdQuery(identityProviderId);
+        if (identityProviderId is null || userIdFromRoute is null)
+        {
+            userIdentifiers = (Guid.Empty, string.Empty);
 
-        return await sender.Send(query);
+            return false;
+        }
+
+        userIdentifiers = (userIdFromRoute.Value, identityProviderId);
+
+        return true;
     }
 
     private Guid? GetUserIdFromRoute()
     {
         RouteValueDictionary? routeValueDictionary = _httpContextAccessor.HttpContext?.GetRouteData().Values;
 
-        if (routeValueDictionary is null)
+        if (routeValueDictionary is null ||
+            !routeValueDictionary.TryGetValue(UserIdResourceName, out object? userIdValue) ||
+            !Guid.TryParse(userIdValue?.ToString(), out Guid userId))
         {
             return null;
         }
 
-        return routeValueDictionary.TryGetValue(UserIdResourceName, out object? userIdValue) &&
-               Guid.TryParse(userIdValue?.ToString(), out Guid userId)
-            ? userId
-            : null;
+        return userId;
     }
 }

@@ -16,5 +16,6 @@ internal sealed class AuthorizationServiceInstaller : IServiceInstaller
         services
             .AddHttpContextAccessor()
             .ConfigureOptions<AuthorizationOptionsSetup>()
+            .AddTransient<IUserChecker, UserChecker>()
             .AddSingleton<IAuthorizationHandler, SameUserAuthorizationHandler>();
 }

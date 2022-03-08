@@ -1,6 +1,6 @@
 ﻿using Infrastructure.EventBus;
 using MassTransit;
-using Modules.Users.Infrastructure.Authorization;
+using Modules.Users.Infrastructure.Authorization.Permissions;
 
 namespace Modules.Users.Infrastructure.Consumers;
 

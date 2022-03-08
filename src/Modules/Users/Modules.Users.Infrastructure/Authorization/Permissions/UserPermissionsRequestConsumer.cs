@@ -1,9 +1,8 @@
 ﻿using Application.Data;
 using Authorization.Contracts;
-using Endpoints.Authorization.Permissions;
 using MassTransit;
 
-namespace Modules.Users.Infrastructure.Authorization;
+namespace Modules.Users.Infrastructure.Authorization.Permissions;
 
 /// <summary>
 /// Represents the <see cref="IUserPermissionsRequest"/> consumer.

@@ -1,12 +1,12 @@
-﻿using Microsoft.Extensions.Options;
-using Persistence.Data;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
-namespace App.ServiceInstallers.Database;
+namespace Persistence.Options;
 
 /// <summary>
-/// Represents the <see cref="ConnectionString"/> setup.
+/// Represents the <see cref="ConnectionStringOptions"/> setup.
 /// </summary>
-internal class ConnectionStringSetup : IConfigureOptions<ConnectionString>
+internal class ConnectionStringSetup : IConfigureOptions<ConnectionStringOptions>
 {
     private const string ConnectionStringName = "Database";
     private readonly IConfiguration _configuration;
@@ -18,5 +18,5 @@ internal class ConnectionStringSetup : IConfigureOptions<ConnectionString>
     public ConnectionStringSetup(IConfiguration configuration) => _configuration = configuration;
 
     /// <inheritdoc />
-    public void Configure(ConnectionString options) => options.Value = _configuration.GetConnectionString(ConnectionStringName);
+    public void Configure(ConnectionStringOptions options) => options.Value = _configuration.GetConnectionString(ConnectionStringName);
 }

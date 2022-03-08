@@ -2,6 +2,7 @@
 using Application.ServiceLifetimes;
 using Microsoft.Extensions.Options;
 using Npgsql;
+using Persistence.Options;
 
 namespace Persistence.Data;
 
@@ -10,10 +11,10 @@ namespace Persistence.Data;
 /// </summary>
 internal sealed class SqlConnectionFactory : ISqlConnectionFactory, IDisposable, ITransient
 {
-    private readonly ConnectionString _connectionString;
+    private readonly ConnectionStringOptions _connectionString;
     private IDbConnection? _connection;
 
-    public SqlConnectionFactory(IOptions<ConnectionString> connectionString) => _connectionString = connectionString.Value;
+    public SqlConnectionFactory(IOptions<ConnectionStringOptions> connectionString) => _connectionString = connectionString.Value;
 
     /// <inheritdoc />
     public IDbConnection GetOpenConnection()

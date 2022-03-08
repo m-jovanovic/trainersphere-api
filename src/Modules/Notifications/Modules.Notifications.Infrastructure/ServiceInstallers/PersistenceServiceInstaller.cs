@@ -6,9 +6,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Modules.Notifications.Persistence;
 using Modules.Notifications.Persistence.Constants;
-using Persistence.Data;
 using Persistence.Extensions;
 using Persistence.Interceptors;
+using Persistence.Options;
 using Shared.Extensions;
 
 namespace Modules.Notifications.Infrastructure.ServiceInstallers;
@@ -25,7 +25,7 @@ internal sealed class PersistenceServiceInstaller : IServiceInstaller
             .Tap(services.TryAddSingleton<UpdateAuditableEntitiesInterceptor>)
             .AddDbContext<NotificationsDbContext>((serviceProvider, options) =>
             {
-                ConnectionString connectionString = serviceProvider.GetService<IOptions<ConnectionString>>()!.Value;
+                ConnectionStringOptions connectionString = serviceProvider.GetService<IOptions<ConnectionStringOptions>>()!.Value;
 
                 options
                     .UseNpgsql(

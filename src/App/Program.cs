@@ -11,7 +11,8 @@ LoggingUtility.Run(() =>
         .InstallServicesFromAssemblies(
             builder.Configuration,
             App.AssemblyReference.Assembly,
-            Authorization.AssemblyReference.Assembly)
+            Authorization.AssemblyReference.Assembly,
+            Persistence.AssemblyReference.Assembly)
         .InstallModulesFromAssemblies(
             builder.Configuration,
             Modules.Users.Infrastructure.AssemblyReference.Assembly,

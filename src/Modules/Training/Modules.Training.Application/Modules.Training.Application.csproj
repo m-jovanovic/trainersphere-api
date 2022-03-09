@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Common\Application\Application.csproj" />
+    <ProjectReference Include="..\Modules.Training.Application.Boundary\Modules.Training.Application.Boundary.csproj" />
+  </ItemGroup>
+
 </Project>

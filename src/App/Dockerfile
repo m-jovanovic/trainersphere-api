@@ -24,6 +24,14 @@ COPY ["src/Modules/Users/Modules.Users.Endpoints/Modules.Users.Endpoints.csproj"
 COPY ["src/Modules/Users/Modules.Users.Infrastructure/Modules.Users.Infrastructure.csproj", "src/Modules/Users/Modules.Users.Infrastructure/"]
 COPY ["src/Modules/Users/Modules.Users.Persistence/Modules.Users.Persistence.csproj", "src/Modules/Users/Modules.Users.Persistence/"]
 
+# Modules - Training
+COPY ["src/Modules/Training/Modules.Training.Domain/Modules.Training.Domain.csproj", "src/Modules/Training/Modules.Training.Domain/"]
+COPY ["src/Modules/Training/Modules.Training.Application.Boundary/Modules.Training.Application.Boundary.csproj", "src/Modules/Training/Modules.Application.Boundary/"]
+COPY ["src/Modules/Training/Modules.Training.Application/Modules.Training.Application.csproj", "src/Modules/Training/Modules.Training.Application/"]
+COPY ["src/Modules/Training/Modules.Training.Endpoints/Modules.Training.Endpoints.csproj", "src/Modules/Training/Modules.Training.Endpoints/"]
+COPY ["src/Modules/Training/Modules.Training.Infrastructure/Modules.Training.Infrastructure.csproj", "src/Modules/Training/Modules.Training.Infrastructure/"]
+COPY ["src/Modules/Training/Modules.Training.Persistence/Modules.Training.Persistence.csproj", "src/Modules/Training/Modules.Training.Persistence/"]
+
 # Modules - Notifications
 COPY ["src/Modules/Notifications/Modules.Notifications.Domain/Modules.Notifications.Domain.csproj", "src/Modules/Notifications/Modules.Notifications.Domain/"]
 COPY ["src/Modules/Notifications/Modules.Notifications.Application/Modules.Notifications.Application.csproj", "src/Modules/Notifications/Modules.Notifications.Application/"]

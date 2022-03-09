@@ -23,6 +23,56 @@ namespace Modules.Training.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Persistence.Inbox.InboxMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("json")
+                        .HasColumnName("content");
+
+                    b.Property<string>("Error")
+                        .HasColumnType("text")
+                        .HasColumnName("error");
+
+                    b.Property<DateTime>("OccurredOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_on_utc");
+
+                    b.Property<DateTime?>("ProcessedOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("processed_on_utc");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("type");
+
+                    b.HasKey("Id")
+                        .HasName("pk_inbox_messages");
+
+                    b.ToTable("inbox_messages", "training");
+                });
+
+            modelBuilder.Entity("Persistence.Inbox.InboxMessageConsumer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id", "Name")
+                        .HasName("pk_inbox_message_consumers");
+
+                    b.ToTable("inbox_message_consumers", "training");
+                });
+
             modelBuilder.Entity("Persistence.Outbox.OutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")

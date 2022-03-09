@@ -3,7 +3,7 @@
 namespace Modules.Users.Domain.Users;
 
 /// <summary>
-/// Represents the user repository.
+/// Represents the user repository interface.
 /// </summary>
 public interface IUserRepository
 {

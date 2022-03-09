@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Modules.Notifications.Persistence;
+using Modules.Training.Persistence;
 using Modules.Users.Persistence;
 
 namespace App.StartupTasks;
@@ -34,6 +35,8 @@ internal sealed class MigrateDatabaseStartupTask : BackgroundService
         using IServiceScope scope = _serviceProvider.CreateScope();
 
         await MigrateDatabaseAsync<UsersDbContext>(scope, stoppingToken);
+
+        await MigrateDatabaseAsync<TrainingDbContext>(scope, stoppingToken);
 
         await MigrateDatabaseAsync<NotificationsDbContext>(scope, stoppingToken);
     }

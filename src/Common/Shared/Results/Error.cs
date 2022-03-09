@@ -71,4 +71,7 @@ public sealed class Error : IEquatable<Error>
 
     /// <inheritdoc />
     public override int GetHashCode() => HashCode.Combine(Code, Message);
+
+    /// <inheritdoc />
+    public override string ToString() => Code;
 }

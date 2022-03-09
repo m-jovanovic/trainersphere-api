@@ -6,7 +6,7 @@ namespace Persistence.Options;
 /// <summary>
 /// Represents the <see cref="ConnectionStringOptions"/> setup.
 /// </summary>
-internal class ConnectionStringSetup : IConfigureOptions<ConnectionStringOptions>
+internal sealed class ConnectionStringSetup : IConfigureOptions<ConnectionStringOptions>
 {
     private const string ConnectionStringName = "Database";
     private readonly IConfiguration _configuration;

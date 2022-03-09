@@ -13,7 +13,11 @@ public sealed class HasPermissionAttribute : AuthorizeAttribute
     /// </summary>
     /// <param name="permission">The permission.</param>
     public HasPermissionAttribute(string permission)
-        : base(permission)
-    {
-    }
+        : base(permission) =>
+        Permission = permission;
+
+    /// <summary>
+    /// Gets the permission.
+    /// </summary>
+    public string Permission { get; }
 }

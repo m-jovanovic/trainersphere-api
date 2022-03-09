@@ -1,7 +1,7 @@
 ﻿namespace Modules.Users.Domain;
 
 /// <summary>
-/// Represents the user's module unit of work.
+/// Represents the users module unit of work.
 /// </summary>
 public interface IUnitOfWork
 {

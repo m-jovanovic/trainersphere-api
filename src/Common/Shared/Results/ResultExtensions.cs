@@ -41,6 +41,17 @@ public static class ResultExtensions
     /// </summary>
     /// <typeparam name="TIn">The input type.</typeparam>
     /// <typeparam name="TOut">The output type.</typeparam>
+    /// <param name="result">The result.</param>
+    /// <param name="func">The mapping function.</param>
+    /// <returns>The mapped result.</returns>
+    public static Result<TOut> FlatMap<TIn, TOut>(this Result<TIn> result, Func<TIn, Result<TOut>> func) =>
+        result.IsSuccess ? func(result.Value) : Result.Failure<TOut>(result.Error);
+
+    /// <summary>
+    /// Maps the success result based on the specified mapping function, otherwise returns a failure result.
+    /// </summary>
+    /// <typeparam name="TIn">The input type.</typeparam>
+    /// <typeparam name="TOut">The output type.</typeparam>
     /// <param name="resultTask">The result task.</param>
     /// <param name="func">The mapping function.</param>
     /// <returns>The mapped result.</returns>

@@ -58,4 +58,15 @@ public sealed class Coach : Entity<CoachId>, IAuditable
 
         return user;
     }
+
+    /// <summary>
+    /// Changes the coach's basic information.
+    /// </summary>
+    /// <param name="firstName">The first name.</param>
+    /// <param name="lastName">The last name.</param>
+    public void Change(string firstName, string lastName)
+    {
+        FirstName = firstName;
+        LastName = lastName;
+    }
 }

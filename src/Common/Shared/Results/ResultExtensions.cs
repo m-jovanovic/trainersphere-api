@@ -209,4 +209,23 @@ public static class ResultExtensions
 
         return result;
     }
+
+    /// <summary>
+    /// Tap will execute the provided action if the result is successful.
+    /// </summary>
+    /// <typeparam name="TIn">The input type.</typeparam>
+    /// <param name="resultTask">The result task.</param>
+    /// <param name="action">The action.</param>
+    /// <returns>The same result.</returns>
+    public static async Task<Result<TIn>> OnFailure<TIn>(this Task<Result<TIn>> resultTask, Action<Error> action)
+    {
+        Result<TIn> result = await resultTask;
+
+        if (result.IsFailure)
+        {
+            action(result.Error);
+        }
+
+        return result;
+    }
 }

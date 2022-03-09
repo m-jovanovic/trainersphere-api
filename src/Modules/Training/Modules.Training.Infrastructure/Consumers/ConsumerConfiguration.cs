@@ -11,6 +11,10 @@ namespace Modules.Training.Infrastructure.Consumers;
 internal sealed class ConsumerConfiguration : IConsumerConfiguration
 {
     /// <inheritdoc />
-    public void AddConsumers(IRegistrationConfigurator registrationConfigurator) =>
+    public void AddConsumers(IRegistrationConfigurator registrationConfigurator)
+    {
         registrationConfigurator.AddConsumer<IntegrationEventConsumer<UserRegisteredIntegrationEvent>>();
+
+        registrationConfigurator.AddConsumer<IntegrationEventConsumer<UserChangedIntegrationEvent>>();
+    }
 }

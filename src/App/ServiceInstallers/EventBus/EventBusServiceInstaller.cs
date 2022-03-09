@@ -18,6 +18,7 @@ internal sealed class EventBusServiceInstaller : IServiceInstaller
 
                 bussConfigurator.AddConsumersFromAssemblies(
                     Modules.Users.Infrastructure.AssemblyReference.Assembly,
+                    Modules.Training.Infrastructure.AssemblyReference.Assembly,
                     Modules.Notifications.Infrastructure.AssemblyReference.Assembly);
 
                 bussConfigurator.AddRequestClientsFromAssemblies(

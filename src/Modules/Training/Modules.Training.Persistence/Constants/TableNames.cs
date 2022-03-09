@@ -6,6 +6,11 @@
 internal static class TableNames
 {
     /// <summary>
+    /// The coaches table.
+    /// </summary>
+    internal const string Coaches = "coaches";
+
+    /// <summary>
     /// The inbox messages table.
     /// </summary>
     internal const string InboxMessages = "inbox_messages";

@@ -1,6 +1,7 @@
 ﻿using Domain.Primitives;
+using Modules.Users.Domain.Users;
 
-namespace Modules.Users.Domain.Users;
+namespace Modules.Users.Domain.Roles;
 
 /// <summary>
 /// Represents the role enumeration.

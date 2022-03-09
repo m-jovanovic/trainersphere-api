@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using FluentAssertions;
 using FluentAssertions.Primitives;
+using Modules.Users.Domain.Roles;
 using Modules.Users.Domain.UnitTests.Data.Users;
 using Modules.Users.Domain.Users;
 using Modules.Users.Domain.Users.Events;

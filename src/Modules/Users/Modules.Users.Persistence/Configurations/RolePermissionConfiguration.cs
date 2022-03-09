@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Modules.Users.Domain.Users;
+using Modules.Users.Domain.Roles;
 using Modules.Users.Persistence.Constants;
 using Shared.Extensions;
 

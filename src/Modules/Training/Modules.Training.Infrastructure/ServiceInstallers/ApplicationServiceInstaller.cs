@@ -29,8 +29,8 @@ internal sealed class ApplicationServiceInstaller : IServiceInstaller
         Application.AssemblyReference.Assembly
             .GetTypes()
             .Where(type =>
-                type.GetInterfaces().Any(
-                    interfaceType => IsNotificationHandler(interfaceType) || IsDomainEventHandler(interfaceType)))
+                type.GetInterfaces().Any() &&
+                type.GetInterfaces().All(interfaceType => IsNotificationHandler(interfaceType) || IsDomainEventHandler(interfaceType)))
             .ForEach(type =>
             {
                 Type closedNotificationHandler = type.GetInterfaces().First(IsNotificationHandler);
@@ -46,8 +46,8 @@ internal sealed class ApplicationServiceInstaller : IServiceInstaller
         Application.AssemblyReference.Assembly
             .GetTypes()
             .Where(type =>
-                type.GetInterfaces().Any(
-                    interfaceType => IsNotificationHandler(interfaceType) || IsIntegrationEventHandler(interfaceType)))
+                type.GetInterfaces().Any() &&
+                type.GetInterfaces().All(interfaceType => IsNotificationHandler(interfaceType) || IsIntegrationEventHandler(interfaceType)))
             .ForEach(type =>
             {
                 Type closedNotificationHandler = type.GetInterfaces().First(IsNotificationHandler);

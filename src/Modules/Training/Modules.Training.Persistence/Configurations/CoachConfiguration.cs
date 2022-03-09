@@ -21,9 +21,9 @@ internal sealed class CoachConfiguration : IEntityTypeConfiguration<Coach>
     {
         builder.ToTable(TableNames.Coaches);
 
-        builder.HasKey(coach => coach.Id.Value);
+        builder.HasKey(coach => coach.Id);
 
-        builder.Property(user => user.Id).ValueGeneratedNever().HasConversion(userId => userId.Value, value => new CoachId(value));
+        builder.Property(user => user.Id).ValueGeneratedNever().HasConversion(coachId => coachId.Value, value => new CoachId(value));
 
         builder.Property(user => user.Email).IsRequired().HasMaxLength(300);
 

@@ -16,6 +16,7 @@ LoggingUtility.Run(() =>
         .InstallModulesFromAssemblies(
             builder.Configuration,
             Modules.Users.Infrastructure.AssemblyReference.Assembly,
+            Modules.Training.Infrastructure.AssemblyReference.Assembly,
             Modules.Notifications.Infrastructure.AssemblyReference.Assembly);
 
     builder.Host.UseSerilogWithConfiguration();

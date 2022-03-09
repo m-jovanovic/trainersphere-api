@@ -29,6 +29,7 @@
     <ProjectReference Include="..\Common\Infrastructure\Infrastructure.csproj" />
     <ProjectReference Include="..\Common\Shared\Shared.csproj" />
     <ProjectReference Include="..\Modules\Notifications\Modules.Notifications.Infrastructure\Modules.Notifications.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Training\Modules.Training.Infrastructure\Modules.Training.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Users\Modules.Users.Infrastructure\Modules.Users.Infrastructure.csproj" />
   </ItemGroup>
 

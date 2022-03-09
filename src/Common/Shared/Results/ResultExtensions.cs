@@ -211,7 +211,7 @@ public static class ResultExtensions
     }
 
     /// <summary>
-    /// Tap will execute the provided action if the result is successful.
+    /// On failure will execute the provided action if the result is a failure.
     /// </summary>
     /// <typeparam name="TIn">The input type.</typeparam>
     /// <param name="resultTask">The result task.</param>

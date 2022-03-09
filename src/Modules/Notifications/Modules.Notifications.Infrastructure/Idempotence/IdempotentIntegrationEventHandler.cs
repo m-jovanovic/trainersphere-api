@@ -6,11 +6,11 @@ namespace Modules.Notifications.Infrastructure.Idempotence;
 /// <summary>
 /// Represents the idempotent integration event handler, which checks if the integration event has already been handled previously.
 /// </summary>
-/// <typeparam name="TEvent">The domain event type.</typeparam>
-internal sealed class IdempotentIntegrationEventHandler<TEvent> : IIntegrationEventHandler<TEvent>
-    where TEvent : IIntegrationEvent
+/// <typeparam name="TIntegrationEvent">The integration event type.</typeparam>
+internal sealed class IdempotentIntegrationEventHandler<TIntegrationEvent> : IIntegrationEventHandler<TIntegrationEvent>
+    where TIntegrationEvent : IIntegrationEvent
 {
-    private readonly IIntegrationEventHandler<TEvent> _decorated;
+    private readonly IIntegrationEventHandler<TIntegrationEvent> _decorated;
     private readonly ISqlQueryExecutor _sqlQueryExecutor;
 
     /// <summary>
@@ -18,14 +18,14 @@ internal sealed class IdempotentIntegrationEventHandler<TEvent> : IIntegrationEv
     /// </summary>
     /// <param name="decorated">The decorated integration event handler.</param>
     /// <param name="sqlQueryExecutor">The SQL query executor.</param>
-    public IdempotentIntegrationEventHandler(IIntegrationEventHandler<TEvent> decorated, ISqlQueryExecutor sqlQueryExecutor)
+    public IdempotentIntegrationEventHandler(IIntegrationEventHandler<TIntegrationEvent> decorated, ISqlQueryExecutor sqlQueryExecutor)
     {
         _decorated = decorated;
         _sqlQueryExecutor = sqlQueryExecutor;
     }
 
     /// <inheritdoc />
-    public async Task Handle(TEvent notification, CancellationToken cancellationToken)
+    public async Task Handle(TIntegrationEvent notification, CancellationToken cancellationToken)
     {
         var parameters = new InboxConsumerParameters(notification.Id, _decorated.GetType().Name);
 

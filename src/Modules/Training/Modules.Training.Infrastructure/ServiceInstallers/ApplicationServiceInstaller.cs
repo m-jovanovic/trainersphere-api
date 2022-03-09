@@ -1,4 +1,5 @@
 ﻿using Application.Behaviors;
+using Application.EventBus;
 using Application.Messaging;
 using FluentValidation;
 using Infrastructure.Configuration;
@@ -21,7 +22,8 @@ internal sealed class ApplicationServiceInstaller : IServiceInstaller
             .AddMediatR(Application.AssemblyReference.Assembly)
             .AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBehavior<,>))
             .AddValidatorsFromAssembly(Application.AssemblyReference.Assembly, includeInternalTypes: true)
-            .Tap(DecorateDomainEventHandlersWithIdempotency);
+            .Tap(DecorateDomainEventHandlersWithIdempotency)
+            .Tap(DecorateIntegrationEventHandlersWithIdempotency);
 
     private static void DecorateDomainEventHandlersWithIdempotency(IServiceCollection services) =>
         Application.AssemblyReference.Assembly
@@ -40,6 +42,23 @@ internal sealed class ApplicationServiceInstaller : IServiceInstaller
                 services.Decorate(closedNotificationHandler, closedIdempotentHandler);
             });
 
+    private static void DecorateIntegrationEventHandlersWithIdempotency(IServiceCollection services) =>
+        Application.AssemblyReference.Assembly
+            .GetTypes()
+            .Where(type =>
+                type.GetInterfaces().Any(
+                    interfaceType => IsNotificationHandler(interfaceType) || IsIntegrationEventHandler(interfaceType)))
+            .ForEach(type =>
+            {
+                Type closedNotificationHandler = type.GetInterfaces().First(IsNotificationHandler);
+
+                Type[] arguments = closedNotificationHandler.GetGenericArguments();
+
+                Type closedIdempotentHandler = typeof(IdempotentIntegrationEventHandler<>).MakeGenericType(arguments);
+
+                services.Decorate(closedNotificationHandler, closedIdempotentHandler);
+            });
+
     private static bool IsNotificationHandler(Type type) =>
         type.IsGenericType &&
         type.Name.StartsWith(typeof(INotificationHandler<>).Name, StringComparison.InvariantCulture);
@@ -47,4 +66,8 @@ internal sealed class ApplicationServiceInstaller : IServiceInstaller
     private static bool IsDomainEventHandler(Type type) =>
         type.IsGenericType &&
         type.Name.StartsWith(typeof(IDomainEventHandler<>).Name, StringComparison.InvariantCulture);
+
+    private static bool IsIntegrationEventHandler(Type type) =>
+        type.IsGenericType &&
+        type.Name.StartsWith(typeof(IIntegrationEventHandler<>).Name, StringComparison.InvariantCulture);
 }

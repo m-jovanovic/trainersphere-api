@@ -1,5 +1,5 @@
-﻿using Application.EventBus;
-using Infrastructure.Configuration;
+﻿using Infrastructure.Configuration;
+using Infrastructure.Utilities;
 using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,12 +22,10 @@ internal sealed class ApplicationServiceInstaller : IServiceInstaller
     private static void DecorateIntegrationEventHandlersWithIdempotency(IServiceCollection services) =>
         Application.AssemblyReference.Assembly
             .GetTypes()
-            .Where(type =>
-                type.GetInterfaces().Any(
-                    interfaceType => IsNotificationHandler(interfaceType) || IsIntegrationEventHandler(interfaceType)))
+            .Where(NotificationHandlerUtility.ImplementsIntegrationEventHandler)
             .ForEach(type =>
             {
-                Type closedNotificationHandler = type.GetInterfaces().First(IsNotificationHandler);
+                Type closedNotificationHandler = type.GetInterfaces().First(NotificationHandlerUtility.IsNotificationHandler);
 
                 Type[] arguments = closedNotificationHandler.GetGenericArguments();
 
@@ -35,12 +33,4 @@ internal sealed class ApplicationServiceInstaller : IServiceInstaller
 
                 services.Decorate(closedNotificationHandler, closedIdempotentHandler);
             });
-
-    private static bool IsNotificationHandler(Type type) =>
-        type.IsGenericType &&
-        type.Name.StartsWith(typeof(INotificationHandler<>).Name, StringComparison.InvariantCulture);
-
-    private static bool IsIntegrationEventHandler(Type type) =>
-        type.IsGenericType &&
-        type.Name.StartsWith(typeof(IIntegrationEventHandler<>).Name, StringComparison.InvariantCulture);
 }

@@ -18,12 +18,12 @@ namespace Modules.Training.Persistence.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("training")
-                .HasAnnotation("ProductVersion", "6.0.2")
+                .HasAnnotation("ProductVersion", "6.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Modules.Training.Domain.Coaches.Coach", b =>
+            modelBuilder.Entity("Modules.Training.Domain.Trainers.Trainer", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
@@ -56,13 +56,13 @@ namespace Modules.Training.Persistence.Migrations
                         .HasColumnName("modified_on_utc");
 
                     b.HasKey("Id")
-                        .HasName("pk_coaches");
+                        .HasName("pk_trainers");
 
                     b.HasIndex("Email")
                         .IsUnique()
-                        .HasDatabaseName("ix_coaches_email");
+                        .HasDatabaseName("ix_trainers_email");
 
-                    b.ToTable("coaches", "training");
+                    b.ToTable("trainers", "training");
                 });
 
             modelBuilder.Entity("Persistence.Inbox.InboxMessage", b =>

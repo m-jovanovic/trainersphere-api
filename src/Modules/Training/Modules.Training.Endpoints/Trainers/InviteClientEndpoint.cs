@@ -4,13 +4,13 @@ using Endpoints.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Modules.Training.Application.Boundary.Coaches.Commands.InviteClient;
+using Modules.Training.Application.Boundary.Trainers.Commands.InviteClient;
 using Modules.Training.Endpoints.Contracts.Invitations;
 using Modules.Training.Endpoints.Routes;
 using Shared.Results;
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace Modules.Training.Endpoints.Coaches;
+namespace Modules.Training.Endpoints.Trainers;
 
 public sealed class InviteClientEndpoint : EndpointBaseAsync
     .WithRequest<InviteClientRequest>
@@ -21,18 +21,18 @@ public sealed class InviteClientEndpoint : EndpointBaseAsync
     public InviteClientEndpoint(ISender sender) => _sender = sender;
 
     [HasPermission(TrainingPermissions.InviteClient)]
-    [HttpPut(CoachesRoutes.InviteClient)]
+    [HttpPut(TrainersRoutes.InviteClient)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [SwaggerOperation(
         Summary = "Invites the client to train with the trainer.",
         Description = "Invites the client to train with the trainer based on the specified request.",
-        Tags = new[] { CoachesRoutes.Tag })]
+        Tags = new[] { TrainersRoutes.Tag })]
     public override async Task<ActionResult<Guid>> HandleAsync(
         [FromRoute]InviteClientRequest request, CancellationToken cancellationToken = default) =>
         await Result.Create(request)
-            .Map(req => new InviteClientCommand(req.CoachId, req.Email))
+            .Map(req => new InviteClientCommand(req.TrainerId, req.Email))
             .Bind(command => _sender.Send(command, cancellationToken))
             .Match(invitationId => Ok(invitationId), this.HandleFailure);
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Modules.Training.Endpoints.Routes;
 
 namespace Modules.Training.Endpoints.Contracts.Invitations;
 
@@ -8,10 +9,10 @@ namespace Modules.Training.Endpoints.Contracts.Invitations;
 public sealed class InviteClientRequest
 {
     /// <summary>
-    /// Gets the coach identifier.
+    /// Gets the trainer identifier.
     /// </summary>
-    [FromRoute(Name = "coachId")]
-    public Guid CoachId { get; init; }
+    [FromRoute(Name = TrainersRoutes.ResourceId)]
+    public Guid TrainerId { get; init; }
 
     /// <summary>
     /// Gets the client email.

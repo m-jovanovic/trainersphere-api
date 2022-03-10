@@ -1,5 +1,5 @@
 ﻿using Domain.Primitives;
-using Modules.Training.Domain.Coaches;
+using Modules.Training.Domain.Trainers;
 
 namespace Modules.Training.Domain.Invitations.Events;
 
@@ -9,11 +9,11 @@ namespace Modules.Training.Domain.Invitations.Events;
 /// <param name="Id">The identifier.</param>
 /// <param name="OccurredOnUtc">The occurred on date and time.</param>
 /// <param name="InvitationId">The invitation identifier.</param>
-/// <param name="CoachId">The coach identifier.</param>
+/// <param name="TrainerId">The trainer identifier.</param>
 /// <param name="Email">The email.</param>
 public sealed record InvitationCreatedDomainEvent(
     Guid Id,
     DateTime OccurredOnUtc,
     InvitationId InvitationId,
-    CoachId CoachId,
+    TrainerId TrainerId,
     string Email) : DomainEvent(Id, OccurredOnUtc);

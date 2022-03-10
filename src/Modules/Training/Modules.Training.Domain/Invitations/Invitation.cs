@@ -1,7 +1,7 @@
 ﻿using Domain.Primitives;
 using Domain.Time;
-using Modules.Training.Domain.Coaches;
 using Modules.Training.Domain.Invitations.Events;
+using Modules.Training.Domain.Trainers;
 using Shared.Results;
 
 namespace Modules.Training.Domain.Invitations;
@@ -15,16 +15,16 @@ public sealed class Invitation : Entity<InvitationId>, IAuditable
     /// Initializes a new instance of the <see cref="Invitation"/> class.
     /// </summary>
     /// <param name="id">The identifier.</param>
-    /// <param name="coachId">The coach identifier.</param>
+    /// <param name="trainerId">The trainer identifier.</param>
     /// <param name="email">The email.</param>
-    private Invitation(InvitationId id, CoachId coachId, string email)
+    private Invitation(InvitationId id, TrainerId trainerId, string email)
         : base(id)
     {
-        CoachId = coachId;
+        TrainerId = trainerId;
         Email = email;
     }
 
-    public CoachId CoachId { get; private set; }
+    public TrainerId TrainerId { get; private set; }
 
     /// <summary>
     /// Gets the email.
@@ -38,20 +38,20 @@ public sealed class Invitation : Entity<InvitationId>, IAuditable
     public DateTime? ModifiedOnUtc { get; private set; }
 
     /// <summary>
-    /// Creates a new invitation for the specified coach and the client with the specified email.
+    /// Creates a new invitation for the specified trainer and the client with the specified email.
     /// </summary>
-    /// <param name="coach">The coach.</param>
+    /// <param name="trainer">The trainer.</param>
     /// <param name="email">The email.</param>
     /// <returns>The new invitation instance.</returns>
-    internal static Result<Invitation> Create(Coach coach, string email)
+    internal static Result<Invitation> Create(Trainer trainer, string email)
     {
-        var invitation = new Invitation(new InvitationId(Guid.NewGuid()), coach.Id, email);
+        var invitation = new Invitation(new InvitationId(Guid.NewGuid()), trainer.Id, email);
 
         invitation.RaiseDomainEvent(new InvitationCreatedDomainEvent(
             Guid.NewGuid(),
             SystemTimeProvider.UtcNow(),
             invitation.Id,
-            invitation.CoachId,
+            invitation.TrainerId,
             invitation.Email));
 
         return invitation;

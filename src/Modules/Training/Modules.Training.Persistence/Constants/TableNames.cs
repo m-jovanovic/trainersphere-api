@@ -6,9 +6,9 @@
 internal static class TableNames
 {
     /// <summary>
-    /// The coaches table.
+    /// The trainers table.
     /// </summary>
-    internal const string Coaches = "coaches";
+    internal const string Trainers = "trainers";
 
     /// <summary>
     /// The inbox messages table.

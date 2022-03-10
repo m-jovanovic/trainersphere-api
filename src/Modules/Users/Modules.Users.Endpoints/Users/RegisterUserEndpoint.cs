@@ -14,7 +14,7 @@ namespace Modules.Users.Endpoints.Users;
 
 public sealed class RegisterUserEndpoint : EndpointBaseAsync
     .WithRequest<RegisterUserRequest>
-    .WithActionResult
+    .WithActionResult<Guid>
 {
     private readonly ISender _sender;
 
@@ -29,7 +29,7 @@ public sealed class RegisterUserEndpoint : EndpointBaseAsync
         Summary = "Registers a new user.",
         Description = "Registers a new user based on the specified request.",
         Tags = new[] { UsersRoutes.Tag })]
-    public override async Task<ActionResult> HandleAsync(RegisterUserRequest request, CancellationToken cancellationToken = default) =>
+    public override async Task<ActionResult<Guid>> HandleAsync(RegisterUserRequest request, CancellationToken cancellationToken = default) =>
         await Result.Create(request)
             .Map(registerUserRequest => new RegisterUserCommand(
                 User.GetIdentityProviderId(),

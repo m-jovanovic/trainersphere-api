@@ -1,4 +1,5 @@
 ﻿using Domain.Primitives;
+using Modules.Training.Domain.Invitations;
 using Shared.Results;
 
 namespace Modules.Training.Domain.Coaches;
@@ -69,4 +70,11 @@ public sealed class Coach : Entity<CoachId>, IAuditable
         FirstName = firstName;
         LastName = lastName;
     }
+
+    /// <summary>
+    /// Invites the client with the specified email to train with the coach.
+    /// </summary>
+    /// <param name="email">The email.</param>
+    /// <returns>The newly created invitation.</returns>
+    public Result<Invitation> Invite(string email) => Invitation.Create(this, email);
 }

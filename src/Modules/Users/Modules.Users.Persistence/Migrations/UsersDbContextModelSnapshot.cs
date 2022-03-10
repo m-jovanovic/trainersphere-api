@@ -18,12 +18,12 @@ namespace Modules.Users.Persistence.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("users")
-                .HasAnnotation("ProductVersion", "6.0.2")
+                .HasAnnotation("ProductVersion", "6.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Modules.Users.Domain.Users.Permission", b =>
+            modelBuilder.Entity("Modules.Users.Domain.Roles.Permission", b =>
                 {
                     b.Property<int>("Id")
                         .HasColumnType("integer")
@@ -61,7 +61,7 @@ namespace Modules.Users.Persistence.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Modules.Users.Domain.Users.Role", b =>
+            modelBuilder.Entity("Modules.Users.Domain.Roles.Role", b =>
                 {
                     b.Property<int>("Id")
                         .HasColumnType("integer")
@@ -87,7 +87,7 @@ namespace Modules.Users.Persistence.Migrations
                         new
                         {
                             Id = 2,
-                            Name = "Coach"
+                            Name = "Trainer"
                         },
                         new
                         {
@@ -101,7 +101,7 @@ namespace Modules.Users.Persistence.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Modules.Users.Domain.Users.RolePermission", b =>
+            modelBuilder.Entity("Modules.Users.Domain.Roles.RolePermission", b =>
                 {
                     b.Property<int>("RoleId")
                         .HasColumnType("integer")
@@ -259,16 +259,16 @@ namespace Modules.Users.Persistence.Migrations
                     b.ToTable("outbox_message_consumers", "users");
                 });
 
-            modelBuilder.Entity("Modules.Users.Domain.Users.RolePermission", b =>
+            modelBuilder.Entity("Modules.Users.Domain.Roles.RolePermission", b =>
                 {
-                    b.HasOne("Modules.Users.Domain.Users.Permission", null)
+                    b.HasOne("Modules.Users.Domain.Roles.Permission", null)
                         .WithMany()
                         .HasForeignKey("PermissionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_role_permissions_permissions_permission_id");
 
-                    b.HasOne("Modules.Users.Domain.Users.Role", null)
+                    b.HasOne("Modules.Users.Domain.Roles.Role", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -278,7 +278,7 @@ namespace Modules.Users.Persistence.Migrations
 
             modelBuilder.Entity("Modules.Users.Domain.Users.UserRole", b =>
                 {
-                    b.HasOne("Modules.Users.Domain.Users.Role", null)
+                    b.HasOne("Modules.Users.Domain.Roles.Role", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)

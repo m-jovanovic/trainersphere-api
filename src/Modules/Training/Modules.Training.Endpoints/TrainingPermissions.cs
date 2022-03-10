@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents the training module permissions.
 /// </summary>
-internal static class CoachesPermissions
+internal static class TrainingPermissions
 {
     internal const string InviteClient = "InviteClient";
 }

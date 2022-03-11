@@ -23,7 +23,7 @@ public class UpdateUserCommandTests
         var userId = new UserId(command.UserId);
         userRepositoryMock
             .Setup(x => x.GetByIdAsync(It.Is<UserId>(id => id == userId), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Failure<User>(UserErrors.NotFound(userId)));
+            .ReturnsAsync(Result.Failure<User>(Error.NullValue));
 
         var handler = new UpdateUserCommandHandler(
             userRepositoryMock.Object,

@@ -11,7 +11,5 @@ namespace Modules.Users.Infrastructure.IdentityProvider;
 internal sealed class IdentityProviderService : IIdentityProviderService, ITransient
 {
     public async Task<Result> ExistsAsync(string identityProviderId, CancellationToken cancellationToken = default) =>
-        await FirebaseAuth.DefaultInstance.GetUserAsync(identityProviderId, cancellationToken) is not null ?
-            Result.Success() :
-            Result.Failure(UserErrors.IdentityNotFound);
+        Result.Create(await FirebaseAuth.DefaultInstance.GetUserAsync(identityProviderId, cancellationToken) is not null);
 }

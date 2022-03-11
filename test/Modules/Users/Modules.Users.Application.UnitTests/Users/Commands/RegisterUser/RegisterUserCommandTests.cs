@@ -23,7 +23,7 @@ public class RegisterUserCommandTests
         var identityProviderServiceMock = new Mock<IIdentityProviderService>();
         identityProviderServiceMock
             .Setup(x => x.ExistsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Failure(UserErrors.IdentityNotFound));
+            .ReturnsAsync(Result.Failure(Error.ConditionNotMet));
 
         var handler = new RegisterUserCommandHandler(
             identityProviderServiceMock.Object,
@@ -50,7 +50,7 @@ public class RegisterUserCommandTests
         var userRepositoryMock = new Mock<IUserRepository>();
         userRepositoryMock
             .Setup(x => x.IsEmailUniqueAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Failure(UserErrors.EmailIsNotUnique));
+            .ReturnsAsync(Result.Failure(Error.ConditionNotMet));
 
         var handler = new RegisterUserCommandHandler(
             identityProviderServiceMock.Object,

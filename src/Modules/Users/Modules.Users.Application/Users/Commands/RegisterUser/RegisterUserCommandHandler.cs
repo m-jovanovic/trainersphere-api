@@ -48,10 +48,12 @@ internal sealed class RegisterUserCommandHandler : ICommandHandler<RegisterUserC
     private async Task<Result<User>> CheckIfIdentityExistsAsync(User user, CancellationToken cancellationToken) =>
         await Result.Success()
             .Bind(() => _identityProviderService.ExistsAsync(user.IdentityProviderId, cancellationToken))
-            .Map(() => user);
+            .Map(() => user)
+            .MapFailure(() => UserErrors.IdentityNotFound);
 
     private async Task<Result<User>> CheckIfEmailIsUniqueAsync(User user, CancellationToken cancellationToken) =>
         await Result.Success()
             .Bind(() => _userRepository.IsEmailUniqueAsync(user.Email, cancellationToken))
-            .Map(() => user);
+            .Map(() => user)
+            .MapFailure(() => UserErrors.EmailIsNotUnique);
 }

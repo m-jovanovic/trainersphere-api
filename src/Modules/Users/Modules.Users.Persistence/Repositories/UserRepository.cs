@@ -20,14 +20,11 @@ internal sealed class UserRepository : IUserRepository, IScoped
 
     /// <inheritdoc />
     public async Task<Result<User>> GetByIdAsync(UserId id, CancellationToken cancellationToken = default) =>
-        Result.Create(await _dbContext.Set<User>().FirstOrDefaultAsync(user => user.Id == id, cancellationToken))
-            .MapFailure(() => UserErrors.NotFound(id));
+        Result.Create(await _dbContext.Set<User>().FirstOrDefaultAsync(user => user.Id == id, cancellationToken));
 
     /// <inheritdoc />
     public async Task<Result> IsEmailUniqueAsync(string email, CancellationToken cancellationToken = default) =>
-        !await _dbContext.Set<User>().AnyAsync(user => user.Email == email, cancellationToken) ?
-            Result.Success() :
-            Result.Failure(UserErrors.EmailIsNotUnique);
+        Result.Create(!await _dbContext.Set<User>().AnyAsync(user => user.Email == email, cancellationToken));
 
     /// <inheritdoc />
     public void Add(User user)

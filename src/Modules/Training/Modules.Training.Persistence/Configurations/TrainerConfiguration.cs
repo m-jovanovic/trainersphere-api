@@ -23,7 +23,9 @@ internal sealed class TrainerConfiguration : IEntityTypeConfiguration<Trainer>
 
         builder.HasKey(trainer => trainer.Id);
 
-        builder.Property(trainer => trainer.Id).ValueGeneratedNever().HasConversion(trainerId => trainerId.Value, value => new TrainerId(value));
+        builder.Property(trainer => trainer.Id)
+            .ValueGeneratedNever()
+            .HasConversion(trainerId => trainerId.Value, value => new TrainerId(value));
 
         builder.Property(trainer => trainer.Email).IsRequired().HasMaxLength(300);
 

@@ -8,12 +8,12 @@ namespace Modules.Training.Domain.Invitations;
 public interface IInvitationRepository
 {
     /// <summary>
-    /// Checks if there is a pending invitation for the specified email.
+    /// Checks that there are no pending invitations for the specified email.
     /// </summary>
     /// <param name="email">The email.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The success result if there is no pending invitation, otherwise a failure result.</returns>
-    Task<Result> CheckIfPendingExistsAsync(string email, CancellationToken cancellationToken = default);
+    /// <returns>The success result if there are no pending invitation for the specified email, otherwise a failure result.</returns>
+    Task<Result> CheckNonePendingForEmailAsync(string email, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Adds the specified invitation to the repository.

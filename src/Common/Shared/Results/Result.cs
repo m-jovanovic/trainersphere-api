@@ -71,6 +71,13 @@ public class Result
     public static Result<TValue> Failure<TValue>(Error error) => new(default, false, error);
 
     /// <summary>
+    /// Returns a success <see cref="Result"/>.
+    /// </summary>
+    /// <param name="condition">The condition.</param>
+    /// <returns>A new instance of <see cref="Result"/>.</returns>
+    public static Result Create(bool condition) => condition ? Success() : Failure(Error.ConditionNotMet);
+
+    /// <summary>
     /// Creates a new <see cref="Result{TValue}"/> with the specified nullable value and the specified error.
     /// </summary>
     /// <typeparam name="TValue">The result type.</typeparam>

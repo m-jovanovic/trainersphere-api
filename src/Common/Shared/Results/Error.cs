@@ -16,6 +16,11 @@ public sealed class Error : IEquatable<Error>
     public static readonly Error NullValue = new("Error.NullValue", "The specified result value is null.");
 
     /// <summary>
+    /// The condition not met error instance.
+    /// </summary>
+    public static readonly Error ConditionNotMet = new("Error.ConditionNotMet", "The specified condition was not met.");
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="Error"/> class.
     /// </summary>
     /// <param name="code">The error code.</param>

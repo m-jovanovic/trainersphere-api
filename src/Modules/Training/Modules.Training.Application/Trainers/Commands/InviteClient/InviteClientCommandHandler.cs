@@ -30,15 +30,19 @@ internal sealed class InviteClientCommandHandler : ICommandHandler<InviteClientC
     }
 
     public async Task<Result<Guid>> Handle(InviteClientCommand request, CancellationToken cancellationToken) =>
-        await _trainerRepository.GetByIdAsync(new TrainerId(request.TrainerId), cancellationToken)
+        await GetTrainerByIdAsync(new TrainerId(request.TrainerId), cancellationToken)
             .Bind(trainer => trainer.Invite(request.Email))
-            .Bind(invitation => CheckIfPendingInvitationExistsAsync(invitation, cancellationToken))
+            .Bind(invitation => CheckNoPendingInvitationsAsync(invitation, cancellationToken))
             .Tap(invitation => _invitationRepository.Add(invitation))
             .Tap(() => _unitOfWork.SaveChangesAsync(cancellationToken))
             .Map(invitation => invitation.Id.Value);
 
-    private async Task<Result<Invitation>> CheckIfPendingInvitationExistsAsync(Invitation invitation, CancellationToken cancellationToken) =>
-        await Result.Success()
-            .Bind(() => _invitationRepository.CheckIfPendingExistsAsync(invitation.Email, cancellationToken))
-            .Map(() => invitation);
+    private async Task<Result<Trainer>> GetTrainerByIdAsync(TrainerId trainerId, CancellationToken cancellationToken) =>
+        await _trainerRepository.GetByIdAsync(trainerId, cancellationToken)
+            .MapFailure(() => TrainerErrors.NotFound(trainerId));
+
+    private async Task<Result<Invitation>> CheckNoPendingInvitationsAsync(Invitation invitation, CancellationToken cancellationToken) =>
+        await _invitationRepository.CheckNonePendingForEmailAsync(invitation.Email, cancellationToken)
+            .Map(() => invitation)
+            .MapFailure(() => InvitationErrors.PendingExists);
 }

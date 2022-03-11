@@ -22,6 +22,7 @@ public sealed class Invitation : Entity<InvitationId>, IAuditable
     {
         TrainerId = trainerId;
         Email = email;
+        Status = InvitationStatus.Pending;
     }
 
     public TrainerId TrainerId { get; private set; }
@@ -30,6 +31,11 @@ public sealed class Invitation : Entity<InvitationId>, IAuditable
     /// Gets the email.
     /// </summary>
     public string Email { get; private set; }
+
+    /// <summary>
+    /// Gets the status.
+    /// </summary>
+    public InvitationStatus Status { get; private set; }
 
     /// <inheritdoc />
     public DateTime CreatedOnUtc { get; private set; }

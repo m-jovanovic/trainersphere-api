@@ -15,8 +15,8 @@ public sealed class UpdateUserRequest
     public Guid UserId { get; init; }
 
     /// <summary>
-    /// Gets the user details.
+    /// Gets the content.
     /// </summary>
     [FromBody]
-    public UpdateUserDetailsRequest UserDetails { get; init; } = new(string.Empty, string.Empty);
+    public UpdateUserRequestContent Content { get; init; } = new(string.Empty, string.Empty);
 }

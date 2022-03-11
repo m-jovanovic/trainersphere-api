@@ -35,8 +35,8 @@ public sealed class UpdateUserEndpoint : EndpointBaseAsync
         await Result.Create(request)
             .Map(updateUserRequest => new UpdateUserCommand(
                 updateUserRequest.UserId,
-                updateUserRequest.UserDetails.FirstName,
-                updateUserRequest.UserDetails.LastName))
+                updateUserRequest.Content.FirstName,
+                updateUserRequest.Content.LastName))
             .Bind(command => _sender.Send(command, cancellationToken))
             .Match(NoContent, this.HandleFailure);
 }

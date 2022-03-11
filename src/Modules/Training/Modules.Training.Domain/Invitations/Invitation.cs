@@ -25,6 +25,9 @@ public sealed class Invitation : Entity<InvitationId>, IAuditable
         Status = InvitationStatus.Pending;
     }
 
+    /// <summary>
+    /// Gets the trainer identifier.
+    /// </summary>
     public TrainerId TrainerId { get; private set; }
 
     /// <summary>

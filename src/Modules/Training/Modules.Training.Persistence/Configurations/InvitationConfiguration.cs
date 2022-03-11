@@ -40,5 +40,6 @@ internal sealed class InvitationConfiguration : IEntityTypeConfiguration<Invitat
     private static void ConfigureRelationships(EntityTypeBuilder<Invitation> builder) =>
         builder.HasOne<Trainer>()
             .WithMany()
-            .HasForeignKey(invitation => invitation.TrainerId);
+            .HasForeignKey(invitation => invitation.TrainerId)
+            .IsRequired();
 }

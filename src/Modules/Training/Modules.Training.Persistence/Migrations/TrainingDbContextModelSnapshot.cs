@@ -23,6 +23,43 @@ namespace Modules.Training.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Modules.Training.Domain.Invitations.Invitation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_on_utc");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("email");
+
+                    b.Property<DateTime?>("ModifiedOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_on_utc");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TrainerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("trainer_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_invitations");
+
+                    b.HasIndex("TrainerId")
+                        .HasDatabaseName("ix_invitations_trainer_id");
+
+                    b.ToTable("invitations", "training");
+                });
+
             modelBuilder.Entity("Modules.Training.Domain.Trainers.Trainer", b =>
                 {
                     b.Property<Guid>("Id")
@@ -163,6 +200,16 @@ namespace Modules.Training.Persistence.Migrations
                         .HasName("pk_outbox_message_consumers");
 
                     b.ToTable("outbox_message_consumers", "training");
+                });
+
+            modelBuilder.Entity("Modules.Training.Domain.Invitations.Invitation", b =>
+                {
+                    b.HasOne("Modules.Training.Domain.Trainers.Trainer", null)
+                        .WithMany()
+                        .HasForeignKey("TrainerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_invitations_trainer_trainer_temp_id");
                 });
 #pragma warning restore 612, 618
         }

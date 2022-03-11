@@ -27,8 +27,12 @@ internal sealed class UpdateUserCommandHandler : ICommandHandler<UpdateUserComma
 
     /// <inheritdoc />
     public async Task<Result> Handle(UpdateUserCommand request, CancellationToken cancellationToken) =>
-        await _userRepository.GetByIdAsync(new UserId(request.UserId), cancellationToken)
+        await GetUserByIdAsync(new UserId(request.UserId), cancellationToken)
             .Tap(user => user.Change(request.FirstName, request.LastName))
             .Tap(() => _unitOfWork.SaveChangesAsync(cancellationToken))
             .MapFailure(() => UserErrors.NotFound(new UserId(request.UserId)));
+
+    private async Task<Result<User>> GetUserByIdAsync(UserId userId, CancellationToken cancellationToken) =>
+        await _userRepository.GetByIdAsync(userId, cancellationToken)
+            .MapFailure(() => UserErrors.NotFound(userId));
 }

@@ -20,8 +20,7 @@ internal sealed class TrainerRepository : ITrainerRepository, IScoped
 
     /// <inheritdoc />
     public async Task<Result<Trainer>> GetByIdAsync(TrainerId id, CancellationToken cancellationToken = default) =>
-        Result.Create(await _dbContext.Set<Trainer>().FirstOrDefaultAsync(user => user.Id == id, cancellationToken))
-            .MapFailure(() => TrainerErrors.NotFound(id));
+        Result.Create(await _dbContext.Set<Trainer>().FirstOrDefaultAsync(user => user.Id == id, cancellationToken));
 
     /// <inheritdoc />
     public void Add(Trainer trainer) => _dbContext.Set<Trainer>().Add(trainer);

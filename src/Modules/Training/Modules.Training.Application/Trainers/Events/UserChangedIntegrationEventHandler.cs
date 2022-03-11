@@ -33,8 +33,12 @@ internal sealed class UserChangedIntegrationEventHandler : IIntegrationEventHand
     }
 
     public async Task Handle(UserChangedIntegrationEvent notification, CancellationToken cancellationToken) =>
-        await _trainerRepository.GetByIdAsync(new TrainerId(notification.UserId), cancellationToken)
+        await GetTrainerByIdAsync(new TrainerId(notification.UserId), cancellationToken)
             .Tap(trainer => trainer.Change(notification.FirstName, notification.LastName))
             .Tap(() => _unitOfWork.SaveChangesAsync(cancellationToken))
             .OnFailure(error => _logger.LogError("Error while processing message: {@MessageId}, {@Error}", notification.Id, error));
+
+    private async Task<Result<Trainer>> GetTrainerByIdAsync(TrainerId trainerId, CancellationToken cancellationToken) =>
+        await _trainerRepository.GetByIdAsync(trainerId, cancellationToken)
+            .MapFailure(() => TrainerErrors.NotFound(trainerId));
 }

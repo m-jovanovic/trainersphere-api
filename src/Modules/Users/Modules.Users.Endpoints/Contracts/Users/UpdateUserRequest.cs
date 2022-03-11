@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Modules.Users.Endpoints.Routes;
 
 namespace Modules.Users.Endpoints.Contracts.Users;
 
@@ -10,7 +11,7 @@ public sealed class UpdateUserRequest
     /// <summary>
     /// Gets the user identifier.
     /// </summary>
-    [FromRoute(Name = "userId")]
+    [FromRoute(Name = UsersRoutes.ResourceId)]
     public Guid UserId { get; init; }
 
     /// <summary>

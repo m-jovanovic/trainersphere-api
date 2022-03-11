@@ -22,7 +22,7 @@ public sealed class InviteClientEndpoint : EndpointBaseAsync
 
     [HasPermission(TrainingPermissions.InviteClient)]
     [HttpPut(TrainersRoutes.InviteClient)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [SwaggerOperation(
@@ -32,7 +32,9 @@ public sealed class InviteClientEndpoint : EndpointBaseAsync
     public override async Task<ActionResult<Guid>> HandleAsync(
         [FromRoute]InviteClientRequest request, CancellationToken cancellationToken = default) =>
         await Result.Create(request)
-            .Map(req => new InviteClientCommand(req.TrainerId, req.Email))
+            .Map(inviteClientRequest => new InviteClientCommand(
+                inviteClientRequest.TrainerId,
+                inviteClientRequest.Content.Email))
             .Bind(command => _sender.Send(command, cancellationToken))
             .Match(invitationId => Ok(invitationId), this.HandleFailure);
 }

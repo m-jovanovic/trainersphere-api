@@ -15,8 +15,8 @@ public sealed class InviteClientRequest
     public Guid TrainerId { get; init; }
 
     /// <summary>
-    /// Gets the client email.
+    /// Gets the content.
     /// </summary>
     [FromBody]
-    public string Email { get; init; } = string.Empty;
+    public InviteClientRequestContent Content { get; init; } = new(string.Empty);
 }

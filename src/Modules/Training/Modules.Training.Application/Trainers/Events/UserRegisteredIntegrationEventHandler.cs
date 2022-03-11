@@ -28,7 +28,7 @@ internal sealed class UserRegisteredIntegrationEventHandler : IIntegrationEventH
     /// <inheritdoc />
     public async Task Handle(UserRegisteredIntegrationEvent notification, CancellationToken cancellationToken) =>
         await Result.Create(notification)
-            .FlatMap(userRegisteredIntegrationEvent =>
+            .Bind(userRegisteredIntegrationEvent =>
                 Trainer.Create(
                     new TrainerId(userRegisteredIntegrationEvent.UserId),
                     notification.Email,

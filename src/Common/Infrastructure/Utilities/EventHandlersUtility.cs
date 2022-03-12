@@ -5,9 +5,9 @@ using MediatR;
 namespace Infrastructure.Utilities;
 
 /// <summary>
-/// Represents the notification handler utility class.
+/// Represents the event handlers utility class.
 /// </summary>
-public static class NotificationHandlerUtility
+public static class EventHandlersUtility
 {
     private static readonly Type NotificationHandlerType = typeof(INotificationHandler<>);
     private static readonly Type DomainEventHandlerType = typeof(IDomainEventHandler<>);
@@ -27,9 +27,7 @@ public static class NotificationHandlerUtility
     /// </summary>
     /// <param name="type">The type.</param>
     /// <returns>True if the specified type implements the <see cref="IIntegrationEventHandler{TEvent}"/>, otherwise false. </returns>
-    public static bool ImplementsIntegrationEventHandler(Type type) =>
-        type.GetInterfaces().Any() &&
-        type.GetInterfaces().All(interfaceType => IsNotificationHandler(interfaceType) || IsIntegrationEventHandler(interfaceType));
+    public static bool ImplementsIntegrationEventHandler(Type type) => type.GetInterfaces().Any(IsIntegrationEventHandler);
 
     /// <summary>
     /// Checks if the specified type inherits from <see cref="INotificationHandler{TEvent}"/>.

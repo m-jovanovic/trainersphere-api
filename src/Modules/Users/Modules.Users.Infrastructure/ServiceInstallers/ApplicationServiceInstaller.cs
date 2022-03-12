@@ -26,10 +26,10 @@ internal sealed class ApplicationServiceInstaller : IServiceInstaller
     private static void DecorateDomainEventHandlersWithIdempotency(IServiceCollection services) =>
         Application.AssemblyReference.Assembly
             .GetTypes()
-            .Where(NotificationHandlerUtility.ImplementsDomainEventHandler)
+            .Where(EventHandlersUtility.ImplementsDomainEventHandler)
             .ForEach(type =>
             {
-                Type closedNotificationHandler = type.GetInterfaces().First(NotificationHandlerUtility.IsNotificationHandler);
+                Type closedNotificationHandler = type.GetInterfaces().First(EventHandlersUtility.IsNotificationHandler);
 
                 Type[] arguments = closedNotificationHandler.GetGenericArguments();
 

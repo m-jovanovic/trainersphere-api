@@ -10,7 +10,7 @@ namespace Modules.Training.Application.Trainers.Events;
 /// <summary>
 /// Represents the <see cref="UserChangedIntegrationEvent"/> handler.
 /// </summary>
-internal sealed class UserChangedIntegrationEventHandler : IIntegrationEventHandler<UserChangedIntegrationEvent>
+internal sealed class UserChangedIntegrationEventHandler : IntegrationEventHandler<UserChangedIntegrationEvent>
 {
     private readonly ITrainerRepository _trainerRepository;
     private readonly IUnitOfWork _unitOfWork;
@@ -32,7 +32,8 @@ internal sealed class UserChangedIntegrationEventHandler : IIntegrationEventHand
         _logger = logger;
     }
 
-    public async Task Handle(UserChangedIntegrationEvent integrationEvent, CancellationToken cancellationToken) =>
+    /// <inheritdoc />
+    public override async Task Handle(UserChangedIntegrationEvent integrationEvent, CancellationToken cancellationToken = default) =>
         await GetTrainerByIdAsync(new TrainerId(integrationEvent.UserId), cancellationToken)
             .Tap(trainer => trainer.Change(integrationEvent.FirstName, integrationEvent.LastName))
             .Tap(() => _unitOfWork.SaveChangesAsync(cancellationToken))

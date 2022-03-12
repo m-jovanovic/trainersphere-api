@@ -22,15 +22,15 @@ internal sealed class ApplicationServiceInstaller : IServiceInstaller
             .AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBehavior<,>))
             .AddValidatorsFromAssembly(Application.AssemblyReference.Assembly, includeInternalTypes: true)
             .Tap(DecorateDomainEventHandlersWithIdempotency)
-            .Tap(DecorateIntegrationEventHandlersWithIdempotency);
+            .Tap(AddAndDecorateIntegrationEventHandlersWithIdempotency);
 
     private static void DecorateDomainEventHandlersWithIdempotency(IServiceCollection services) =>
         Application.AssemblyReference.Assembly
             .GetTypes()
-            .Where(NotificationHandlerUtility.ImplementsDomainEventHandler)
+            .Where(EventHandlersUtility.ImplementsDomainEventHandler)
             .ForEach(type =>
             {
-                Type closedNotificationHandler = type.GetInterfaces().First(NotificationHandlerUtility.IsNotificationHandler);
+                Type closedNotificationHandler = type.GetInterfaces().First(EventHandlersUtility.IsNotificationHandler);
 
                 Type[] arguments = closedNotificationHandler.GetGenericArguments();
 
@@ -39,18 +39,22 @@ internal sealed class ApplicationServiceInstaller : IServiceInstaller
                 services.Decorate(closedNotificationHandler, closedIdempotentHandler);
             });
 
-    private static void DecorateIntegrationEventHandlersWithIdempotency(IServiceCollection services) =>
+    private static void AddAndDecorateIntegrationEventHandlersWithIdempotency(IServiceCollection services) =>
         Application.AssemblyReference.Assembly
             .GetTypes()
-            .Where(NotificationHandlerUtility.ImplementsIntegrationEventHandler)
-            .ForEach(type =>
+            .Where(EventHandlersUtility.ImplementsIntegrationEventHandler)
+            .ForEach(integrationEventHandlerType =>
             {
-                Type closedNotificationHandler = type.GetInterfaces().First(NotificationHandlerUtility.IsNotificationHandler);
+                Type closedIntegrationEventHandler = integrationEventHandlerType
+                    .GetInterfaces()
+                    .First(EventHandlersUtility.IsIntegrationEventHandler);
 
-                Type[] arguments = closedNotificationHandler.GetGenericArguments();
+                Type[] arguments = closedIntegrationEventHandler.GetGenericArguments();
 
                 Type closedIdempotentHandler = typeof(IdempotentIntegrationEventHandler<>).MakeGenericType(arguments);
 
-                services.Decorate(closedNotificationHandler, closedIdempotentHandler);
+                services.AddScoped(integrationEventHandlerType);
+
+                services.Decorate(integrationEventHandlerType, closedIdempotentHandler);
             });
 }

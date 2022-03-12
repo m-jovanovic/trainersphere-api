@@ -1,7 +1,6 @@
 ﻿using Application.Data;
 using Application.EventBus;
 using Application.Time;
-using MediatR;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Polly;
@@ -22,8 +21,8 @@ internal sealed class ProcessInboxMessagesJob : IJob
     };
 
     private readonly ISqlQueryExecutor _sqlQueryExecutor;
-    private readonly IPublisher _publisher;
     private readonly ISystemTime _systemTime;
+    private readonly IServiceProvider _serviceProvider;
     private readonly ProcessInboxMessagesOptions _options;
     private readonly AsyncRetryPolicy _policy;
 
@@ -31,18 +30,18 @@ internal sealed class ProcessInboxMessagesJob : IJob
     /// Initializes a new instance of the <see cref="ProcessInboxMessagesJob"/> class.
     /// </summary>
     /// <param name="sqlQueryExecutor">The SQL query executor.</param>
-    /// <param name="publisher">The publisher.</param>
     /// <param name="systemTime">The system time.</param>
+    /// <param name="serviceProvider">The service provider.</param>
     /// <param name="options">The options.</param>
     public ProcessInboxMessagesJob(
         ISqlQueryExecutor sqlQueryExecutor,
-        IPublisher publisher,
         ISystemTime systemTime,
+        IServiceProvider serviceProvider,
         IOptions<ProcessInboxMessagesOptions> options)
     {
         _sqlQueryExecutor = sqlQueryExecutor;
-        _publisher = publisher;
         _systemTime = systemTime;
+        _serviceProvider = serviceProvider;
         _options = options.Value;
         _policy = Policy.Handle<Exception>().RetryAsync(_options.RetryCount);
     }
@@ -61,7 +60,17 @@ internal sealed class ProcessInboxMessagesJob : IJob
         {
             IIntegrationEvent integrationEvent = JsonConvert.DeserializeObject<IIntegrationEvent>(inboxMessage.Content, JsonSerializerSettings)!;
 
-            PolicyResult result = await _policy.ExecuteAndCaptureAsync(() => _publisher.Publish(integrationEvent, context.CancellationToken));
+            IEnumerable<IIntegrationEventHandler> handlers = IntegrationEventHandlersFactory.GetHandlers(
+                integrationEvent.GetType(),
+                _serviceProvider);
+
+            PolicyResult result = await _policy.ExecuteAndCaptureAsync(async () =>
+            {
+                foreach (IIntegrationEventHandler handler in handlers)
+                {
+                    await handler.Handle(integrationEvent, context.CancellationToken);
+                }
+            });
 
             await UpdateInboxMessageAsync(inboxMessage, result.FinalException);
         }

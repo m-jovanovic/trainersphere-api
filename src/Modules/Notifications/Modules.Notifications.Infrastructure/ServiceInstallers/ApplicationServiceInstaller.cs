@@ -17,20 +17,24 @@ internal sealed class ApplicationServiceInstaller : IServiceInstaller
     public void Install(IServiceCollection services, IConfiguration configuration) =>
         services
             .AddMediatR(Application.AssemblyReference.Assembly)
-            .Tap(DecorateIntegrationEventHandlersWithIdempotency);
+            .Tap(AddAndDecorateIntegrationEventHandlersWithIdempotency);
 
-    private static void DecorateIntegrationEventHandlersWithIdempotency(IServiceCollection services) =>
+    private static void AddAndDecorateIntegrationEventHandlersWithIdempotency(IServiceCollection services) =>
         Application.AssemblyReference.Assembly
             .GetTypes()
-            .Where(NotificationHandlerUtility.ImplementsIntegrationEventHandler)
-            .ForEach(type =>
+            .Where(EventHandlersUtility.ImplementsIntegrationEventHandler)
+            .ForEach(integrationEventHandlerType =>
             {
-                Type closedNotificationHandler = type.GetInterfaces().First(NotificationHandlerUtility.IsNotificationHandler);
+                Type closedIntegrationEventHandler = integrationEventHandlerType
+                    .GetInterfaces()
+                    .First(EventHandlersUtility.IsIntegrationEventHandler);
 
-                Type[] arguments = closedNotificationHandler.GetGenericArguments();
+                Type[] arguments = closedIntegrationEventHandler.GetGenericArguments();
 
                 Type closedIdempotentHandler = typeof(IdempotentIntegrationEventHandler<>).MakeGenericType(arguments);
 
-                services.Decorate(closedNotificationHandler, closedIdempotentHandler);
+                services.AddScoped(integrationEventHandlerType);
+
+                services.Decorate(integrationEventHandlerType, closedIdempotentHandler);
             });
 }

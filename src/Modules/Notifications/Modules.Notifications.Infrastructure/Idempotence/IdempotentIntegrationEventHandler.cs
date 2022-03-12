@@ -7,7 +7,7 @@ namespace Modules.Notifications.Infrastructure.Idempotence;
 /// Represents the idempotent integration event handler, which checks if the integration event has already been handled previously.
 /// </summary>
 /// <typeparam name="TIntegrationEvent">The integration event type.</typeparam>
-internal sealed class IdempotentIntegrationEventHandler<TIntegrationEvent> : IIntegrationEventHandler<TIntegrationEvent>
+internal sealed class IdempotentIntegrationEventHandler<TIntegrationEvent> : IntegrationEventHandler<TIntegrationEvent>
     where TIntegrationEvent : IIntegrationEvent
 {
     private readonly IIntegrationEventHandler<TIntegrationEvent> _decorated;
@@ -25,7 +25,7 @@ internal sealed class IdempotentIntegrationEventHandler<TIntegrationEvent> : IIn
     }
 
     /// <inheritdoc />
-    public async Task Handle(TIntegrationEvent integrationEvent, CancellationToken cancellationToken)
+    public override async Task Handle(TIntegrationEvent integrationEvent, CancellationToken cancellationToken = default)
     {
         var parameters = new InboxConsumerParameters(integrationEvent.Id, _decorated.GetType().Name);
 

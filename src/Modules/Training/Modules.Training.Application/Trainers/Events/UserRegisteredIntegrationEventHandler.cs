@@ -9,7 +9,7 @@ namespace Modules.Training.Application.Trainers.Events;
 /// <summary>
 /// Represents the <see cref="UserRegisteredIntegrationEvent"/> handler.
 /// </summary>
-internal sealed class UserRegisteredIntegrationEventHandler : IIntegrationEventHandler<UserRegisteredIntegrationEvent>
+internal sealed class UserRegisteredIntegrationEventHandler : IntegrationEventHandler<UserRegisteredIntegrationEvent>
 {
     private readonly ITrainerRepository _trainerRepository;
     private readonly IUnitOfWork _unitOfWork;
@@ -26,7 +26,7 @@ internal sealed class UserRegisteredIntegrationEventHandler : IIntegrationEventH
     }
 
     /// <inheritdoc />
-    public async Task Handle(UserRegisteredIntegrationEvent integrationEvent, CancellationToken cancellationToken) =>
+    public override async Task Handle(UserRegisteredIntegrationEvent integrationEvent, CancellationToken cancellationToken = default) =>
         await Result.Create(integrationEvent)
             .Bind(userRegisteredIntegrationEvent =>
                 Trainer.Create(

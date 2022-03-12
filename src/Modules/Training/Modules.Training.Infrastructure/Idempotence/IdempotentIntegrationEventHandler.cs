@@ -25,16 +25,16 @@ internal sealed class IdempotentIntegrationEventHandler<TIntegrationEvent> : IIn
     }
 
     /// <inheritdoc />
-    public async Task Handle(TIntegrationEvent notification, CancellationToken cancellationToken)
+    public async Task Handle(TIntegrationEvent integrationEvent, CancellationToken cancellationToken)
     {
-        var parameters = new InboxConsumerParameters(notification.Id, _decorated.GetType().Name);
+        var parameters = new InboxConsumerParameters(integrationEvent.Id, _decorated.GetType().Name);
 
         if (await IsInboxMessageConsumedAsync(parameters))
         {
             return;
         }
 
-        await _decorated.Handle(notification, cancellationToken);
+        await _decorated.Handle(integrationEvent, cancellationToken);
 
         await InsertInboxMessageConsumerAsync(parameters);
     }

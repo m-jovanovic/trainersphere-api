@@ -14,8 +14,10 @@ internal sealed class UserRegisteredIntegrationEventHandler : IIntegrationEventH
     public UserRegisteredIntegrationEventHandler(IEmailSender emailSender) => _emailSender = emailSender;
 
     /// <inheritdoc />
-    public async Task Handle(UserRegisteredIntegrationEvent notification, CancellationToken cancellationToken) =>
+    public async Task Handle(UserRegisteredIntegrationEvent integrationEvent, CancellationToken cancellationToken) =>
         await _emailSender.SendWelcomeAsync(
-            new WelcomeEmailRequest(notification.Email, $"{notification.FirstName} {notification.LastName}"),
+            new WelcomeEmailRequest(
+                integrationEvent.Email,
+                $"{integrationEvent.FirstName} {integrationEvent.LastName}"),
             cancellationToken);
 }

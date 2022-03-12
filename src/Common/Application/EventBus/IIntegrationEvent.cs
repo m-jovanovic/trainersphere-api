@@ -1,11 +1,9 @@
-﻿using MediatR;
-
-namespace Application.EventBus;
+﻿namespace Application.EventBus;
 
 /// <summary>
 /// Represents the integration event interface.
 /// </summary>
-public interface IIntegrationEvent : INotification
+public interface IIntegrationEvent
 {
     /// <summary>
     /// Gets the identifier.

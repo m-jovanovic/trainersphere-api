@@ -21,7 +21,7 @@ public sealed class InviteClientEndpoint : EndpointBaseAsync
     public InviteClientEndpoint(ISender sender) => _sender = sender;
 
     [HasPermission(TrainingPermissions.InviteClient)]
-    [HttpPut(TrainersRoutes.InviteClient)]
+    [HttpPost(TrainersRoutes.InviteClient)]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]

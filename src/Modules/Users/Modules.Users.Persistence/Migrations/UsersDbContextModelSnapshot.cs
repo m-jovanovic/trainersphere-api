@@ -58,6 +58,12 @@ namespace Modules.Users.Persistence.Migrations
                             Id = 101,
                             Description = "Can modify user information.",
                             Name = "UserModify"
+                        },
+                        new
+                        {
+                            Id = 200,
+                            Description = "Can invite new client.",
+                            Name = "InviteClient"
                         });
                 });
 
@@ -132,6 +138,11 @@ namespace Modules.Users.Persistence.Migrations
                         {
                             RoleId = 1,
                             PermissionId = 101
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 200
                         });
                 });
 

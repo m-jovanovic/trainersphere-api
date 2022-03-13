@@ -10,6 +10,8 @@ public sealed class Permission : Enumeration<Permission>
     public static readonly Permission UserRead = new(100, nameof(UserRead), "Can read user information.");
     public static readonly Permission UserModify = new(101, nameof(UserModify), "Can modify user information.");
 
+    public static readonly Permission InviteClient = new(200, nameof(InviteClient), "Can invite new client.");
+
     /// <summary>
     /// Initializes a new instance of the <see cref="Permission"/> class.
     /// </summary>

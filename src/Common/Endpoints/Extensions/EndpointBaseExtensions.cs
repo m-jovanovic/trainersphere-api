@@ -29,13 +29,10 @@ public static class EndpointBaseExtensions
                 Status = StatusCodes.Status400BadRequest,
                 Extensions = { { "errors", validationResult.Errors } }
             }),
-            var notFound when notFound.Error.Code.Contains("NotFound", StringComparison.InvariantCulture) => endpoint.NotFound(new ProblemDetails
-            {
-                Type = "Resource Not Found",
-                Title = result.Error.Code,
-                Detail = result.Error.Message,
-                Status = StatusCodes.Status404NotFound
-            }),
+            var notFound when notFound.Error.Code.Contains("NotFound", StringComparison.InvariantCulture) =>
+                endpoint.Conflict(CreateProblemDetails("Not Found", StatusCodes.Status404NotFound, notFound.Error)),
+            var conflict when conflict.Error.Code.Contains("Exists", StringComparison.InvariantCulture) =>
+                endpoint.Conflict(CreateProblemDetails("Conflict", StatusCodes.Status409Conflict, conflict.Error)),
             _ => endpoint.BadRequest(new
             {
                 Errors = new[]
@@ -43,5 +40,14 @@ public static class EndpointBaseExtensions
                     result.Error
                 }
             })
+        };
+
+    private static ProblemDetails CreateProblemDetails(string type, int status, Error error) =>
+        new()
+        {
+            Type = type,
+            Title = error.Code,
+            Detail = error.Message,
+            Status = status
         };
 }

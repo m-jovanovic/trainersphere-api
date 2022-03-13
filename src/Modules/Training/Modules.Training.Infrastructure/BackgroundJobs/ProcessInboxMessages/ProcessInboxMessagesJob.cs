@@ -60,7 +60,7 @@ internal sealed class ProcessInboxMessagesJob : IJob
         {
             IIntegrationEvent integrationEvent = JsonConvert.DeserializeObject<IIntegrationEvent>(inboxMessage.Content, JsonSerializerSettings)!;
 
-            IEnumerable<IIntegrationEventHandler> handlers = IntegrationEventHandlersFactory.GetHandlers(
+            IEnumerable<IIntegrationEventHandler> handlers = IntegrationEventHandlerFactory.GetHandlers(
                 integrationEvent.GetType(),
                 _serviceProvider);
 

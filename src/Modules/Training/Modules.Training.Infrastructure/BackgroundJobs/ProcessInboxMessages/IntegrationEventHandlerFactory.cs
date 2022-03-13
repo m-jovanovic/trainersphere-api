@@ -5,10 +5,19 @@ using Shared.Extensions;
 
 namespace Modules.Training.Infrastructure.BackgroundJobs.ProcessInboxMessages;
 
-internal static class IntegrationEventHandlersFactory
+/// <summary>
+/// Represents the integration event handler factory.
+/// </summary>
+internal static class IntegrationEventHandlerFactory
 {
     private static readonly ConcurrentDictionary<Type, List<Type>> EventHandlersDictionary = new();
 
+    /// <summary>
+    /// Gets the handlers for the specified type.
+    /// </summary>
+    /// <param name="type">The integration event type.</param>
+    /// <param name="serviceProvider">The service provider.</param>
+    /// <returns>THe collection of <see cref="IIntegrationEventHandler"/> instance that handle the specified integration event type.</returns>
     internal static IEnumerable<IIntegrationEventHandler> GetHandlers(Type type, IServiceProvider serviceProvider)
     {
         if (!EventHandlersDictionary.ContainsKey(type))

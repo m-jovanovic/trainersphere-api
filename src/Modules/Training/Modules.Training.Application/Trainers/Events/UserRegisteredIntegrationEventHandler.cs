@@ -27,13 +27,11 @@ internal sealed class UserRegisteredIntegrationEventHandler : IntegrationEventHa
 
     /// <inheritdoc />
     public override async Task Handle(UserRegisteredIntegrationEvent integrationEvent, CancellationToken cancellationToken = default) =>
-        await Result.Create(integrationEvent)
-            .Bind(userRegisteredIntegrationEvent =>
-                Trainer.Create(
-                    new TrainerId(userRegisteredIntegrationEvent.UserId),
-                    integrationEvent.Email,
-                    integrationEvent.FirstName,
-                    integrationEvent.LastName))
+        await Trainer.Create(
+                new TrainerId(integrationEvent.UserId),
+                integrationEvent.Email,
+                integrationEvent.FirstName,
+                integrationEvent.LastName)
             .Tap(trainer => _trainerRepository.Add(trainer))
             .Tap(() => _unitOfWork.SaveChangesAsync(cancellationToken));
 }

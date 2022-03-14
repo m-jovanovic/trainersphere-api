@@ -1,4 +1,5 @@
 ﻿using Domain.Primitives;
+using Shared.Results;
 
 namespace Modules.Users.Domain.UserRegistrations;
 
@@ -42,7 +43,7 @@ public sealed class UserRegistration : Entity<UserRegistrationId>, IAuditable
     /// <param name="id">The identifier.</param>
     /// <param name="email">The email.</param>
     /// <returns>The new user registration instance.</returns>
-    public static UserRegistration Create(UserRegistrationId id, string email)
+    public static Result<UserRegistration> Create(UserRegistrationId id, string email)
     {
         var userRegistration = new UserRegistration(id, email, UserRegistrationStatus.Pending);
 

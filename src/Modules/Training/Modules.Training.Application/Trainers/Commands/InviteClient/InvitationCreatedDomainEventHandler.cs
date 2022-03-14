@@ -26,6 +26,8 @@ internal sealed class InvitationCreatedDomainEventHandler : IDomainEventHandler<
                 notification.OccurredOnUtc,
                 notification.InvitationId.Value,
                 notification.TrainerId.Value,
-                notification.Email),
+                notification.Email,
+                notification.Sender.FirstName,
+                notification.Sender.LastName),
             cancellationToken);
 }

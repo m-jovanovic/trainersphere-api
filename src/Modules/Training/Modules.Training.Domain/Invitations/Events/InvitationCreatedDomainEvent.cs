@@ -16,4 +16,5 @@ public sealed record InvitationCreatedDomainEvent(
     DateTime OccurredOnUtc,
     InvitationId InvitationId,
     TrainerId TrainerId,
-    string Email) : DomainEvent(Id, OccurredOnUtc);
+    string Email,
+    Sender Sender) : DomainEvent(Id, OccurredOnUtc);

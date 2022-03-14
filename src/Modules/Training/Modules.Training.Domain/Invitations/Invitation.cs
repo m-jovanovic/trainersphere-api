@@ -85,7 +85,8 @@ public sealed class Invitation : Entity<InvitationId>, IAuditable
             SystemTimeProvider.UtcNow(),
             invitation.Id,
             invitation.TrainerId,
-            invitation.Email));
+            invitation.Email,
+            invitation.Sender));
 
         return invitation;
     }

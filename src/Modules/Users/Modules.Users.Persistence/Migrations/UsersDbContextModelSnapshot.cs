@@ -146,6 +146,39 @@ namespace Modules.Users.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Modules.Users.Domain.UserRegistrations.UserRegistration", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_on_utc");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("email");
+
+                    b.Property<DateTime?>("ModifiedOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_on_utc");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id")
+                        .HasName("pk_user_registrations");
+
+                    b.HasIndex("Email", "Status")
+                        .HasDatabaseName("ix_user_registrations_email_status");
+
+                    b.ToTable("user_registrations", "users");
+                });
+
             modelBuilder.Entity("Modules.Users.Domain.Users.User", b =>
                 {
                     b.Property<Guid>("Id")

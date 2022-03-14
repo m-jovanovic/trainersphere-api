@@ -30,7 +30,7 @@ public static class EndpointBaseExtensions
                 Extensions = { { "errors", validationResult.Errors } }
             }),
             var notFound when notFound.Error.Code.Contains("NotFound", StringComparison.InvariantCulture) =>
-                endpoint.Conflict(CreateProblemDetails("Not Found", StatusCodes.Status404NotFound, notFound.Error)),
+                endpoint.NotFound(CreateProblemDetails("Not Found", StatusCodes.Status404NotFound, notFound.Error)),
             var conflict when conflict.Error.Code.Contains("Exists", StringComparison.InvariantCulture) =>
                 endpoint.Conflict(CreateProblemDetails("Conflict", StatusCodes.Status409Conflict, conflict.Error)),
             _ => endpoint.BadRequest(new

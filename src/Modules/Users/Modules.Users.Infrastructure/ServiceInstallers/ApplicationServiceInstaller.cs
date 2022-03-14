@@ -5,6 +5,7 @@ using Infrastructure.Utilities;
 using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Modules.Users.Infrastructure.Consumers;
 using Modules.Users.Infrastructure.Idempotence;
 using Shared.Extensions;
 
@@ -21,7 +22,8 @@ internal sealed class ApplicationServiceInstaller : IServiceInstaller
             .AddMediatR(Application.AssemblyReference.Assembly)
             .AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBehavior<,>))
             .AddValidatorsFromAssembly(Application.AssemblyReference.Assembly, includeInternalTypes: true)
-            .Tap(DecorateDomainEventHandlersWithIdempotency);
+            .Tap(DecorateDomainEventHandlersWithIdempotency)
+            .Tap(AddAndDecorateIntegrationEventHandlersWithIdempotency);
 
     private static void DecorateDomainEventHandlersWithIdempotency(IServiceCollection services) =>
         Application.AssemblyReference.Assembly
@@ -36,5 +38,24 @@ internal sealed class ApplicationServiceInstaller : IServiceInstaller
                 Type closedIdempotentHandler = typeof(IdempotentDomainEventHandler<>).MakeGenericType(arguments);
 
                 services.Decorate(closedNotificationHandler, closedIdempotentHandler);
+            });
+
+    private static void AddAndDecorateIntegrationEventHandlersWithIdempotency(IServiceCollection services) =>
+        Application.AssemblyReference.Assembly
+            .GetTypes()
+            .Where(EventHandlersUtility.ImplementsIntegrationEventHandler)
+            .ForEach(integrationEventHandlerType =>
+            {
+                Type closedIntegrationEventHandler = integrationEventHandlerType
+                    .GetInterfaces()
+                    .First(EventHandlersUtility.IsIntegrationEventHandler);
+
+                Type[] arguments = closedIntegrationEventHandler.GetGenericArguments();
+
+                Type closedIdempotentHandler = typeof(IdempotentIntegrationEventHandler<>).MakeGenericType(arguments);
+
+                services.AddScoped(integrationEventHandlerType);
+
+                services.Decorate(integrationEventHandlerType, closedIdempotentHandler);
             });
 }

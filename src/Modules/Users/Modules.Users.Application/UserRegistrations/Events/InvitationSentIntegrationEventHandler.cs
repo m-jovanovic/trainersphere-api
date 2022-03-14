@@ -6,6 +6,9 @@ using Shared.Results;
 
 namespace Modules.Users.Application.UserRegistrations.Events;
 
+/// <summary>
+/// Represents the <see cref="InvitationSentIntegrationEvent"/> handler.
+/// </summary>
 internal sealed class InvitationSentIntegrationEventHandler : IntegrationEventHandler<InvitationSentIntegrationEvent>
 {
     private readonly IUserRegistrationRepository _userRegistrationRepository;

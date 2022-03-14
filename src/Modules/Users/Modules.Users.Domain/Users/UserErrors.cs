@@ -18,6 +18,11 @@ public static class UserErrors
     public static Error EmailIsNotUnique => new("User.EmailIsNotUnique", "The specified email is already in use.");
 
     /// <summary>
+    /// Gets the registration incomplete error.
+    /// </summary>
+    public static Error RegistrationIsIncomplete => new("User.RegistrationIsIncomplete", "The user registration is incomplete.");
+
+    /// <summary>
     /// Gets the not found error.
     /// </summary>
     public static Func<UserId, Error> NotFound => userId => new Error(

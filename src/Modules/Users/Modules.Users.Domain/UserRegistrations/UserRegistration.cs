@@ -29,6 +29,21 @@ public sealed class UserRegistration : Entity<UserRegistrationId>, IAuditable
     public string Email { get; private set; }
 
     /// <summary>
+    /// Gets the first name.
+    /// </summary>
+    public string? FirstName { get; private set; }
+
+    /// <summary>
+    /// Gets the last name.
+    /// </summary>
+    public string? LastName { get; private set; }
+
+    /// <summary>
+    /// Gets the identity provider identifier.
+    /// </summary>
+    public string? IdentityProviderId { get; private set; }
+
+    /// <summary>
     /// Gets the status.
     /// </summary>
     public UserRegistrationStatus Status { get; private set; }
@@ -57,14 +72,25 @@ public sealed class UserRegistration : Entity<UserRegistrationId>, IAuditable
         return userRegistration;
     }
 
-    public Result Confirm() =>
+    /// <summary>
+    /// Confirms the user registration with the specified parameters.
+    /// </summary>
+    /// <param name="identityProviderId">The identity provider identifier.</param>
+    /// <param name="firstName">The first name.</param>
+    /// <param name="lastName">The last name.</param>
+    /// <returns>The result of the confirmation operation.</returns>
+    public Result Confirm(string identityProviderId, string firstName, string lastName) =>
         Status switch
         {
             var status when status == UserRegistrationStatus.Confirmed => Result.Failure(UserRegistrationErrors.AlreadyConfirmed(Id)),
             var status when status == UserRegistrationStatus.Expired => Result.Failure(UserRegistrationErrors.Expired(Id)),
-            _ => ConfirmInternal()
+            _ => ConfirmInternal(identityProviderId, firstName, lastName)
         };
 
+    /// <summary>
+    /// Expires the user registration.
+    /// </summary>
+    /// <returns>The result of the expiration operation.</returns>
     public Result Expire() =>
         Status switch
         {
@@ -72,8 +98,11 @@ public sealed class UserRegistration : Entity<UserRegistrationId>, IAuditable
             _ => ExpireInternal()
         };
 
-    private Result ConfirmInternal()
+    private Result ConfirmInternal(string identityProviderId, string firstName, string lastName)
     {
+        IdentityProviderId = identityProviderId;
+        FirstName = firstName;
+        LastName = lastName;
         Status = UserRegistrationStatus.Confirmed;
         ConfirmedOnUtc = SystemTimeProvider.UtcNow();
 

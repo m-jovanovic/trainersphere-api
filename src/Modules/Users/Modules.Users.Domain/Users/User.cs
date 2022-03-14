@@ -1,6 +1,7 @@
 ﻿using Domain.Primitives;
 using Domain.Time;
 using Modules.Users.Domain.Roles;
+using Modules.Users.Domain.UserRegistrations;
 using Modules.Users.Domain.Users.Events;
 using Shared.Results;
 
@@ -76,6 +77,7 @@ public sealed class User : Entity<UserId>, IAuditable
 
         user._roles.Add(Role.Registered);
 
+        // Differentiate that this is a trainer user.
         user.RaiseDomainEvent(new UserRegisteredDomainEvent(
             Guid.NewGuid(),
             SystemTimeProvider.UtcNow(),
@@ -84,6 +86,33 @@ public sealed class User : Entity<UserId>, IAuditable
             user.FirstName,
             user.LastName));
 
+        return user;
+    }
+
+    /// <summary>
+    /// Creates a new user based on the specified user registration.
+    /// </summary>
+    /// <param name="userRegistration">The user registration.</param>
+    /// <returns>The new user instance.</returns>
+    public static Result<User> CreateFromRegistration(UserRegistration userRegistration)
+    {
+        if (string.IsNullOrWhiteSpace(userRegistration.IdentityProviderId) ||
+            string.IsNullOrWhiteSpace(userRegistration.FirstName) ||
+            string.IsNullOrWhiteSpace(userRegistration.LastName))
+        {
+            return Result.Failure<User>(UserErrors.RegistrationIsIncomplete);
+        }
+
+        var user = new User(
+            new UserId(Guid.NewGuid()),
+            userRegistration.IdentityProviderId,
+            userRegistration.Email,
+            userRegistration.FirstName,
+            userRegistration.LastName);
+
+        user._roles.Add(Role.Registered);
+
+        // Raise proper domain event.
         return user;
     }
 

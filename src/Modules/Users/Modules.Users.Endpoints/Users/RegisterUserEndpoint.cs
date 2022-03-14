@@ -1,7 +1,7 @@
 ﻿using Ardalis.ApiEndpoints;
-using Endpoints.Authorization;
 using Endpoints.Extensions;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Modules.Users.Application.Boundary.Users.Commands.RegisterUser;
@@ -20,7 +20,7 @@ public sealed class RegisterUserEndpoint : EndpointBaseAsync
 
     public RegisterUserEndpoint(ISender sender) => _sender = sender;
 
-    [HasPermission(UsersPermissions.UserModify)]
+    [Authorize]
     [HttpPost(UsersRoutes.Register)]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

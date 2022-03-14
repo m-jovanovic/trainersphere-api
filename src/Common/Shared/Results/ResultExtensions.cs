@@ -70,11 +70,22 @@ public static class ResultExtensions
     /// <summary>
     /// Binds the success result based on the specified binding function, otherwise returns a failure result.
     /// </summary>
+    /// <typeparam name="TIn">The input type.</typeparam>
     /// <param name="result">The result.</param>
     /// <param name="func">The binding function.</param>
     /// <returns>The bound result.</returns>
-    public static async Task<Result> Bind(this Result result, Func<Task<Result>> func) =>
-        result.IsSuccess ? await func() : Result.Failure(result.Error);
+    public static Result Bind<TIn>(this Result<TIn> result, Func<TIn, Result> func) =>
+        result.IsSuccess ? func(result.Value) : Result.Failure(result.Error);
+
+    /// <summary>
+    /// Binds the success result based on the specified binding function, otherwise returns a failure result.
+    /// </summary>
+    /// <typeparam name="TIn">The input type.</typeparam>
+    /// <param name="result">The result.</param>
+    /// <param name="func">The binding function.</param>
+    /// <returns>The bound result.</returns>
+    public static async Task<Result> Bind<TIn>(this Task<Result<TIn>> result, Func<TIn, Result> func) =>
+        (await result).Bind(func);
 
     /// <summary>
     /// Binds the success result based on the specified binding function, otherwise returns a failure result.
@@ -133,19 +144,26 @@ public static class ResultExtensions
     /// <summary>
     /// Tap will execute the provided action if the result is successful.
     /// </summary>
-    /// <typeparam name="TIn">The input type.</typeparam>
     /// <param name="result">The result.</param>
-    /// <param name="action">The action.</param>
+    /// <param name="func">The function.</param>
     /// <returns>The same result.</returns>
-    public static Result<TIn> Tap<TIn>(this Result<TIn> result, Action action)
+    public static async Task<Result> Tap(this Result result, Func<Task> func)
     {
         if (result.IsSuccess)
         {
-            action();
+            await func();
         }
 
         return result;
     }
+
+    /// <summary>
+    /// Tap will execute the provided action if the result is successful.
+    /// </summary>
+    /// <param name="resultTask">The result task.</param>
+    /// <param name="func">The function.</param>
+    /// <returns>The same result.</returns>
+    public static async Task<Result> Tap(this Task<Result> resultTask, Func<Task> func) => await (await resultTask).Tap(func);
 
     /// <summary>
     /// Tap will execute the provided action if the result is successful.
@@ -169,9 +187,9 @@ public static class ResultExtensions
     /// </summary>
     /// <typeparam name="TIn">The input type.</typeparam>
     /// <param name="resultTask">The result task.</param>
-    /// <param name="action">The action.</param>
+    /// <param name="func">The function.</param>
     /// <returns>The same result.</returns>
-    public static async Task<Result<TIn>> Tap<TIn>(this Task<Result<TIn>> resultTask, Action action) => (await resultTask).Tap(action);
+    public static async Task<Result<TIn>> Tap<TIn>(this Task<Result<TIn>> resultTask, Func<Task> func) => await (await resultTask).Tap(func);
 
     /// <summary>
     /// Tap will execute the provided action if the result is successful.

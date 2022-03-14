@@ -19,6 +19,12 @@ internal sealed class UserRegistrationRepository : IUserRegistrationRepository, 
     public UserRegistrationRepository(UsersDbContext dbContext) => _dbContext = dbContext;
 
     /// <inheritdoc />
+    public async Task<Result<UserRegistration>> GetByIdAsync(UserRegistrationId id, CancellationToken cancellationToken = default) =>
+        Result.Create(
+            await _dbContext.Set<UserRegistration>()
+                .FirstOrDefaultAsync(userRegistration => userRegistration.Id == id, cancellationToken));
+
+    /// <inheritdoc />
     public async Task<Result> CheckNonePendingForEmailAsync(string email, CancellationToken cancellationToken = default) =>
         Result.Create(
             !await _dbContext.Set<UserRegistration>()

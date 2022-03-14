@@ -11,4 +11,11 @@ public static class InvitationErrors
     /// Gets the pending exists error.
     /// </summary>
     public static Error PendingExists => new("Invitation.PendingExists", "There is already an existing invitation for the client.");
+
+    /// <summary>
+    /// Gets the not found error.
+    /// </summary>
+    public static Func<InvitationId, Error> NotFound => invitationId => new Error(
+        "Invitation.NotFound",
+        $"The invitation with the identifier '{invitationId.Value}' was not found.");
 }

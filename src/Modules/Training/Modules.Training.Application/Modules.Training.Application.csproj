@@ -15,6 +15,7 @@
     <ProjectReference Include="..\..\Users\Modules.Users.IntegrationEvents\Modules.Users.IntegrationEvents.csproj" />
     <ProjectReference Include="..\Modules.Training.Application.Boundary\Modules.Training.Application.Boundary.csproj" />
     <ProjectReference Include="..\Modules.Training.Domain\Modules.Training.Domain.csproj" />
+    <ProjectReference Include="..\Modules.Training.IntegrationEvents\Modules.Training.IntegrationEvents.csproj" />
   </ItemGroup>
 
 </Project>

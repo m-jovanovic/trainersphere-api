@@ -210,6 +210,36 @@ namespace Modules.Training.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_invitations_trainer_trainer_temp_id");
+
+                    b.OwnsOne("Modules.Training.Domain.Invitations.Sender", "Sender", b1 =>
+                        {
+                            b1.Property<Guid>("InvitationId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("id");
+
+                            b1.Property<string>("FirstName")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)")
+                                .HasColumnName("sender_first_name");
+
+                            b1.Property<string>("LastName")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)")
+                                .HasColumnName("sender_last_name");
+
+                            b1.HasKey("InvitationId");
+
+                            b1.ToTable("invitations", "training");
+
+                            b1.WithOwner()
+                                .HasForeignKey("InvitationId")
+                                .HasConstraintName("fk_invitations_invitations_id");
+                        });
+
+                    b.Navigation("Sender")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

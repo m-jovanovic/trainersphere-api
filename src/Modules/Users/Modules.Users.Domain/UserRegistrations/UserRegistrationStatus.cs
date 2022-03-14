@@ -9,7 +9,7 @@ public sealed class UserRegistrationStatus : Enumeration<UserRegistrationStatus>
 {
     public static readonly UserRegistrationStatus Pending = new(1, "Pending");
     public static readonly UserRegistrationStatus Expired = new(2, "Expired");
-    public static readonly UserRegistrationStatus Accepted = new(3, "Accepted");
+    public static readonly UserRegistrationStatus Confirmed = new(3, "Confirmed");
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UserRegistrationStatus"/> class.

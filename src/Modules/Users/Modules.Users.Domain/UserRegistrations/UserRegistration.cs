@@ -1,4 +1,6 @@
 ﻿using Domain.Primitives;
+using Domain.Time;
+using Modules.Users.Domain.UserRegistrations.Events;
 using Shared.Results;
 
 namespace Modules.Users.Domain.UserRegistrations;
@@ -31,6 +33,11 @@ public sealed class UserRegistration : Entity<UserRegistrationId>, IAuditable
     /// </summary>
     public UserRegistrationStatus Status { get; private set; }
 
+    /// <summary>
+    /// Gets the confirmed on date and time.
+    /// </summary>
+    public DateTime? ConfirmedOnUtc { get; private set; }
+
     /// <inheritdoc />
     public DateTime CreatedOnUtc { get; private set; }
 
@@ -48,5 +55,45 @@ public sealed class UserRegistration : Entity<UserRegistrationId>, IAuditable
         var userRegistration = new UserRegistration(id, email, UserRegistrationStatus.Pending);
 
         return userRegistration;
+    }
+
+    public Result Confirm() =>
+        Status switch
+        {
+            var status when status == UserRegistrationStatus.Confirmed => Result.Failure(UserRegistrationErrors.AlreadyConfirmed(Id)),
+            var status when status == UserRegistrationStatus.Expired => Result.Failure(UserRegistrationErrors.Expired(Id)),
+            _ => ConfirmInternal()
+        };
+
+    public Result Expire() =>
+        Status switch
+        {
+            var status when status == UserRegistrationStatus.Expired => Result.Failure(UserRegistrationErrors.AlreadyExpired(Id)),
+            _ => ExpireInternal()
+        };
+
+    private Result ConfirmInternal()
+    {
+        Status = UserRegistrationStatus.Confirmed;
+        ConfirmedOnUtc = SystemTimeProvider.UtcNow();
+
+        RaiseDomainEvent(new UserRegistrationConfirmedDomainEvent(
+            Guid.NewGuid(),
+            SystemTimeProvider.UtcNow(),
+            Id));
+
+        return Result.Success();
+    }
+
+    private Result ExpireInternal()
+    {
+        Status = UserRegistrationStatus.Expired;
+
+        RaiseDomainEvent(new UserRegistrationExpiredDomainEvent(
+            Guid.NewGuid(),
+            SystemTimeProvider.UtcNow(),
+            Id));
+
+        return Result.Success();
     }
 }

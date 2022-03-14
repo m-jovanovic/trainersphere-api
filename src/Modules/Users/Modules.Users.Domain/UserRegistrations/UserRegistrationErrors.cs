@@ -13,4 +13,25 @@ public static class UserRegistrationErrors
     public static Error PendingExists => new(
         "UserRegistration.PendingExists",
         "There is already an existing user registration for the specified email.");
+
+    /// <summary>
+    /// Gets the expired error.
+    /// </summary>
+    public static Func<UserRegistrationId, Error> Expired => userRegistrationId => new(
+        "UserRegistration.Expired",
+        $"The user registration with the identifier '{userRegistrationId.Value}' has expired.");
+
+    /// <summary>
+    /// Gets the already confirmed error.
+    /// </summary>
+    public static Func<UserRegistrationId, Error> AlreadyConfirmed => userRegistrationId => new(
+        "UserRegistration.AlreadyConfirmed",
+        $"The user registration with the identifier '{userRegistrationId.Value}' has already been confirmed.");
+
+    /// <summary>
+    /// Gets the already expired error.
+    /// </summary>
+    public static Func<UserRegistrationId, Error> AlreadyExpired => userRegistrationId => new(
+        "UserRegistration.AlreadyExpired",
+        $"The user registration with the identifier '{userRegistrationId.Value}' has already been expired.");
 }

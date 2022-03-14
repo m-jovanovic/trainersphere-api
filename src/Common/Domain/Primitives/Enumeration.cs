@@ -34,12 +34,12 @@ public abstract class Enumeration<TEnum> : IEquatable<Enumeration<TEnum>>
     /// <summary>
     /// Gets the identifier.
     /// </summary>
-    public int Id { get; private init; }
+    public int Id { get; protected init; }
 
     /// <summary>
     /// Gets the name.
     /// </summary>
-    public string Name { get; private init; }
+    public string Name { get; protected init; }
 
     public static bool operator ==(Enumeration<TEnum>? a, Enumeration<TEnum>? b)
     {

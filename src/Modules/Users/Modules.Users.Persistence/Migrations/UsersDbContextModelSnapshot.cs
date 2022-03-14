@@ -152,6 +152,10 @@ namespace Modules.Users.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<DateTime?>("ConfirmedOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("confirmed_on_utc");
+
                     b.Property<DateTime>("CreatedOnUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_on_utc");

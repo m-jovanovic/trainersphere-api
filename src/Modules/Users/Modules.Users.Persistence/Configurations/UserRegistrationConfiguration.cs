@@ -33,6 +33,8 @@ internal sealed class UserRegistrationConfiguration : IEntityTypeConfiguration<U
             .IsRequired()
             .HasConversion(status => status.Id, value => UserRegistrationStatus.FromId(value)!);
 
+        builder.Property(userRegistration => userRegistration.ConfirmedOnUtc).IsRequired(false);
+
         builder.Property(userRegistration => userRegistration.CreatedOnUtc).IsRequired();
 
         builder.Property(userRegistration => userRegistration.ModifiedOnUtc).IsRequired(false);

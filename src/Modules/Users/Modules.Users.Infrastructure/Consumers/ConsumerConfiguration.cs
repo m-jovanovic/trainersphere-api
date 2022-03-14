@@ -1,5 +1,6 @@
 ﻿using Infrastructure.EventBus;
 using MassTransit;
+using Modules.Training.IntegrationEvents;
 using Modules.Users.Infrastructure.Authorization.Permissions;
 
 namespace Modules.Users.Infrastructure.Consumers;
@@ -10,6 +11,10 @@ namespace Modules.Users.Infrastructure.Consumers;
 internal sealed class ConsumerConfiguration : IConsumerConfiguration
 {
     /// <inheritdoc />
-    public void AddConsumers(IRegistrationConfigurator registrationConfigurator) =>
+    public void AddConsumers(IRegistrationConfigurator registrationConfigurator)
+    {
         registrationConfigurator.AddConsumer<UserPermissionsRequestConsumer>();
+
+        registrationConfigurator.AddConsumer<IntegrationEventConsumer<InvitationSentIntegrationEvent>>();
+    }
 }

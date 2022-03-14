@@ -1,4 +1,4 @@
-﻿namespace Application.EventBus;
+﻿namespace Application.Contracts.EventBus;
 
 /// <summary>
 /// Represents the integration event interface.

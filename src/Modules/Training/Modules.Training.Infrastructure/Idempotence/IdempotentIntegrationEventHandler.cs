@@ -1,4 +1,5 @@
-﻿using Application.Data;
+﻿using Application.Contracts.EventBus;
+using Application.Data;
 using Application.EventBus;
 
 namespace Modules.Training.Infrastructure.Idempotence;

@@ -1,4 +1,4 @@
-﻿using Application.EventBus;
+﻿using Application.Contracts.EventBus;
 
 namespace Modules.Users.IntegrationEvents;
 

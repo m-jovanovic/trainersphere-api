@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Common\Application\Application.csproj" />
     <ProjectReference Include="..\..\Users\Modules.Users.IntegrationEvents\Modules.Users.IntegrationEvents.csproj" />
   </ItemGroup>
 

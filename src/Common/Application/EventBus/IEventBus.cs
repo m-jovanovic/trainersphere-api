@@ -1,4 +1,6 @@
-﻿namespace Application.EventBus;
+﻿using Application.Contracts.EventBus;
+
+namespace Application.EventBus;
 
 /// <summary>
 /// Represents the event bus interface.

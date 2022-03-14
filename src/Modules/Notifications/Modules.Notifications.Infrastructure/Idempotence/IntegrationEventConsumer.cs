@@ -1,5 +1,5 @@
-﻿using Application.Data;
-using Application.EventBus;
+﻿using Application.Contracts.EventBus;
+using Application.Data;
 using MassTransit;
 using Newtonsoft.Json;
 using Persistence.Inbox;

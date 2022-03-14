@@ -30,6 +30,15 @@ internal sealed class InvitationConfiguration : IEntityTypeConfiguration<Invitat
 
         builder.Property(invitation => invitation.Email).IsRequired().HasMaxLength(300);
 
+        builder.OwnsOne(invitation => invitation.Sender, senderBuilder =>
+        {
+            senderBuilder.Property(sender => sender.FirstName).IsRequired().HasMaxLength(100);
+
+            senderBuilder.Property(sender => sender.LastName).IsRequired().HasMaxLength(100);
+        });
+
+        builder.Navigation(invitation => invitation.Sender).IsRequired();
+
         builder.Property(invitation => invitation.Status).IsRequired();
 
         builder.Property(invitation => invitation.CreatedOnUtc).IsRequired();

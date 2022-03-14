@@ -20,12 +20,23 @@ public sealed class Invitation : Entity<InvitationId>, IAuditable
     /// <param name="sender">The sender.</param>
     /// <param name="status">The status.</param>
     private Invitation(InvitationId id, TrainerId trainerId, string email, Sender sender, InvitationStatus status)
-        : base(id)
+        : this(id, trainerId, email, status) =>
+        Sender = sender;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Invitation"/> class.
+    /// </summary>
+    /// <param name="id">The identifier.</param>
+    /// <param name="trainerId">The trainer identifier.</param>
+    /// <param name="email">The email.</param>
+    /// <param name="status">The status.</param>
+    private Invitation(InvitationId id, TrainerId trainerId, string email, InvitationStatus status)
+         : base(id)
     {
         TrainerId = trainerId;
         Email = email;
-        Sender = sender;
         Status = status;
+        Sender = new Sender(string.Empty, string.Empty);
     }
 
     /// <summary>

@@ -19,14 +19,21 @@ public sealed class Sender : ValueObject
     }
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="Sender"/> class.
+    /// </summary>
+    private Sender()
+    {
+    }
+
+    /// <summary>
     /// Gets the first name.
     /// </summary>
-    public string FirstName { get; }
+    public string FirstName { get; } = string.Empty;
 
     /// <summary>
     /// Gets the last name.
     /// </summary>
-    public string LastName { get; }
+    public string LastName { get; } = string.Empty;
 
     /// <inheritdoc />
     protected override IEnumerable<object> GetAtomicValues()

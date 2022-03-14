@@ -17,12 +17,13 @@ public sealed class Invitation : Entity<InvitationId>, IAuditable
     /// <param name="id">The identifier.</param>
     /// <param name="trainerId">The trainer identifier.</param>
     /// <param name="email">The email.</param>
-    private Invitation(InvitationId id, TrainerId trainerId, string email)
+    /// <param name="status">The status.</param>
+    private Invitation(InvitationId id, TrainerId trainerId, string email, InvitationStatus status)
         : base(id)
     {
         TrainerId = trainerId;
         Email = email;
-        Status = InvitationStatus.Pending;
+        Status = status;
     }
 
     /// <summary>
@@ -54,7 +55,7 @@ public sealed class Invitation : Entity<InvitationId>, IAuditable
     /// <returns>The new invitation instance.</returns>
     internal static Result<Invitation> Create(Trainer trainer, string email)
     {
-        var invitation = new Invitation(new InvitationId(Guid.NewGuid()), trainer.Id, email);
+        var invitation = new Invitation(new InvitationId(Guid.NewGuid()), trainer.Id, email, InvitationStatus.Pending);
 
         invitation.RaiseDomainEvent(new InvitationCreatedDomainEvent(
             Guid.NewGuid(),

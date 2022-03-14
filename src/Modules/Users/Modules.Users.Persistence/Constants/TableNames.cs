@@ -31,6 +31,16 @@ internal static class TableNames
     internal const string RolePermissions = "role_permissions";
 
     /// <summary>
+    /// The inbox messages table.
+    /// </summary>
+    internal const string InboxMessages = "inbox_messages";
+
+    /// <summary>
+    /// The inbox message consumers table.
+    /// </summary>
+    internal const string InboxMessageConsumers = "inbox_message_consumers";
+
+    /// <summary>
     /// The outbox messages table.
     /// </summary>
     internal const string OutboxMessages = "outbox_messages";

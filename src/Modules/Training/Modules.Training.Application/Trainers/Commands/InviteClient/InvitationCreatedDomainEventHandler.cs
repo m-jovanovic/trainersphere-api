@@ -21,7 +21,7 @@ internal sealed class InvitationCreatedDomainEventHandler : IDomainEventHandler<
     /// <inheritdoc />
     public async Task Handle(InvitationCreatedDomainEvent notification, CancellationToken cancellationToken) =>
         await _eventBus.PublishAsync(
-            new InvitationCreatedIntegrationEvent(
+            new InvitationSentIntegrationEvent(
                 notification.Id,
                 notification.OccurredOnUtc,
                 notification.InvitationId.Value,

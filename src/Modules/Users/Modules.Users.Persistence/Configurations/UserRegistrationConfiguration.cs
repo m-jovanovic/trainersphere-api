@@ -29,6 +29,12 @@ internal sealed class UserRegistrationConfiguration : IEntityTypeConfiguration<U
 
         builder.Property(userRegistration => userRegistration.Email).IsRequired().HasMaxLength(300);
 
+        builder.Property(userRegistration => userRegistration.IdentityProviderId).HasMaxLength(500);
+
+        builder.Property(userRegistration => userRegistration.FirstName).HasMaxLength(100);
+
+        builder.Property(userRegistration => userRegistration.LastName).HasMaxLength(100);
+
         builder.Property(userRegistration => userRegistration.Status)
             .IsRequired()
             .HasConversion(status => status.Id, value => UserRegistrationStatus.FromId(value)!);

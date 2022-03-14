@@ -29,6 +29,11 @@ public sealed class UserRegistration : Entity<UserRegistrationId>, IAuditable
     public string Email { get; private set; }
 
     /// <summary>
+    /// Gets the identity provider identifier.
+    /// </summary>
+    public string? IdentityProviderId { get; private set; }
+
+    /// <summary>
     /// Gets the first name.
     /// </summary>
     public string? FirstName { get; private set; }
@@ -37,11 +42,6 @@ public sealed class UserRegistration : Entity<UserRegistrationId>, IAuditable
     /// Gets the last name.
     /// </summary>
     public string? LastName { get; private set; }
-
-    /// <summary>
-    /// Gets the identity provider identifier.
-    /// </summary>
-    public string? IdentityProviderId { get; private set; }
 
     /// <summary>
     /// Gets the status.

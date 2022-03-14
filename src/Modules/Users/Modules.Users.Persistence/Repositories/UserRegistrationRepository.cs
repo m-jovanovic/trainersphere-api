@@ -21,7 +21,7 @@ internal sealed class UserRegistrationRepository : IUserRegistrationRepository, 
     /// <inheritdoc />
     public async Task<Result> CheckNonePendingForEmailAsync(string email, CancellationToken cancellationToken = default) =>
         Result.Create(
-            await _dbContext.Set<UserRegistration>()
+            !await _dbContext.Set<UserRegistration>()
                 .AnyAsync(
                     userRegistration => userRegistration.Email == email && userRegistration.Status == UserRegistrationStatus.Pending,
                     cancellationToken));

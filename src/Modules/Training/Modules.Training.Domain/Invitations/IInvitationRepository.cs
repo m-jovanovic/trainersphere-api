@@ -8,6 +8,14 @@ namespace Modules.Training.Domain.Invitations;
 public interface IInvitationRepository
 {
     /// <summary>
+    /// Gets the invitation with the specified identifier, if it exists.
+    /// </summary>
+    /// <param name="id">The invitation identifier.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The invitation with the specified identifier if it exists, otherwise null.</returns>
+    Task<Result<Invitation>> GetByIdAsync(InvitationId id, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Checks that there are no pending invitations for the specified email.
     /// </summary>
     /// <param name="email">The email.</param>

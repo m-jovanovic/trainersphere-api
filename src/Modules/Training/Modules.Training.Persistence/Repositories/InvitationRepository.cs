@@ -19,6 +19,10 @@ internal sealed class InvitationRepository : IInvitationRepository, IScoped
     public InvitationRepository(TrainingDbContext dbContext) => _dbContext = dbContext;
 
     /// <inheritdoc />
+    public async Task<Result<Invitation>> GetByIdAsync(InvitationId id, CancellationToken cancellationToken = default) =>
+        Result.Create(await _dbContext.Set<Invitation>().FirstOrDefaultAsync(invitation => invitation.Id == id, cancellationToken));
+
+    /// <inheritdoc />
     public async Task<Result> CheckNonePendingForEmailAsync(string email, CancellationToken cancellationToken = default) =>
         Result.Create(!await _dbContext.Set<Invitation>().AnyAsync(invitation => invitation.Email == email, cancellationToken));
 

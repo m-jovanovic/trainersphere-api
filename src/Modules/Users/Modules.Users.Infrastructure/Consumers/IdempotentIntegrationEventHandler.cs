@@ -28,7 +28,7 @@ internal sealed class IdempotentIntegrationEventHandler<TIntegrationEvent> : Int
     /// <inheritdoc />
     public override async Task Handle(TIntegrationEvent integrationEvent, CancellationToken cancellationToken = default)
     {
-        var parameters = new InboxConsumerParameters(integrationEvent.Id, _decorated.GetType().Name);
+        var parameters = new InboxConsumerParameters(integrationEvent.Id, _decorated.GetType().FullName!);
 
         if (await IsInboxMessageConsumedAsync(parameters))
         {

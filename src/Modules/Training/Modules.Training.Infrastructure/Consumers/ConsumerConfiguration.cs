@@ -13,7 +13,7 @@ internal sealed class ConsumerConfiguration : IConsumerConfiguration
     /// <inheritdoc />
     public void AddConsumers(IRegistrationConfigurator registrationConfigurator)
     {
-        registrationConfigurator.AddConsumer<IntegrationEventConsumer<UserRegisteredIntegrationEvent>>();
+        registrationConfigurator.AddConsumer<IntegrationEventConsumer<TrainerUserRegisteredIntegrationEvent>>();
 
         registrationConfigurator.AddConsumer<IntegrationEventConsumer<UserChangedIntegrationEvent>>();
     }

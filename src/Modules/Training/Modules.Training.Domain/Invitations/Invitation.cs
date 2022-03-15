@@ -1,5 +1,6 @@
 ﻿using Domain.Primitives;
 using Domain.Time;
+using Modules.Training.Domain.Clients;
 using Modules.Training.Domain.Invitations.Events;
 using Modules.Training.Domain.Trainers;
 using Shared.Results;
@@ -66,6 +67,21 @@ public sealed class Invitation : Entity<InvitationId>, IAuditable
     public DateTime? ModifiedOnUtc { get; private set; }
 
     /// <summary>
+    /// Accepts the invitation with the specified parameters.
+    /// </summary>
+    /// <param name="clientId">The client identifier.</param>
+    /// <param name="email">The email.</param>
+    /// <param name="firstName">The first name.</param>
+    /// <param name="lastName">The last name.</param>
+    /// <returns>The new client that has accepted the invitation.</returns>
+    public Result<Client> Accept(ClientId clientId, string email, string firstName, string lastName) =>
+        Status switch
+        {
+            InvitationStatus.Expired => Result.Failure<Client>(InvitationErrors.Expired(Id)),
+            _ => AcceptInternal(clientId, email, firstName, lastName)
+        };
+
+    /// <summary>
     /// Creates a new invitation for the specified trainer and the client with the specified email.
     /// </summary>
     /// <param name="trainer">The trainer.</param>
@@ -89,5 +105,12 @@ public sealed class Invitation : Entity<InvitationId>, IAuditable
             invitation.Sender));
 
         return invitation;
+    }
+
+    private Result<Client> AcceptInternal(ClientId clientId, string email, string firstName, string lastName)
+    {
+        Status = InvitationStatus.Accepted;
+
+        return Client.Create(clientId, TrainerId, email, firstName, lastName);
     }
 }

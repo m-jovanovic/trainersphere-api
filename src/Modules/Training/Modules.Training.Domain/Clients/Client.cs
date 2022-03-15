@@ -61,7 +61,7 @@ public sealed class Client : Entity<ClientId>, IAuditable
     /// <param name="firstName">The first name.</param>
     /// <param name="lastName">The last name.</param>
     /// <returns>The new trainer instance.</returns>
-    public static Result<Client> Create(ClientId id, TrainerId trainerId, string email, string firstName, string lastName)
+    internal static Result<Client> Create(ClientId id, TrainerId trainerId, string email, string firstName, string lastName)
     {
         var client = new Client(id, trainerId, email, firstName, lastName);
 

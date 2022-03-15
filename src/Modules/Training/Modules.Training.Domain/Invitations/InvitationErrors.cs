@@ -18,4 +18,11 @@ public static class InvitationErrors
     public static Func<InvitationId, Error> NotFound => invitationId => new Error(
         "Invitation.NotFound",
         $"The invitation with the identifier '{invitationId.Value}' was not found.");
+
+    /// <summary>
+    /// Gets the expired error.
+    /// </summary>
+    public static Func<InvitationId, Error> Expired => invitationId => new Error(
+        "Invitation.Expired",
+        $"The invitation with the identifier '{invitationId.Value}' has expired.");
 }

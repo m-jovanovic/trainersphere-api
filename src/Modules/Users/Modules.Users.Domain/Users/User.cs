@@ -76,8 +76,8 @@ public sealed class User : Entity<UserId>, IAuditable
         var user = new User(id, identityProviderId, email, firstName, lastName);
 
         user._roles.Add(Role.Registered);
+        user._roles.Add(Role.Trainer);
 
-        // Differentiate that this is a trainer user.
         user.RaiseDomainEvent(new UserRegisteredDomainEvent(
             Guid.NewGuid(),
             SystemTimeProvider.UtcNow(),
@@ -111,6 +111,15 @@ public sealed class User : Entity<UserId>, IAuditable
             userRegistration.LastName);
 
         user._roles.Add(Role.Registered);
+        user._roles.Add(Role.Client);
+
+        user.RaiseDomainEvent(new UserRegisteredDomainEvent(
+            Guid.NewGuid(),
+            SystemTimeProvider.UtcNow(),
+            user.Id,
+            user.Email,
+            user.FirstName,
+            user.LastName));
 
         // Raise proper domain event.
         return user;

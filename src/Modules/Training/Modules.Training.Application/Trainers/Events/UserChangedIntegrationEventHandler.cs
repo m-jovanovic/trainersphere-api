@@ -1,4 +1,5 @@
 ﻿using Application.EventBus;
+using Application.Extensions;
 using Microsoft.Extensions.Logging;
 using Modules.Training.Domain;
 using Modules.Training.Domain.Trainers;
@@ -37,8 +38,7 @@ internal sealed class UserChangedIntegrationEventHandler : IntegrationEventHandl
         await GetTrainerByIdAsync(new TrainerId(integrationEvent.UserId), cancellationToken)
             .Tap(trainer => trainer.Change(integrationEvent.FirstName, integrationEvent.LastName))
             .Tap(() => _unitOfWork.SaveChangesAsync(cancellationToken))
-            .OnFailure(error =>
-                _logger.LogError("Error while processing integration event: {IntegrationEventId} - {Error}", integrationEvent.Id, error));
+            .OnFailure(error => _logger.LogError(integrationEvent, error));
 
     private async Task<Result<Trainer>> GetTrainerByIdAsync(TrainerId trainerId, CancellationToken cancellationToken) =>
         await _trainerRepository.GetByIdAsync(trainerId, cancellationToken)

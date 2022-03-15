@@ -1,4 +1,5 @@
-﻿using Application.Messaging;
+﻿using Application.Extensions;
+using Application.Messaging;
 using Microsoft.Extensions.Logging;
 using Modules.Users.Domain;
 using Modules.Users.Domain.UserRegistrations;
@@ -43,8 +44,7 @@ internal sealed class UserRegistrationConfirmedDomainEventHandler : IDomainEvent
             .Bind(User.CreateFromRegistration)
             .Tap(user => _userRepository.Add(user))
             .Tap(() => _unitOfWork.SaveChangesAsync(cancellationToken))
-            .OnFailure(error =>
-                _logger.LogError("Error while processing domain event: {DomainEventId} - {Error}", notification.Id, error));
+            .OnFailure(error => _logger.LogError(notification, error));
 
     private async Task<Result<UserRegistration>> GetUserRegistrationByIdAsync(
         UserRegistrationId userRegistrationId,

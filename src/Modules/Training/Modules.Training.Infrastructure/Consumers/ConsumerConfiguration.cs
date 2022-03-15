@@ -15,6 +15,8 @@ internal sealed class ConsumerConfiguration : IConsumerConfiguration
     {
         registrationConfigurator.AddConsumer<IntegrationEventConsumer<TrainerUserRegisteredIntegrationEvent>>();
 
+        registrationConfigurator.AddConsumer<IntegrationEventConsumer<ClientUserRegisteredIntegrationEvent>>();
+
         registrationConfigurator.AddConsumer<IntegrationEventConsumer<UserChangedIntegrationEvent>>();
     }
 }

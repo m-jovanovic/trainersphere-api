@@ -1,5 +1,7 @@
 ﻿using System.Linq;
+using Domain.Primitives;
 using FluentAssertions;
+using FluentAssertions.Collections;
 using FluentAssertions.Primitives;
 using Modules.Users.Domain.Roles;
 using Modules.Users.Domain.UnitTests.Data.Users;
@@ -47,9 +49,30 @@ public class UserTests
         // Assert
         AndWhichConstraint<ObjectAssertions, UserRegisteredDomainEvent> domainEvent = user.Value
             .GetDomainEvents()
-            .Single()
+            .Single(domainEvent => domainEvent is UserRegisteredDomainEvent)
             .Should()
             .BeOfType<UserRegisteredDomainEvent>();
+
+        domainEvent.Which.UserId.Should().Be(data.Id);
+        domainEvent.Which.Email.Should().Be(data.Email);
+        domainEvent.Which.FirstName.Should().Be(data.FirstName);
+        domainEvent.Which.LastName.Should().Be(data.LastName);
+    }
+
+    [Theory]
+    [ClassData(typeof(CreateUserRequestData))]
+    public void Create_ShouldRaiseTrainerUserRegisteredDomainEvent_WhenItSucceeds(CreateUserRequest data)
+    {
+        // Arrange
+        // Act
+        Result<User> user = User.Create(data.Id, data.IdentityProviderId, data.Email, data.FirstName, data.LastName);
+
+        // Assert
+        AndWhichConstraint<ObjectAssertions, TrainerUserRegisteredDomainEvent> domainEvent = user.Value
+            .GetDomainEvents()
+            .Single(domainEvent => domainEvent is TrainerUserRegisteredDomainEvent)
+            .Should()
+            .BeOfType<TrainerUserRegisteredDomainEvent>();
 
         domainEvent.Which.UserId.Should().Be(data.Id);
         domainEvent.Which.Email.Should().Be(data.Email);

@@ -86,6 +86,14 @@ public sealed class User : Entity<UserId>, IAuditable
             user.FirstName,
             user.LastName));
 
+        user.RaiseDomainEvent(new TrainerUserRegisteredDomainEvent(
+            Guid.NewGuid(),
+            SystemTimeProvider.UtcNow(),
+            user.Id,
+            user.Email,
+            user.FirstName,
+            user.LastName));
+
         return user;
     }
 
@@ -114,6 +122,14 @@ public sealed class User : Entity<UserId>, IAuditable
         user._roles.Add(Role.Client);
 
         user.RaiseDomainEvent(new UserRegisteredDomainEvent(
+            Guid.NewGuid(),
+            SystemTimeProvider.UtcNow(),
+            user.Id,
+            user.Email,
+            user.FirstName,
+            user.LastName));
+
+        user.RaiseDomainEvent(new ClientUserRegisteredDomainEvent(
             Guid.NewGuid(),
             SystemTimeProvider.UtcNow(),
             user.Id,

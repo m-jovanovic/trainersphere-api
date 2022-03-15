@@ -71,6 +71,18 @@ public class UserTests
 
     [Theory]
     [ClassData(typeof(CreateUserRequestData))]
+    public void Create_ShouldAddTrainerRole_WhenItSucceeds(CreateUserRequest data)
+    {
+        // Arrange
+        // Act
+        Result<User> user = User.Create(data.Id, data.IdentityProviderId, data.Email, data.FirstName, data.LastName);
+
+        // Assert
+        user.Value.Roles.Should().ContainSingle(role => role == Role.Trainer);
+    }
+
+    [Theory]
+    [ClassData(typeof(CreateUserRequestData))]
     public void Change_ShouldChangeBasicInformation(CreateUserRequest data)
     {
         // Arrange

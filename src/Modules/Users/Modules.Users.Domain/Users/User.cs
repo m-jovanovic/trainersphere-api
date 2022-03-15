@@ -132,6 +132,7 @@ public sealed class User : Entity<UserId>, IAuditable
         user.RaiseDomainEvent(new ClientUserRegisteredDomainEvent(
             Guid.NewGuid(),
             SystemTimeProvider.UtcNow(),
+            userRegistration.Id,
             user.Id,
             user.Email,
             user.FirstName,

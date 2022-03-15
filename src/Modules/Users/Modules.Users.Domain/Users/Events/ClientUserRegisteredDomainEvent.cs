@@ -1,4 +1,5 @@
 ﻿using Domain.Primitives;
+using Modules.Users.Domain.UserRegistrations;
 
 namespace Modules.Users.Domain.Users.Events;
 
@@ -7,6 +8,7 @@ namespace Modules.Users.Domain.Users.Events;
 /// </summary>
 /// <param name="Id">The identifier.</param>
 /// <param name="OccurredOnUtc">The occurred on date and time.</param>
+/// <param name="UserRegistrationId">The user registration identifier.</param>
 /// <param name="UserId">The user identifier.</param>
 /// <param name="Email">The email.</param>
 /// <param name="FirstName">The first name.</param>
@@ -14,6 +16,7 @@ namespace Modules.Users.Domain.Users.Events;
 public sealed record ClientUserRegisteredDomainEvent(
     Guid Id,
     DateTime OccurredOnUtc,
+    UserRegistrationId UserRegistrationId,
     UserId UserId,
     string Email,
     string FirstName,

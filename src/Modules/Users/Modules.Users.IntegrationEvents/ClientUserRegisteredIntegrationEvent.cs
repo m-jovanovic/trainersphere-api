@@ -7,6 +7,7 @@ namespace Modules.Users.IntegrationEvents;
 /// </summary>
 /// <param name="Id">The identifier.</param>
 /// <param name="OccurredOnUtc">The occurred on date and time.</param>
+/// <param name="UserRegistrationId">The user registration identifier.</param>
 /// <param name="UserId">The user identifier.</param>
 /// <param name="Email">The email.</param>
 /// <param name="FirstName">The first name.</param>
@@ -14,6 +15,7 @@ namespace Modules.Users.IntegrationEvents;
 public sealed record ClientUserRegisteredIntegrationEvent(
     Guid Id,
     DateTime OccurredOnUtc,
+    Guid UserRegistrationId,
     Guid UserId,
     string Email,
     string FirstName,

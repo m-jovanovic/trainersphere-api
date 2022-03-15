@@ -24,6 +24,7 @@ internal sealed class ClientUserRegisteredDomainEventHandler : IDomainEventHandl
             new ClientUserRegisteredIntegrationEvent(
                 notification.Id,
                 notification.OccurredOnUtc,
+                notification.UserRegistrationId.Value,
                 notification.UserId.Value,
                 notification.Email,
                 notification.FirstName,

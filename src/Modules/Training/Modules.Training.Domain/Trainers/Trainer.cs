@@ -55,9 +55,9 @@ public sealed class Trainer : Entity<TrainerId>, IAuditable
     /// <returns>The new trainer instance.</returns>
     public static Result<Trainer> Create(TrainerId id, string email, string firstName, string lastName)
     {
-        var user = new Trainer(id, email, firstName, lastName);
+        var trainer = new Trainer(id, email, firstName, lastName);
 
-        return user;
+        return trainer;
     }
 
     /// <summary>

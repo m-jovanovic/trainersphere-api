@@ -23,6 +23,55 @@ namespace Modules.Training.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Modules.Training.Domain.Clients.Client", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_on_utc");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("email");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("first_name");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("last_name");
+
+                    b.Property<DateTime?>("ModifiedOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_on_utc");
+
+                    b.Property<Guid>("TrainerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("trainer_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_clients");
+
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasDatabaseName("ix_clients_email");
+
+                    b.HasIndex("TrainerId")
+                        .HasDatabaseName("ix_clients_trainer_id");
+
+                    b.ToTable("clients", "training");
+                });
+
             modelBuilder.Entity("Modules.Training.Domain.Invitations.Invitation", b =>
                 {
                     b.Property<Guid>("Id")
@@ -200,6 +249,16 @@ namespace Modules.Training.Persistence.Migrations
                         .HasName("pk_outbox_message_consumers");
 
                     b.ToTable("outbox_message_consumers", "training");
+                });
+
+            modelBuilder.Entity("Modules.Training.Domain.Clients.Client", b =>
+                {
+                    b.HasOne("Modules.Training.Domain.Trainers.Trainer", null)
+                        .WithMany()
+                        .HasForeignKey("TrainerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_clients_trainer_trainer_temp_id");
                 });
 
             modelBuilder.Entity("Modules.Training.Domain.Invitations.Invitation", b =>

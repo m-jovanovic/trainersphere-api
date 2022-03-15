@@ -11,6 +11,11 @@ internal static class TableNames
     internal const string Trainers = "trainers";
 
     /// <summary>
+    /// The clients table.
+    /// </summary>
+    internal const string Clients = "clients";
+
+    /// <summary>
     /// The invitations table.
     /// </summary>
     internal const string Invitations = "invitations";

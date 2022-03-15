@@ -53,6 +53,17 @@ public sealed class Client : Entity<ClientId>, IAuditable
     public DateTime? ModifiedOnUtc { get; private set; }
 
     /// <summary>
+    /// Changes the client's basic information.
+    /// </summary>
+    /// <param name="firstName">The first name.</param>
+    /// <param name="lastName">The last name.</param>
+    public void Change(string firstName, string lastName)
+    {
+        FirstName = firstName;
+        LastName = lastName;
+    }
+
+    /// <summary>
     /// Creates a new client with the specified parameters.
     /// </summary>
     /// <param name="id">The identifier.</param>

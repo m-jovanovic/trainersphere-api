@@ -38,4 +38,20 @@ internal sealed class EmailSender : IEmailSender
 
         await _mailersendClient.SendEmailAsync(emailRequest, cancellationToken);
     }
+
+    /// <inheritdoc />
+    public async Task SendClientInvitationAsync(
+        ClientInvitationEmailRequest clientInvitationEmailRequest,
+        CancellationToken cancellationToken = default)
+    {
+        EmailRequest emailRequest = EmailRequest.Create(_options.Templates.ClientInvitation)
+            .WithSender(_options.SenderEmail)
+            .WithRecipient(clientInvitationEmailRequest.Email)
+            .WithVariable(
+                Variable
+                    .Create(clientInvitationEmailRequest.Email)
+                    .WithSubstitution("trainer", clientInvitationEmailRequest.Trainer));
+
+        await _mailersendClient.SendEmailAsync(emailRequest, cancellationToken);
+    }
 }

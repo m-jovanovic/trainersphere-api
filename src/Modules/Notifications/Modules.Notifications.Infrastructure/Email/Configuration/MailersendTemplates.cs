@@ -9,4 +9,9 @@ internal sealed class MailersendTemplates
     /// Gets the welcome email template identifier.
     /// </summary>
     public string WelcomeEmail { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets the client invitation email template identifier.
+    /// </summary>
+    public string ClientInvitation { get; init; } = string.Empty;
 }

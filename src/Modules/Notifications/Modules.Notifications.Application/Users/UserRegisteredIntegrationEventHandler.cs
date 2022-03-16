@@ -11,6 +11,10 @@ internal sealed class UserRegisteredIntegrationEventHandler : IntegrationEventHa
 {
     private readonly IEmailSender _emailSender;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UserRegisteredIntegrationEventHandler"/> class.
+    /// </summary>
+    /// <param name="emailSender">The email sender.</param>
     public UserRegisteredIntegrationEventHandler(IEmailSender emailSender) => _emailSender = emailSender;
 
     /// <inheritdoc />

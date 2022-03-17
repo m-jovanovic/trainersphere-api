@@ -8,8 +8,9 @@ namespace Modules.Users.Domain.UserRegistrations;
 public sealed class UserRegistrationStatus : Enumeration<UserRegistrationStatus>
 {
     public static readonly UserRegistrationStatus Pending = new(1, "Pending");
-    public static readonly UserRegistrationStatus Expired = new(2, "Expired");
-    public static readonly UserRegistrationStatus Confirmed = new(3, "Confirmed");
+    public static readonly UserRegistrationStatus Confirmed = new(2, "Confirmed");
+    public static readonly UserRegistrationStatus Cancelled = new(3, "Cancelled");
+    public static readonly UserRegistrationStatus Expired = new(4, "Expired");
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UserRegistrationStatus"/> class.

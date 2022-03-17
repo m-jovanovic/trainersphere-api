@@ -77,7 +77,8 @@ public sealed class Invitation : Entity<InvitationId>, IAuditable
     public Result<Client> Accept(ClientId clientId, string email, string firstName, string lastName) =>
         Status switch
         {
-            InvitationStatus.Expired => Result.Failure<Client>(InvitationErrors.Expired(Id)),
+            var status when status == InvitationStatus.Expired => Result.Failure<Client>(InvitationErrors.Expired(Id)),
+            var status when status == InvitationStatus.Cancelled => Result.Failure<Client>(InvitationErrors.Cancelled(Id)),
             _ => AcceptInternal(clientId, email, firstName, lastName)
         };
 

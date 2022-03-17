@@ -25,4 +25,11 @@ public static class InvitationErrors
     public static Func<InvitationId, Error> Expired => invitationId => new Error(
         "Invitation.Expired",
         $"The invitation with the identifier '{invitationId.Value}' has expired.");
+
+    /// <summary>
+    /// Gets the cancelled error.
+    /// </summary>
+    public static Func<InvitationId, Error> Cancelled => invitationId => new Error(
+        "Invitation.Cancelled",
+        $"The invitation with the identifier '{invitationId.Value}' has been cancelled.");
 }

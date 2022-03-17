@@ -8,6 +8,11 @@ namespace Modules.Training.Application.ValidationErrors;
 internal static class InvitationValidationErrors
 {
     /// <summary>
+    /// Gets the identifier is required error.
+    /// </summary>
+    internal static Error IdentifierIsRequired => new("Invitation.IdentifierIsRequired", "The identifier is required.");
+
+    /// <summary>
     /// Gets the trainer identifier is required error.
     /// </summary>
     internal static Error TrainerIdentifierIsRequired => new("Invitation.TrainerIdentifierIsRequired", "The trainer identifier is required.");

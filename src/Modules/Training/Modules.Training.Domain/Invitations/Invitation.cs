@@ -90,6 +90,18 @@ public sealed class Invitation : Entity<InvitationId>, IAuditable
     }
 
     /// <summary>
+    /// Cancels the invitation.
+    /// </summary>
+    /// <returns>The result of the cancellation operation.</returns>
+    public Result Cancel() =>
+        Status switch
+        {
+            var status when status == InvitationStatus.Cancelled => Result.Failure<Client>(InvitationErrors.Cancelled(Id)),
+            var status when status == InvitationStatus.Expired => Result.Failure<Client>(InvitationErrors.Expired(Id)),
+            _ => CancelInternal()
+        };
+
+    /// <summary>
     /// Creates a new invitation for the specified trainer and the client with the specified email.
     /// </summary>
     /// <param name="trainer">The trainer.</param>
@@ -120,5 +132,12 @@ public sealed class Invitation : Entity<InvitationId>, IAuditable
         Status = InvitationStatus.Accepted;
 
         return Client.Create(clientId, TrainerId, email, firstName, lastName);
+    }
+
+    private Result CancelInternal()
+    {
+        Status = InvitationStatus.Cancelled;
+
+        return Result.Success();
     }
 }

@@ -74,13 +74,20 @@ public sealed class Invitation : Entity<InvitationId>, IAuditable
     /// <param name="firstName">The first name.</param>
     /// <param name="lastName">The last name.</param>
     /// <returns>The new client that has accepted the invitation.</returns>
-    public Result<Client> Accept(ClientId clientId, string email, string firstName, string lastName) =>
-        Status switch
+    public Result<Client> Accept(ClientId clientId, string email, string firstName, string lastName)
+    {
+        if (Email != email)
         {
-            var status when status == InvitationStatus.Expired => Result.Failure<Client>(InvitationErrors.Expired(Id)),
+            return Result.Failure<Client>(InvitationErrors.EmailDoesNotMatch);
+        }
+
+        return Status switch
+        {
             var status when status == InvitationStatus.Cancelled => Result.Failure<Client>(InvitationErrors.Cancelled(Id)),
+            var status when status == InvitationStatus.Expired => Result.Failure<Client>(InvitationErrors.Expired(Id)),
             _ => AcceptInternal(clientId, email, firstName, lastName)
         };
+    }
 
     /// <summary>
     /// Creates a new invitation for the specified trainer and the client with the specified email.

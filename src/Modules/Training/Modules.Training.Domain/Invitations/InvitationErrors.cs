@@ -13,6 +13,11 @@ public static class InvitationErrors
     public static Error PendingExists => new("Invitation.PendingExists", "There is already an existing invitation for the client.");
 
     /// <summary>
+    /// Gets the email does not match error.
+    /// </summary>
+    public static Error EmailDoesNotMatch => new("Invitation.EmailDoesNotMatch", "There specified email does not match the invitation's email.");
+
+    /// <summary>
     /// Gets the not found error.
     /// </summary>
     public static Func<InvitationId, Error> NotFound => invitationId => new Error(

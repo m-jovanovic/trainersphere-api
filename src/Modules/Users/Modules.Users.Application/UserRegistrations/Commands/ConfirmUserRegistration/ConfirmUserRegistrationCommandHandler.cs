@@ -38,6 +38,7 @@ internal sealed class ConfirmUserRegistrationCommandHandler : ICommandHandler<Co
             .Bind(userRegistration => CheckIfIdentityExistsAsync(userRegistration, cancellationToken))
             .Bind(userRegistration => userRegistration.Confirm(
                 request.IdentityProviderId,
+                request.Email,
                 request.FirstName,
                 request.LastName))
             .Tap(() => _unitOfWork.SaveChangesAsync(cancellationToken));

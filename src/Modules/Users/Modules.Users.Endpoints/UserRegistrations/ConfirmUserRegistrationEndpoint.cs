@@ -36,6 +36,7 @@ public sealed class ConfirmUserRegistrationEndpoint : EndpointBaseAsync
             .Map(confirmUserRegistrationRequest => new ConfirmUserRegistrationCommand(
                 confirmUserRegistrationRequest.UserRegistrationId,
                 User.GetIdentityProviderId(),
+                confirmUserRegistrationRequest.Content.Email,
                 confirmUserRegistrationRequest.Content.FirstName,
                 confirmUserRegistrationRequest.Content.LastName))
             .Bind(command => _sender.Send(command, cancellationToken))

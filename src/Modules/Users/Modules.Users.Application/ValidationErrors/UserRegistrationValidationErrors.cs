@@ -18,6 +18,11 @@ internal static class UserRegistrationValidationErrors
     internal static Error IdentityIsRequired => new("UserRegistration.IdentityIsRequired", "The user registration identity is required.");
 
     /// <summary>
+    /// Gets the email is required error.
+    /// </summary>
+    internal static Error EmailIsRequired => new("UserRegistration.EmailIsRequired", "The user registration email is required.");
+
+    /// <summary>
     /// Gets the first name is required error.
     /// </summary>
     internal static Error FirstNameIsRequired => new("UserRegistration.FirstNameIsRequired", "The user registration first name is required.");

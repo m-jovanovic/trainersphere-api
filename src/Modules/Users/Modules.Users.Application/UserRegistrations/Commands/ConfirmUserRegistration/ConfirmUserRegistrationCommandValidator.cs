@@ -19,6 +19,8 @@ internal sealed class ConfirmUserRegistrationCommandValidator : AbstractValidato
 
         RuleFor(x => x.IdentityProviderId).NotEmpty().WithError(UserRegistrationValidationErrors.IdentityIsRequired);
 
+        RuleFor(x => x.Email).NotEmpty().WithError(UserRegistrationValidationErrors.EmailIsRequired);
+
         RuleFor(x => x.FirstName).NotEmpty().WithError(UserRegistrationValidationErrors.FirstNameIsRequired);
 
         RuleFor(x => x.LastName).NotEmpty().WithError(UserRegistrationValidationErrors.LastNameIsRequired);

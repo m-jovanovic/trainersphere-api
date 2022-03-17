@@ -18,5 +18,5 @@ public sealed class ConfirmUserRegistrationRequest
     /// Gets the content.
     /// </summary>
     [FromBody]
-    public ConfirmUserRegistrationRequestContent Content { get; init; } = new(string.Empty, string.Empty);
+    public ConfirmUserRegistrationRequestContent Content { get; init; } = new(string.Empty, string.Empty, string.Empty);
 }

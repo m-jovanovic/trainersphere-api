@@ -76,16 +76,24 @@ public sealed class UserRegistration : Entity<UserRegistrationId>, IAuditable
     /// Confirms the user registration with the specified parameters.
     /// </summary>
     /// <param name="identityProviderId">The identity provider identifier.</param>
+    /// <param name="email">The email.</param>
     /// <param name="firstName">The first name.</param>
     /// <param name="lastName">The last name.</param>
     /// <returns>The result of the confirmation operation.</returns>
-    public Result Confirm(string identityProviderId, string firstName, string lastName) =>
-        Status switch
+    public Result Confirm(string identityProviderId, string email, string firstName, string lastName)
+    {
+        if (Email != email)
+        {
+            return Result.Failure(UserRegistrationErrors.EmailDoesNotMatch);
+        }
+
+        return Status switch
         {
             var status when status == UserRegistrationStatus.Confirmed => Result.Failure(UserRegistrationErrors.AlreadyConfirmed(Id)),
             var status when status == UserRegistrationStatus.Expired => Result.Failure(UserRegistrationErrors.Expired(Id)),
             _ => ConfirmInternal(identityProviderId, firstName, lastName)
         };
+    }
 
     /// <summary>
     /// Expires the user registration.

@@ -20,6 +20,13 @@ public static class UserRegistrationErrors
         "There is already an existing user registration for the specified email.");
 
     /// <summary>
+    /// Gets the email does not match error.
+    /// </summary>
+    public static Error EmailDoesNotMatch => new(
+        "UserRegistration.EmailDoesNotMatch",
+        "There specified email does not match the user registration's email.");
+
+    /// <summary>
     /// Gets the not found error.
     /// </summary>
     public static Func<UserRegistrationId, Error> NotFound => userRegistrationId => new(

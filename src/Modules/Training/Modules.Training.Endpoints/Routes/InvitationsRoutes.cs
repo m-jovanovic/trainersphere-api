@@ -9,4 +9,6 @@ internal static class InvitationsRoutes
     internal const string ResourceId = "invitationId";
 
     internal const string GetById = $"{BaseUri}/{{{ResourceId}:guid}}";
+
+    internal const string Cancel = $"{BaseUri}/{{{ResourceId}:guid}}";
 }

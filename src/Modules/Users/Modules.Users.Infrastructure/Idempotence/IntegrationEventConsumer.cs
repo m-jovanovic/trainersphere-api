@@ -4,7 +4,7 @@ using MassTransit;
 using Newtonsoft.Json;
 using Persistence.Inbox;
 
-namespace Modules.Users.Infrastructure.Consumers;
+namespace Modules.Users.Infrastructure.Idempotence;
 
 /// <summary>
 /// Represents the integration event consumer.

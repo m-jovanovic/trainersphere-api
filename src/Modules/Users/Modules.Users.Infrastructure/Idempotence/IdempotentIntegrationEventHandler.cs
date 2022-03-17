@@ -2,7 +2,7 @@
 using Application.Data;
 using Application.EventBus;
 
-namespace Modules.Users.Infrastructure.Consumers;
+namespace Modules.Users.Infrastructure.Idempotence;
 
 /// <summary>
 /// Represents the idempotent integration event handler, which checks if the integration event has already been handled previously.

@@ -21,19 +21,26 @@ LoggingUtility.Run(() =>
 
     builder.Host.UseSerilogWithConfiguration();
 
-    WebApplication app = builder.Build();
+    WebApplication webApplication = builder.Build();
 
-    if (app.Environment.IsDevelopment())
+    if (webApplication.Environment.IsDevelopment())
     {
-        app.UseSwagger().UseSwaggerUI();
+        webApplication
+            .UseSwagger()
+            .UseSwaggerUI()
+            .UseCors(corsPolicyBuilder =>
+                corsPolicyBuilder
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowAnyOrigin());
     }
 
-    app.UseSerilogRequestLogging()
+    webApplication.UseSerilogRequestLogging()
         .UseHttpsRedirection()
         .UseAuthentication()
         .UseAuthorization();
 
-    app.MapControllers();
+    webApplication.MapControllers();
 
-    app.Run();
+    webApplication.Run();
 });

@@ -138,6 +138,8 @@ public sealed class Invitation : Entity<InvitationId>, IAuditable
     {
         Status = InvitationStatus.Cancelled;
 
+        RaiseDomainEvent(new InvitationCancelledDomainEvent(Guid.NewGuid(), SystemTimeProvider.UtcNow(), Id));
+
         return Result.Success();
     }
 }

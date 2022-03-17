@@ -39,7 +39,9 @@ internal sealed class InvitationConfiguration : IEntityTypeConfiguration<Invitat
 
         builder.Navigation(invitation => invitation.Sender).IsRequired();
 
-        builder.Property(invitation => invitation.Status).IsRequired();
+        builder.Property(invitation => invitation.Status)
+            .IsRequired()
+            .HasConversion(status => status.Id, value => InvitationStatus.FromId(value)!);
 
         builder.Property(invitation => invitation.CreatedOnUtc).IsRequired();
 

@@ -89,11 +89,23 @@ public sealed class UserRegistration : Entity<UserRegistrationId>, IAuditable
 
         return Status switch
         {
-            var status when status == UserRegistrationStatus.Confirmed => Result.Failure(UserRegistrationErrors.AlreadyConfirmed(Id)),
+            var status when status == UserRegistrationStatus.Confirmed => Result.Failure(UserRegistrationErrors.Confirmed(Id)),
+            var status when status == UserRegistrationStatus.Cancelled => Result.Failure(UserRegistrationErrors.Cancelled(Id)),
             var status when status == UserRegistrationStatus.Expired => Result.Failure(UserRegistrationErrors.Expired(Id)),
             _ => ConfirmInternal(identityProviderId, firstName, lastName)
         };
     }
+
+    /// <summary>
+    /// Cancels the user registration.
+    /// </summary>
+    /// <returns>The result of the cancellation operation.</returns>
+    public Result Cancel() =>
+        Status switch
+        {
+            var status when status == UserRegistrationStatus.Cancelled => Result.Failure(UserRegistrationErrors.Cancelled(Id)),
+            _ => CancelInternal()
+        };
 
     /// <summary>
     /// Expires the user registration.
@@ -102,7 +114,7 @@ public sealed class UserRegistration : Entity<UserRegistrationId>, IAuditable
     public Result Expire() =>
         Status switch
         {
-            var status when status == UserRegistrationStatus.Expired => Result.Failure(UserRegistrationErrors.AlreadyExpired(Id)),
+            var status when status == UserRegistrationStatus.Expired => Result.Failure(UserRegistrationErrors.Expired(Id)),
             _ => ExpireInternal()
         };
 
@@ -118,6 +130,13 @@ public sealed class UserRegistration : Entity<UserRegistrationId>, IAuditable
             Guid.NewGuid(),
             SystemTimeProvider.UtcNow(),
             Id));
+
+        return Result.Success();
+    }
+
+    private Result CancelInternal()
+    {
+        Status = UserRegistrationStatus.Cancelled;
 
         return Result.Success();
     }

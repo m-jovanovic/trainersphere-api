@@ -34,23 +34,23 @@ public static class UserRegistrationErrors
         $"The user registration with the identifier '{userRegistrationId.Value}' was not found.");
 
     /// <summary>
+    /// Gets the confirmed error.
+    /// </summary>
+    public static Func<UserRegistrationId, Error> Confirmed => userRegistrationId => new(
+        "UserRegistration.Confirmed",
+        $"The user registration with the identifier '{userRegistrationId.Value}' has been confirmed.");
+
+    /// <summary>
+    /// Gets the cancelled error.
+    /// </summary>
+    public static Func<UserRegistrationId, Error> Cancelled => userRegistrationId => new(
+        "UserRegistration.Cancelled",
+        $"The user registration with the identifier '{userRegistrationId.Value}' has been cancelled.");
+
+    /// <summary>
     /// Gets the expired error.
     /// </summary>
     public static Func<UserRegistrationId, Error> Expired => userRegistrationId => new(
         "UserRegistration.Expired",
         $"The user registration with the identifier '{userRegistrationId.Value}' has expired.");
-
-    /// <summary>
-    /// Gets the already confirmed error.
-    /// </summary>
-    public static Func<UserRegistrationId, Error> AlreadyConfirmed => userRegistrationId => new(
-        "UserRegistration.AlreadyConfirmed",
-        $"The user registration with the identifier '{userRegistrationId.Value}' has already been confirmed.");
-
-    /// <summary>
-    /// Gets the already expired error.
-    /// </summary>
-    public static Func<UserRegistrationId, Error> AlreadyExpired => userRegistrationId => new(
-        "UserRegistration.AlreadyExpired",
-        $"The user registration with the identifier '{userRegistrationId.Value}' has already been expired.");
 }

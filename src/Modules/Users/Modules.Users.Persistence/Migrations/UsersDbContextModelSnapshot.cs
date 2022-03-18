@@ -51,17 +51,29 @@ namespace Modules.Users.Persistence.Migrations
                         {
                             Id = 100,
                             Description = "Can read user information.",
-                            Name = "UserRead"
+                            Name = "ReadUser"
                         },
                         new
                         {
                             Id = 101,
                             Description = "Can modify user information.",
-                            Name = "UserModify"
+                            Name = "ModifyUser"
                         },
                         new
                         {
                             Id = 200,
+                            Description = "Can read invitations.",
+                            Name = "ReadInvitations"
+                        },
+                        new
+                        {
+                            Id = 201,
+                            Description = "Can cancel invitation.",
+                            Name = "CancelInvitation"
+                        },
+                        new
+                        {
+                            Id = 202,
                             Description = "Can invite new client.",
                             Name = "InviteClient"
                         });
@@ -143,6 +155,16 @@ namespace Modules.Users.Persistence.Migrations
                         {
                             RoleId = 2,
                             PermissionId = 200
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 201
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 202
                         });
                 });
 

@@ -7,10 +7,12 @@ namespace Modules.Users.Domain.Roles;
 /// </summary>
 public sealed class Permission : Enumeration<Permission>
 {
-    public static readonly Permission UserRead = new(100, nameof(UserRead), "Can read user information.");
-    public static readonly Permission UserModify = new(101, nameof(UserModify), "Can modify user information.");
+    public static readonly Permission ReadUser = new(100, nameof(ReadUser), "Can read user information.");
+    public static readonly Permission ModifyUser = new(101, nameof(ModifyUser), "Can modify user information.");
 
-    public static readonly Permission InviteClient = new(200, nameof(InviteClient), "Can invite new client.");
+    public static readonly Permission ReadInvitations = new(200, nameof(ReadInvitations), "Can read invitations.");
+    public static readonly Permission CancelInvitation = new(201, nameof(CancelInvitation), "Can cancel invitation.");
+    public static readonly Permission InviteClient = new(202, nameof(InviteClient), "Can invite new client.");
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Permission"/> class.

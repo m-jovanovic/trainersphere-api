@@ -44,7 +44,9 @@ internal sealed class RolePermissionConfiguration : IEntityTypeConfiguration<Rol
 
     private static void ConfigureData(EntityTypeBuilder<RolePermission> builder) =>
         builder.HasData(
-            new RolePermission(Role.Registered, Permission.UserRead),
-            new RolePermission(Role.Registered, Permission.UserModify),
+            new RolePermission(Role.Registered, Permission.ReadUser),
+            new RolePermission(Role.Registered, Permission.ModifyUser),
+            new RolePermission(Role.Trainer, Permission.ReadInvitations),
+            new RolePermission(Role.Trainer, Permission.CancelInvitation),
             new RolePermission(Role.Trainer, Permission.InviteClient));
 }

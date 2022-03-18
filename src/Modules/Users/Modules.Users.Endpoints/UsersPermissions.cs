@@ -5,7 +5,7 @@
 /// </summary>
 internal static class UsersPermissions
 {
-    internal const string UserRead = "UserRead";
+    internal const string ReadUser = "ReadUser";
 
-    internal const string UserModify = "UserModify";
+    internal const string ModifyUser = "ModifyUser";
 }

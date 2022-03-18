@@ -22,7 +22,7 @@ public sealed class UpdateUserEndpoint : EndpointBaseAsync
     public UpdateUserEndpoint(ISender sender) => _sender = sender;
 
     [Authorize(Policies.SameUser)]
-    [HasPermission(UsersPermissions.UserModify)]
+    [HasPermission(UsersPermissions.ModifyUser)]
     [HttpPut(UsersRoutes.Update)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

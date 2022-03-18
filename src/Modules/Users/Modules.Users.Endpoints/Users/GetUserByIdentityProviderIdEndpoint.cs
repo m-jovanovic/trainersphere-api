@@ -19,7 +19,7 @@ public sealed class GetUserByIdentityProviderIdEndpoint : EndpointBaseAsync
 
     public GetUserByIdentityProviderIdEndpoint(ISender sender) => _sender = sender;
 
-    [HasPermission(UsersPermissions.UserRead)]
+    [HasPermission(UsersPermissions.ReadUser)]
     [HttpGet(UsersRoutes.GetByIdentityProviderId)]
     [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

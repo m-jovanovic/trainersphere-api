@@ -29,4 +29,14 @@ public sealed record InvitationResponse
     /// Gets the status.
     /// </summary>
     public int Status { get; init; }
+
+    /// <summary>
+    /// Gets the created on date and time.
+    /// </summary>
+    public DateTime CreatedOnUtc { get; init; }
+
+    /// <summary>
+    /// Gets the modified on date and time.
+    /// </summary>
+    public DateTime? ModifiedOnUtc { get; init; }
 }

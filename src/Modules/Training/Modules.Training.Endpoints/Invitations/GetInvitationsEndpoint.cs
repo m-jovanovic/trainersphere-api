@@ -26,7 +26,9 @@ public sealed class GetInvitationsEndpoint : EndpointBaseAsync
         Summary = "Gets the invitation.",
         Description = "Gets the invitation with the specified trainer identifier.",
         Tags = new[] { InvitationsRoutes.Tag })]
-    public override async Task<ActionResult<List<InvitationResponse>>> HandleAsync(Guid request, CancellationToken cancellationToken = default) =>
+    public override async Task<ActionResult<List<InvitationResponse>>> HandleAsync(
+        [FromQuery(Name = TrainersRoutes.ResourceId)] Guid request,
+        CancellationToken cancellationToken = default) =>
         await Result.Success(new GetInvitationsQuery(request))
             .Bind(query => _sender.Send(query, cancellationToken))
             .Match(Ok, this.HandleFailure);

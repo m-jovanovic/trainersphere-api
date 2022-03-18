@@ -29,8 +29,7 @@ public sealed class CancelInvitationEndpoint : EndpointBaseAsync
         Description = "Cancels the invitation with the specified identifier.",
         Tags = new[] { TrainersRoutes.Tag })]
     public override async Task<ActionResult> HandleAsync(Guid request, CancellationToken cancellationToken = default) =>
-        await Result.Create(request)
-            .Map(invitationId => new CancelInvitationCommand(invitationId))
+        await Result.Success(new CancelInvitationCommand(request))
             .Bind(command => _sender.Send(command, cancellationToken))
             .Match(NoContent, this.HandleFailure);
 }

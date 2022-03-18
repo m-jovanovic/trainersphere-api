@@ -8,7 +8,7 @@ namespace Modules.Training.Application.Invitations.Queries.GetInvitations;
 /// <summary>
 /// Represents the <see cref="GetInvitationsQuery"/> handler.
 /// </summary>
-internal sealed class GetInvitationsQueryHandler : IQueryHandler<GetInvitationsQuery, IReadOnlyCollection<InvitationResponse>>
+internal sealed class GetInvitationsQueryHandler : IQueryHandler<GetInvitationsQuery, List<InvitationResponse>>
 {
     private readonly ISqlQueryExecutor _sqlQueryExecutor;
 
@@ -19,7 +19,7 @@ internal sealed class GetInvitationsQueryHandler : IQueryHandler<GetInvitationsQ
     public GetInvitationsQueryHandler(ISqlQueryExecutor sqlQueryExecutor) => _sqlQueryExecutor = sqlQueryExecutor;
 
     /// <inheritdoc />
-    public async Task<Result<IReadOnlyCollection<InvitationResponse>>> Handle(GetInvitationsQuery request, CancellationToken cancellationToken) =>
+    public async Task<Result<List<InvitationResponse>>> Handle(GetInvitationsQuery request, CancellationToken cancellationToken) =>
         await Result.Create(request)
             .Bind(async query => Result.Create(await GetInvitationByIdAsync(query)))
             .Map(invitations => invitations.ToList());

@@ -52,7 +52,7 @@ internal sealed class ConfirmUserRegistrationCommandHandler : ICommandHandler<Co
     private async Task<Result<UserRegistration>> CheckIfIdentityExistsAsync(
         UserRegistration userRegistration,
         CancellationToken cancellationToken) =>
-        await _identityProviderService.ExistsAsync(userRegistration.IdentityProviderId!, cancellationToken)
+        await _identityProviderService.ExistsAsync(userRegistration.IdentityProviderId ?? string.Empty, cancellationToken)
             .Map(() => userRegistration)
-            .MapFailure(() => UserRegistrationErrors.IdentityNotFound);
+            .MapFailure(() => UserRegistrationErrors.NotFoundByIdentity(userRegistration.IdentityProviderId ?? string.Empty));
 }

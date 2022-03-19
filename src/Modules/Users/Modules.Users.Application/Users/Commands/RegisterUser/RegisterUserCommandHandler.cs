@@ -48,7 +48,7 @@ internal sealed class RegisterUserCommandHandler : ICommandHandler<RegisterUserC
     private async Task<Result<User>> CheckIfIdentityExistsAsync(User user, CancellationToken cancellationToken) =>
         await _identityProviderService.ExistsAsync(user.IdentityProviderId, cancellationToken)
             .Map(() => user)
-            .MapFailure(() => UserErrors.IdentityNotFound);
+            .MapFailure(() => UserErrors.NotFoundByIdentity(user.IdentityProviderId));
 
     private async Task<Result<User>> CheckIfEmailIsUniqueAsync(User user, CancellationToken cancellationToken) =>
         await _userRepository.IsEmailUniqueAsync(user.Email, cancellationToken)

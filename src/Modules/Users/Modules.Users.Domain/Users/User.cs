@@ -138,7 +138,6 @@ public sealed class User : Entity<UserId>, IAuditable
             user.FirstName,
             user.LastName));
 
-        // Raise proper domain event.
         return user;
     }
 

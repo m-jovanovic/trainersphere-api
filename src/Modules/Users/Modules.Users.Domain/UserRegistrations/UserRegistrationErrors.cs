@@ -8,16 +8,11 @@ namespace Modules.Users.Domain.UserRegistrations;
 public static class UserRegistrationErrors
 {
     /// <summary>
-    /// Gets the identity not found error.
-    /// </summary>
-    public static Error IdentityNotFound => new("UserRegistration.IdentityNotFound", "The user registration identity was not found.");
-
-    /// <summary>
     /// Gets the pending exists error.
     /// </summary>
-    public static Error PendingExists => new(
+    public static Error PendingExists => new ConflictError(
         "UserRegistration.PendingExists",
-        "There is already an existing user registration for the specified email.");
+        "There is already an existing user registration pending for the specified email.");
 
     /// <summary>
     /// Gets the email does not match error.
@@ -29,9 +24,17 @@ public static class UserRegistrationErrors
     /// <summary>
     /// Gets the not found error.
     /// </summary>
-    public static Func<UserRegistrationId, Error> NotFound => userRegistrationId => new(
+    public static Func<UserRegistrationId, Error> NotFound => userRegistrationId => new NotFoundError(
         "UserRegistration.NotFound",
         $"The user registration with the identifier '{userRegistrationId.Value}' was not found.");
+
+    /// <summary>
+    /// Gets the not found by identity error.
+    /// </summary>
+    public static Func<string, Error> NotFoundByIdentity =>
+        identityProviderId => new NotFoundError(
+            "User.NotFoundByIdentity",
+            $"The user with the identity provider identifier '{identityProviderId}' was not found.");
 
     /// <summary>
     /// Gets the confirmed error.

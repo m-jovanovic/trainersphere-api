@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents an error.
 /// </summary>
-public sealed class Error : IEquatable<Error>
+public class Error : IEquatable<Error>
 {
     /// <summary>
     /// The empty error instance.
@@ -61,7 +61,7 @@ public sealed class Error : IEquatable<Error>
     public static bool operator !=(Error? a, Error? b) => !(a == b);
 
     /// <inheritdoc />
-    public bool Equals(Error? other)
+    public virtual bool Equals(Error? other)
     {
         if (other is null)
         {

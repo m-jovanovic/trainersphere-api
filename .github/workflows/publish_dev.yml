@@ -10,7 +10,7 @@ env:
   DOTNET_VERSION: "6.0.x"
 
 jobs:
-  publish-to-azure:
+  publish-dev:
     runs-on: ubuntu-latest
 
     steps:
@@ -30,10 +30,10 @@ jobs:
       - name: Test 🧪
         run: dotnet test ./TrainerSphere.sln --configuration Release --no-build --verbosity normal
 
-      - name: Publish
-        run: dotnet publish ./TrainerSphere.sln --configuration Release --no-build --output '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}'
+      - name: Publish 🚀
+        run: dotnet publish ./TrainerSphere.sln --configuration Release --no-restore --output '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}'
 
-      - name: Deploy to Azure
+      - name: Deploy to Azure 🌌
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}

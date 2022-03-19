@@ -23,17 +23,14 @@ LoggingUtility.Run(() =>
 
     WebApplication webApplication = builder.Build();
 
-    if (webApplication.Environment.IsDevelopment())
-    {
-        webApplication
-            .UseSwagger()
-            .UseSwaggerUI()
-            .UseCors(corsPolicyBuilder =>
-                corsPolicyBuilder
-                    .AllowAnyHeader()
-                    .AllowAnyMethod()
-                    .AllowAnyOrigin());
-    }
+    webApplication
+        .UseSwagger()
+        .UseSwaggerUI()
+        .UseCors(corsPolicyBuilder =>
+            corsPolicyBuilder
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowAnyOrigin());
 
     webApplication.UseSerilogRequestLogging()
         .UseHttpsRedirection()

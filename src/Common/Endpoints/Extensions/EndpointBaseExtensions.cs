@@ -41,11 +41,11 @@ public static class EndpointBaseExtensions
             })
         };
 
-    private static ProblemDetails CreateProblemDetails(string type, int status, Error error, Error[]? errors = null) =>
+    private static ProblemDetails CreateProblemDetails(string title, int status, Error error, Error[]? errors = null) =>
         new()
         {
-            Type = type,
-            Title = error.Code,
+            Title = title,
+            Type = error.Code,
             Detail = error.Message,
             Status = status,
             Extensions = { { nameof(errors), errors } }

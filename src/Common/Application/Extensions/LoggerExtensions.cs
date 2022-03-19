@@ -1,7 +1,7 @@
 ﻿using Application.Contracts.EventBus;
 using Domain.Primitives;
 using Microsoft.Extensions.Logging;
-using Shared.Results;
+using Shared.Errors;
 
 namespace Application.Extensions;
 

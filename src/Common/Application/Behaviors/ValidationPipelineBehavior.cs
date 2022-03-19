@@ -1,6 +1,7 @@
 ﻿using Application.Infrastructure;
 using FluentValidation;
 using MediatR;
+using Shared.Errors;
 using Shared.Results;
 
 namespace Application.Behaviors;

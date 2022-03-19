@@ -1,4 +1,6 @@
-﻿namespace Shared.Results;
+﻿using Shared.Errors;
+
+namespace Shared.Results;
 
 /// <summary>
 /// Represents the validation result containing an array of errors.

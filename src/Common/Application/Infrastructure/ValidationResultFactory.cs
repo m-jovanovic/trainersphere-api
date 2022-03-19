@@ -1,4 +1,5 @@
-﻿using Shared.Results;
+﻿using Shared.Errors;
+using Shared.Results;
 
 namespace Application.Infrastructure;
 

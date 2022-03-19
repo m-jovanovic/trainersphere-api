@@ -23,7 +23,7 @@ public sealed class GetInvitationsEndpoint : EndpointBaseAsync
     [HttpGet(InvitationsRoutes.Get)]
     [ProducesResponseType(typeof(InvitationResponse), StatusCodes.Status200OK)]
     [SwaggerOperation(
-        Summary = "Gets the invitation.",
+        Summary = "Gets the invitations.",
         Description = "Gets the invitation with the specified trainer identifier.",
         Tags = new[] { InvitationsRoutes.Tag })]
     public override async Task<ActionResult<List<InvitationResponse>>> HandleAsync(

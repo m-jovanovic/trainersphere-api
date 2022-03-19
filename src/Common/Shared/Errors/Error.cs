@@ -1,4 +1,4 @@
-﻿namespace Shared.Results;
+﻿namespace Shared.Errors;
 
 /// <summary>
 /// Represents an error.

@@ -7,6 +7,7 @@ using Modules.Users.Application.Users.Commands.UpdateUser;
 using Modules.Users.Domain;
 using Modules.Users.Domain.Users;
 using Moq;
+using Shared.Errors;
 using Shared.Results;
 using Xunit;
 

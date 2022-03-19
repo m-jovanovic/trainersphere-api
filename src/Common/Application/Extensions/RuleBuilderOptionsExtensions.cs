@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using Shared.Results;
+using Shared.Errors;
 
 namespace Application.Extensions;
 

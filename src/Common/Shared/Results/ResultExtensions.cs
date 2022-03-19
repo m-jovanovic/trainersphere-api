@@ -1,4 +1,6 @@
-﻿namespace Shared.Results;
+﻿using Shared.Errors;
+
+namespace Shared.Results;
 
 /// <summary>
 /// Contains extension methods for working with the <see cref="Result"/> class.

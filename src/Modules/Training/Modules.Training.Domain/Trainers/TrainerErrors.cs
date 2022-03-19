@@ -10,7 +10,7 @@ public static class TrainerErrors
     /// <summary>
     /// Gets the not found error.
     /// </summary>
-    public static Func<TrainerId, Error> NotFound => trainerId => new Error(
+    public static Func<TrainerId, Error> NotFound => trainerId => new NotFoundError(
         "Trainer.NotFound",
         $"The trainer with the identifier '{trainerId.Value}' was not found.");
 }

@@ -7,7 +7,7 @@ namespace Shared.Results;
 /// </summary>
 public interface IValidationResult
 {
-    protected static readonly Error ValidationError = new("ValidationError.Default", "A validation problem occurred.");
+    public static readonly Error ValidationError = new("ValidationError", "A validation problem occurred.");
 
     /// <summary>
     /// Gets the errors.

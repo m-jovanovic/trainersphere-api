@@ -21,19 +21,17 @@ public static class EndpointBaseExtensions
     public static ActionResult HandleFailure(this EndpointBase endpoint, Result result) =>
         result switch
         {
-            { IsSuccess: true } => throw new InvalidOperationException("This method should not be invoked for a success result."),
-            IValidationResult validationResult => endpoint.BadRequest(new ProblemDetails
-            {
-                Type = "Validation Error",
-                Title = "Validation failure occurred",
-                Detail = "There was a problem validating your request.",
-                Status = StatusCodes.Status400BadRequest,
-                Extensions = { { "errors", validationResult.Errors } }
-            }),
-            var notFound when notFound.Error.Code.Contains("NotFound", StringComparison.InvariantCulture) =>
-                endpoint.NotFound(CreateProblemDetails("Not Found", StatusCodes.Status404NotFound, notFound.Error)),
-            var conflict when conflict.Error.Code.Contains("Exists", StringComparison.InvariantCulture) =>
-                endpoint.Conflict(CreateProblemDetails("Conflict", StatusCodes.Status409Conflict, conflict.Error)),
+            { IsSuccess: true } => throw new InvalidOperationException("This method can't be invoked for a success result."),
+            IValidationResult validationResult =>
+                endpoint.BadRequest(
+                    CreateProblemDetails(
+                        "Validation Error", StatusCodes.Status400BadRequest, IValidationResult.ValidationError, validationResult.Errors)),
+            var notFound when notFound.Error is NotFoundError =>
+                endpoint.NotFound(
+                    CreateProblemDetails("Not Found", StatusCodes.Status404NotFound, notFound.Error)),
+            var conflict when conflict.Error is ConflictError =>
+                endpoint.Conflict(
+                    CreateProblemDetails("Conflict", StatusCodes.Status409Conflict, conflict.Error)),
             _ => endpoint.BadRequest(new
             {
                 Errors = new[]
@@ -43,12 +41,13 @@ public static class EndpointBaseExtensions
             })
         };
 
-    private static ProblemDetails CreateProblemDetails(string type, int status, Error error) =>
+    private static ProblemDetails CreateProblemDetails(string type, int status, Error error, Error[]? errors = null) =>
         new()
         {
             Type = type,
             Title = error.Code,
             Detail = error.Message,
-            Status = status
+            Status = status,
+            Extensions = { { nameof(errors), errors } }
         };
 }

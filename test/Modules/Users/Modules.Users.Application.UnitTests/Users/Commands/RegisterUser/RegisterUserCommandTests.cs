@@ -35,7 +35,7 @@ public class RegisterUserCommandTests
         Result<Guid> result = await handler.Handle(command, default);
 
         // Assert
-        result.Error.Should().Be(UserErrors.IdentityNotFound);
+        result.Error.Should().Be(UserErrors.NotFoundByIdentity(command.IdentityProviderId));
     }
 
     [Theory]

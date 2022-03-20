@@ -8,7 +8,7 @@ env:
   AZURE_WEBAPP_NAME: dev-api-trainersphere
   AZURE_WEBAPP_PACKAGE_PATH: "./publish"
   DOTNET_VERSION: "6.0.x"
-  ConnectionStrings__Database: ${{ secrets.DEV_CONNECTION_STRING }}
+  CONNECTIONSTRINGS__DATABASE: "<Replaced by Bundle>"
 
 jobs:
   publish-dev:
@@ -36,11 +36,17 @@ jobs:
             dotnet new tool-manifest
             dotnet tool install dotnet-ef --version 6.0.3
 
-      - name: Create migration bundle 📦
-        run: dotnet ef migrations bundle --configuration Bundle --verbose --context UsersDbContext --startup-project ./src/App --project ./src/Modules/Users/Modules.Users.Persistence --output users-bundle.exe
+      - name: Create migration bundles 📦
+        run: | 
+            dotnet ef migrations bundle --configuration Bundle --verbose --startup-project ./src/App --project ./src/Modules/Users/Modules.Users.Persistence --context UsersDbContext --output users-bundle.exe
+            dotnet ef migrations bundle --configuration Bundle --verbose --startup-project ./src/App --project ./src/Modules/Training/Modules.Training.Persistence --context TrainingDbContext --output training-bundle.exe
+            dotnet ef migrations bundle --configuration Bundle --verbose --startup-project ./src/App --project ./src/Modules/Notifications/Modules.Notifications.Persistence --context NotificationsDbContext --output notifications-bundle.exe
 
-      - name: Apply bundle
-        run: ./users-bundle.exe --connection '${{ secrets.DEV_CONNECTION_STRING }}'
+      - name: Apply migration bundles 📩
+        run: |
+            ./users-bundle.exe --connection '${{ secrets.DEV_CONNECTION_STRING }}' --verbose
+            ./training-bundle.exe --connection '${{ secrets.DEV_CONNECTION_STRING }}' --verbose
+            ./notifications-bundle.exe --connection '${{ secrets.DEV_CONNECTION_STRING }}' --verbose
 
       - name: Publish 🚀
         run: dotnet publish ./src/App --configuration Release --no-build --output '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}'

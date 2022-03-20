@@ -36,10 +36,10 @@ jobs:
             dotnet tool install dotnet-ef --version 6.0.3
 
       - name: Create migration bundle 📦
-        run: dotnet ef migrations bundle --configuration Bundle --verbose --context UsersDbContext --startup-project ./src/App --project ./src/Modules/Users/Modules.Users.Persistence
+        run: dotnet ef migrations bundle --configuration Bundle --verbose --context UsersDbContext --startup-project ./src/App --project ./src/Modules/Users/Modules.Users.Persistence --output users-bundle
       
       - name: Apply bundle
-        run: ./bundle.exe
+        run: ./users-bundle.exe
 
       - name: Publish 🚀
         run: dotnet publish ./src/App --configuration Release --no-build --output '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}'

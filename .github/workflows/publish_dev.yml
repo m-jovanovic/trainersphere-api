@@ -30,6 +30,17 @@ jobs:
       - name: Test 🧪
         run: dotnet test ./src/App --configuration Release --no-build --verbosity normal
 
+      - name: Install EF Tool 🦄
+        run: |
+            dotnet new tool-manifest
+            dotnet tool install dotnet-ef --version 6.0.2
+
+      - name: Create migration bundle 📦
+        run: dotnet ef migrations bundle --no-build --project ./src/App/App.csproj --verbose
+      
+      - name: Apply bundle
+        run: ./bundle.exe
+
       - name: Publish 🚀
         run: dotnet publish ./src/App --configuration Release --no-build --output '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}'
 

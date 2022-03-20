@@ -12,6 +12,7 @@ internal sealed class EventBusServiceInstaller : IServiceInstaller
     /// <inheritdoc />
     public void Install(IServiceCollection services, IConfiguration configuration) =>
         services
+            .ConfigureOptions<MassTransitHostOptionsSetup>()
             .AddMassTransit(bussConfigurator =>
             {
                 bussConfigurator.SetKebabCaseEndpointNameFormatter();
@@ -25,6 +26,5 @@ internal sealed class EventBusServiceInstaller : IServiceInstaller
                     Authorization.AssemblyReference.Assembly);
 
                 bussConfigurator.UsingInMemory((context, configurator) => configurator.ConfigureEndpoints(context));
-            })
-            .AddMassTransitHostedService(true);
+            });
 }

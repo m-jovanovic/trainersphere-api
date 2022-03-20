@@ -36,7 +36,7 @@ jobs:
             dotnet tool install dotnet-ef --version 6.0.3
 
       - name: Create migration bundle 📦
-        run: dotnet ef migrations bundle --configuration Bundle --verbose --context UsersDbContext --startup-project ./src/App --project ./src/Modules/Users/Modules.Users.Persistence --output users-bundle
+        run: dotnet ef migrations bundle --configuration Bundle --verbose --context UsersDbContext --startup-project ./src/App --project ./src/Modules/Users/Modules.Users.Persistence --output users-bundle.exe
       
       - name: Apply bundle
         run: ./users-bundle.exe

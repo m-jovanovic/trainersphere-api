@@ -68,4 +68,21 @@ public static class FunctionalExtensions
             finallyAction();
         }
     }
+
+    /// <summary>
+    /// Executes a try-catch-finally block with the specified actions.
+    /// </summary>
+    /// <param name="action">The action in the try block.</param>
+    /// <param name="catchAction">The action in the catch block.</param>
+    public static void TryCatch(Action action, Action<Exception> catchAction)
+    {
+        try
+        {
+            action();
+        }
+        catch (Exception exception)
+        {
+            catchAction(exception);
+        }
+    }
 }

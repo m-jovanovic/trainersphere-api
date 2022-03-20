@@ -24,4 +24,9 @@ public sealed record UserResponse
     /// Gets the last name.
     /// </summary>
     public string LastName { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets the permissions.
+    /// </summary>
+    public HashSet<string> Permissions { get; init; } = new();
 }

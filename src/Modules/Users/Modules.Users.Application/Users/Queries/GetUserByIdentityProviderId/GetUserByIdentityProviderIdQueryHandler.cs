@@ -25,10 +25,27 @@ internal sealed class GetUserByIdentityProviderIdQueryHandler : IQueryHandler<Ge
             .Bind(async query => Result.Create(await GetUserByIdentityProviderIdAsync(query)))
             .MapFailure(() => UserErrors.NotFoundByIdentity(request.IdentityProviderId));
 
-    private async Task<UserResponse?> GetUserByIdentityProviderIdAsync(GetUserByIdentityProviderIdQuery query) =>
-        await _sqlQueryExecutor.FirstOrDefaultAsync<UserResponse>(
-                @"SELECT id, email, first_name, last_name
-                  FROM users.users
-                  WHERE identity_provider_id = @IdentityProviderId",
-                new { query.IdentityProviderId });
+    private async Task<UserResponse?> GetUserByIdentityProviderIdAsync(GetUserByIdentityProviderIdQuery query)
+    {
+        UserResponse? userResponse = null;
+
+        await _sqlQueryExecutor.QueryAsync<UserResponse, string, UserResponse>(
+            @"SELECT u.id, u.email, u.first_name, u.last_name, p.name AS permission
+              FROM users.users u
+              JOIN users.user_roles ur ON u.id = ur.user_id
+              JOIN users.roles r ON r.id = ur.role_id
+              JOIN users.role_permissions rp ON r.id = rp.role_id
+              JOIN users.permissions p ON p.id = rp.permission_id
+              WHERE u.identity_provider_id = @IdentityProviderId",
+            (user, permission) =>
+            {
+                (userResponse ??= user).Permissions.Add(permission);
+
+                return user;
+            },
+            new { query.IdentityProviderId },
+            "permission");
+
+        return userResponse;
+    }
 }

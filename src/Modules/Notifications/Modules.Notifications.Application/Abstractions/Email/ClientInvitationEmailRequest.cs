@@ -5,4 +5,4 @@
 /// </summary>
 /// <param name="Email">The email.</param>
 /// <param name="Trainer">The trainer.</param>
-public sealed record ClientInvitationEmailRequest(string Email, string Trainer);
+public sealed record ClientInvitationEmailRequest(string Email, Guid InvitationId, string Trainer);

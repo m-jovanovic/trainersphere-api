@@ -22,6 +22,7 @@ internal sealed class InvitationSentIntegrationEventHandler : IntegrationEventHa
         await _emailSender.SendClientInvitationAsync(
             new ClientInvitationEmailRequest(
                 integrationEvent.Email,
+                integrationEvent.InvitationId,
                 $"{integrationEvent.SenderFirstName} {integrationEvent.SenderLastName}"),
             cancellationToken);
 }

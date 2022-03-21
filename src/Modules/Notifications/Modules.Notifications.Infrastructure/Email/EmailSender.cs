@@ -44,13 +44,14 @@ internal sealed class EmailSender : IEmailSender
         ClientInvitationEmailRequest clientInvitationEmailRequest,
         CancellationToken cancellationToken = default)
     {
-        EmailRequest emailRequest = EmailRequest.Create(_options.Templates.ClientInvitation)
+        EmailRequest emailRequest = EmailRequest.Create(_options.Templates.ClientInvitationEmail)
             .WithSender(_options.SenderEmail)
             .WithRecipient(clientInvitationEmailRequest.Email)
             .WithVariable(
                 Variable
                     .Create(clientInvitationEmailRequest.Email)
-                    .WithSubstitution("trainer", clientInvitationEmailRequest.Trainer));
+                    .WithSubstitution("trainer", clientInvitationEmailRequest.Trainer)
+                    .WithSubstitution("invitationId", clientInvitationEmailRequest.InvitationId.ToString()));
 
         await _mailersendClient.SendEmailAsync(emailRequest, cancellationToken);
     }

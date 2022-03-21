@@ -23,5 +23,9 @@ internal sealed class ClientRepository : IClientRepository, IScoped
         Result.Create(await _dbContext.Set<Client>().FirstOrDefaultAsync(client => client.Id == id, cancellationToken));
 
     /// <inheritdoc />
+    public async Task<Result> IsEmailUniqueAsync(string email, CancellationToken cancellationToken) =>
+        Result.Create(!await _dbContext.Set<Client>().AnyAsync(trainer => trainer.Email == email, cancellationToken));
+
+    /// <inheritdoc />
     public void Add(Client client) => _dbContext.Set<Client>().Add(client);
 }

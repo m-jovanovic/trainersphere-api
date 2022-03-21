@@ -95,10 +95,12 @@ public class Result
     /// <returns>
     /// The first failure from the specified <paramref name="results"/> array,or a success if it does not exist.
     /// </returns>
-    public static Result FirstFailureOrSuccess(params Result[] results)
+    public static async Task<Result> FirstFailureOrSuccess(params Func<Task<Result>>[] results)
     {
-        foreach (Result result in results)
+        foreach (Func<Task<Result>> resultTask in results)
         {
+            Result result = await resultTask();
+
             if (result.IsFailure)
             {
                 return result;

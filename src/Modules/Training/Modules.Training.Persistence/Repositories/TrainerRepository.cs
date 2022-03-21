@@ -23,5 +23,9 @@ internal sealed class TrainerRepository : ITrainerRepository, IScoped
         Result.Create(await _dbContext.Set<Trainer>().FirstOrDefaultAsync(user => user.Id == id, cancellationToken));
 
     /// <inheritdoc />
+    public async Task<Result> IsEmailUniqueAsync(string email, CancellationToken cancellationToken) =>
+        Result.Create(!await _dbContext.Set<Trainer>().AnyAsync(trainer => trainer.Email == email, cancellationToken));
+
+    /// <inheritdoc />
     public void Add(Trainer trainer) => _dbContext.Set<Trainer>().Add(trainer);
 }

@@ -16,6 +16,14 @@ public interface ITrainerRepository
     Task<Result<Trainer>> GetByIdAsync(TrainerId id, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Checks if the specified email is unique.
+    /// </summary>
+    /// <param name="email">The email.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The success result if the email is unique, otherwise a failure result.</returns>
+    Task<Result> IsEmailUniqueAsync(string email, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Adds the specified trainer to the repository.
     /// </summary>
     /// <param name="trainer">The trainer.</param>

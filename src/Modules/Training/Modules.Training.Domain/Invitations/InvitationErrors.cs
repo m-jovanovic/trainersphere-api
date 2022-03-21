@@ -8,6 +8,11 @@ namespace Modules.Training.Domain.Invitations;
 public static class InvitationErrors
 {
     /// <summary>
+    /// Gets the email is not unique error.
+    /// </summary>
+    public static Error EmailIsNotUnique => new ConflictError("Invitation.EmailIsNotUnique", "The specified email is already in use.");
+
+    /// <summary>
     /// Gets the pending exists error.
     /// </summary>
     public static Error PendingExists => new ConflictError("Invitation.PendingExists", "There is already an existing invitation for the client.");

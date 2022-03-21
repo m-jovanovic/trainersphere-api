@@ -16,6 +16,14 @@ public interface IClientRepository
     Task<Result<Client>> GetByIdAsync(ClientId id, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Checks if the specified email is unique.
+    /// </summary>
+    /// <param name="email">The email.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The success result if the email is unique, otherwise a failure result.</returns>
+    Task<Result> IsEmailUniqueAsync(string email, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Adds the specified client to the repository.
     /// </summary>
     /// <param name="client">The client.</param>

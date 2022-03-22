@@ -35,7 +35,7 @@ internal sealed class InvitationSentIntegrationEventHandler : IntegrationEventHa
 
     /// <inheritdoc />
     public override async Task Handle(InvitationSentIntegrationEvent integrationEvent, CancellationToken cancellationToken = default) =>
-        await UserRegistration.Create(new UserRegistrationId(integrationEvent.Id), integrationEvent.Email)
+        await UserRegistration.Create(new UserRegistrationId(integrationEvent.InvitationId), integrationEvent.Email)
             .Bind(userRegistration => CheckNoPendingInvitationsAsync(userRegistration, cancellationToken))
             .Tap(userRegistration => _userRegistrationRepository.Add(userRegistration))
             .Tap(() => _unitOfWork.SaveChangesAsync(cancellationToken))

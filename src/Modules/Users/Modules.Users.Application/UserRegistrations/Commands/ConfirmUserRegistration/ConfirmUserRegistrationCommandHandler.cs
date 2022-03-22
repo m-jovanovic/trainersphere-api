@@ -14,6 +14,7 @@ internal sealed class ConfirmUserRegistrationCommandHandler : ICommandHandler<Co
 {
     private readonly IIdentityProviderService _identityProviderService;
     private readonly IUserRegistrationRepository _userRegistrationRepository;
+    private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     /// <summary>
@@ -21,21 +22,25 @@ internal sealed class ConfirmUserRegistrationCommandHandler : ICommandHandler<Co
     /// </summary>
     /// <param name="identityProviderService">The identity provider service.</param>
     /// <param name="userRegistrationRepository">The user registration repository.</param>
+    /// <param name="userRepository">The user repository.</param>
     /// <param name="unitOfWork">The unit of work.</param>
     public ConfirmUserRegistrationCommandHandler(
         IIdentityProviderService identityProviderService,
         IUserRegistrationRepository userRegistrationRepository,
+        IUserRepository userRepository,
         IUnitOfWork unitOfWork)
     {
         _identityProviderService = identityProviderService;
         _userRegistrationRepository = userRegistrationRepository;
+        _userRepository = userRepository;
         _unitOfWork = unitOfWork;
     }
 
     /// <inheritdoc />
     public async Task<Result> Handle(ConfirmUserRegistrationCommand request, CancellationToken cancellationToken) =>
         await GetUserRegistrationByIdAsync(new UserRegistrationId(request.UserRegistrationId), cancellationToken)
-            .Bind(userRegistration => CheckIfIdentityExistsAsync(userRegistration, cancellationToken))
+            .Bind(userRegistration => CheckIfIdentityExistsAsync(userRegistration, request.IdentityProviderId, cancellationToken))
+            .Bind(userRegistration => CheckIfEmailIsUniqueAsync(userRegistration, cancellationToken))
             .Bind(userRegistration => userRegistration.Confirm(
                 request.IdentityProviderId,
                 request.Email,
@@ -51,8 +56,16 @@ internal sealed class ConfirmUserRegistrationCommandHandler : ICommandHandler<Co
 
     private async Task<Result<UserRegistration>> CheckIfIdentityExistsAsync(
         UserRegistration userRegistration,
+        string identityProviderId,
         CancellationToken cancellationToken) =>
-        await _identityProviderService.ExistsAsync(userRegistration.IdentityProviderId ?? string.Empty, cancellationToken)
+        await _identityProviderService.ExistsAsync(identityProviderId, cancellationToken)
             .Map(() => userRegistration)
-            .MapFailure(() => UserRegistrationErrors.NotFoundByIdentity(userRegistration.IdentityProviderId ?? string.Empty));
+            .MapFailure(() => UserRegistrationErrors.NotFoundByIdentity(identityProviderId));
+
+    private async Task<Result<UserRegistration>> CheckIfEmailIsUniqueAsync(
+        UserRegistration userRegistration,
+        CancellationToken cancellationToken) =>
+        await _userRepository.IsEmailUniqueAsync(userRegistration.Email, cancellationToken)
+            .Map(() => userRegistration)
+            .MapFailure(() => UserRegistrationErrors.EmailHasBeenTaken);
 }

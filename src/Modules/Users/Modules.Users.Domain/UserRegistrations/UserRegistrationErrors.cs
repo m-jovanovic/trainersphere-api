@@ -24,6 +24,11 @@ public static class UserRegistrationErrors
     /// <summary>
     /// Gets the not found error.
     /// </summary>
+    public static Error EmailHasBeenTaken => new ConflictError("UserRegistration.EmailHasBeenTaken", "The specified email has been taken.");
+
+    /// <summary>
+    /// Gets the not found error.
+    /// </summary>
     public static Func<UserRegistrationId, Error> NotFound => userRegistrationId => new NotFoundError(
         "UserRegistration.NotFound",
         $"The user registration with the identifier '{userRegistrationId.Value}' was not found.");

@@ -11,7 +11,7 @@ namespace Modules.Users.Application.Boundary.UserRegistrations.Commands.ConfirmU
 /// <param name="LastName">The last name.</param>
 public sealed record ConfirmUserRegistrationCommand(
     Guid UserRegistrationId,
-    string Email,
     string IdentityProviderId,
+    string Email,
     string FirstName,
     string LastName) : ICommand;

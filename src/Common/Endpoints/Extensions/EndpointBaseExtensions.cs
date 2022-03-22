@@ -27,18 +27,11 @@ public static class EndpointBaseExtensions
                     CreateProblemDetails(
                         "Validation Error", StatusCodes.Status400BadRequest, IValidationResult.ValidationError, validationResult.Errors)),
             var notFound when notFound.Error is NotFoundError =>
-                endpoint.NotFound(
-                    CreateProblemDetails("Not Found", StatusCodes.Status404NotFound, notFound.Error)),
+                endpoint.NotFound(CreateProblemDetails("Not Found", StatusCodes.Status404NotFound, notFound.Error)),
             var conflict when conflict.Error is ConflictError =>
-                endpoint.Conflict(
-                    CreateProblemDetails("Conflict", StatusCodes.Status409Conflict, conflict.Error)),
-            _ => endpoint.BadRequest(new
-            {
-                Errors = new[]
-                {
-                    result.Error
-                }
-            })
+                endpoint.Conflict(CreateProblemDetails("Conflict", StatusCodes.Status409Conflict, conflict.Error)),
+            var badRequest =>
+                endpoint.BadRequest(CreateProblemDetails("Bad Request", StatusCodes.Status400BadRequest, badRequest.Error))
         };
 
     private static ProblemDetails CreateProblemDetails(string title, int status, Error error, Error[]? errors = null) =>

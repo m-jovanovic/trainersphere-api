@@ -1,4 +1,4 @@
-name: Publish - Dev 🚀
+name: Publish Development 🚀
 
 on:
   push:
@@ -11,7 +11,7 @@ env:
   CONNECTIONSTRINGS__DATABASE: "<Replaced by Bundle>"
 
 jobs:
-  publish-dev:
+  publish:
     runs-on: ubuntu-latest
 
     steps:

@@ -26,8 +26,9 @@ internal sealed class GetInvitationsQueryHandler : IQueryHandler<GetInvitationsQ
 
     private async Task<IEnumerable<InvitationResponse>> GetInvitationByIdAsync(GetInvitationsQuery query) =>
         await _sqlQueryExecutor.QueryAsync<InvitationResponse>(
-            @"SELECT id, email, sender_first_name, sender_last_name, status, created_on_utc, modified_on_utc
+            @"SELECT id, email, status, created_on_utc, modified_on_utc
               FROM training.invitations
-              WHERE trainer_id = @TrainerId",
+              WHERE trainer_id = @TrainerId
+              ORDER BY created_on_utc DESC",
             new { query.TrainerId });
 }

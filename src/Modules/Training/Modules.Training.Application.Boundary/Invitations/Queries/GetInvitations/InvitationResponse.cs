@@ -16,16 +16,6 @@ public sealed record InvitationResponse
     public string Email { get; init; } = string.Empty;
 
     /// <summary>
-    /// Gets the sender first name.
-    /// </summary>
-    public string SenderFirstName { get; init; } = string.Empty;
-
-    /// <summary>
-    /// Gets the sender last name.
-    /// </summary>
-    public string SenderLastName { get; init; } = string.Empty;
-
-    /// <summary>
     /// Gets the status.
     /// </summary>
     public int Status { get; init; }

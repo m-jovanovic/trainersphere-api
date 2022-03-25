@@ -26,7 +26,9 @@ internal sealed class InvitationRepository : IInvitationRepository, IScoped
     public async Task<Result> CheckNonePendingForEmailAsync(string email, CancellationToken cancellationToken = default) =>
         Result.Create(
             !await _dbContext.Set<Invitation>()
-                .AnyAsync(invitation => invitation.Email == email && invitation.Status == InvitationStatus.Pending, cancellationToken));
+                .AnyAsync(
+                    invitation => invitation.Email == email && invitation.Status == InvitationStatus.Pending,
+                    cancellationToken));
 
     /// <inheritdoc />
     public void Add(Invitation invitation) => _dbContext.Set<Invitation>().Add(invitation);

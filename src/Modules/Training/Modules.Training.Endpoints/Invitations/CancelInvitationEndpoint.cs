@@ -27,8 +27,10 @@ public sealed class CancelInvitationEndpoint : EndpointBaseAsync
     [SwaggerOperation(
         Summary = "Cancels the invitation.",
         Description = "Cancels the invitation with the specified identifier.",
-        Tags = new[] { TrainersRoutes.Tag })]
-    public override async Task<ActionResult> HandleAsync(Guid request, CancellationToken cancellationToken = default) =>
+        Tags = new[] { InvitationsRoutes.Tag })]
+    public override async Task<ActionResult> HandleAsync(
+        [FromRoute(Name = InvitationsRoutes.ResourceId)] Guid request,
+        CancellationToken cancellationToken = default) =>
         await Result.Success(new CancelInvitationCommand(request))
             .Bind(command => _sender.Send(command, cancellationToken))
             .Match(NoContent, this.HandleFailure);

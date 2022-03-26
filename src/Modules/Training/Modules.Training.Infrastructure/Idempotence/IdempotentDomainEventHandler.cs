@@ -28,7 +28,7 @@ internal sealed class IdempotentDomainEventHandler<TEvent> : IDomainEventHandler
     /// <inheritdoc />
     public async Task Handle(TEvent notification, CancellationToken cancellationToken)
     {
-        var parameters = new OutboxConsumerParameters(notification.Id, _decorated.GetType().Name);
+        var parameters = new OutboxConsumerParameters(notification.Id, _decorated.GetType().FullName!);
 
         if (await IsOutboxMessageConsumedAsync(parameters))
         {

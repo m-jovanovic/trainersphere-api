@@ -5,7 +5,6 @@ using Infrastructure.Utilities;
 using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Modules.Users.Infrastructure.Consumers;
 using Modules.Users.Infrastructure.Idempotence;
 using Shared.Extensions;
 

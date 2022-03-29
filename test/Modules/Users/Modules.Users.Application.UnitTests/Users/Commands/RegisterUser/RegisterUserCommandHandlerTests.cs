@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Modules.Users.Application.UnitTests.Users.Commands.RegisterUser;
 
-public class RegisterUserCommandTests
+public sealed class RegisterUserCommandHandlerTests
 {
     [Theory]
     [ClassData(typeof(RegisterUserCommandData))]

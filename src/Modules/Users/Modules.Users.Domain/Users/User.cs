@@ -104,6 +104,11 @@ public sealed class User : Entity<UserId>, IAuditable
     /// <returns>The new user instance.</returns>
     public static Result<User> CreateFromRegistration(UserRegistration userRegistration)
     {
+        if (userRegistration.Status != UserRegistrationStatus.Confirmed)
+        {
+            return Result.Failure<User>(UserErrors.RegistrationIsNotConfirmed);
+        }
+
         if (string.IsNullOrWhiteSpace(userRegistration.IdentityProviderId) ||
             string.IsNullOrWhiteSpace(userRegistration.FirstName) ||
             string.IsNullOrWhiteSpace(userRegistration.LastName))

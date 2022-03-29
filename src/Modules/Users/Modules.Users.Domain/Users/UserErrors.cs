@@ -13,6 +13,11 @@ public static class UserErrors
     public static Error EmailIsNotUnique => new ConflictError("User.EmailIsNotUnique", "The specified email is already in use.");
 
     /// <summary>
+    /// Gets the registration is not confirmed error.
+    /// </summary>
+    public static Error RegistrationIsNotConfirmed => new("User.RegistrationIsNotConfirmed", "The user registration is not confirmed.");
+
+    /// <summary>
     /// Gets the registration incomplete error.
     /// </summary>
     public static Error RegistrationIsIncomplete => new("User.RegistrationIsIncomplete", "The user registration is incomplete.");

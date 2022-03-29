@@ -1,7 +1,5 @@
 ﻿using System.Linq;
-using Domain.Primitives;
 using FluentAssertions;
-using FluentAssertions.Collections;
 using FluentAssertions.Primitives;
 using Modules.Users.Domain.Roles;
 using Modules.Users.Domain.UnitTests.Data.Users;
@@ -12,11 +10,11 @@ using Xunit;
 
 namespace Modules.Users.Domain.UnitTests.Users;
 
-public class UserTests
+public sealed class UserCreateTests
 {
     [Theory]
     [ClassData(typeof(CreateUserRequestData))]
-    public void Create_ShouldSucceed(CreateUserRequest data)
+    public void Create_ShouldSucceed_WhenDataIsValid(CreateUserRequest data)
     {
         // Arrange
         // Act
@@ -102,43 +100,5 @@ public class UserTests
 
         // Assert
         user.Value.Roles.Should().ContainSingle(role => role == Role.Trainer);
-    }
-
-    [Theory]
-    [ClassData(typeof(CreateUserRequestData))]
-    public void Change_ShouldChangeBasicInformation(CreateUserRequest data)
-    {
-        // Arrange
-        User user = User.Create(data.Id, data.IdentityProviderId, data.Email, string.Empty, string.Empty).Value;
-
-        // Act
-        user.Change(data.FirstName, data.LastName);
-
-        // Assert
-        user.FirstName.Should().Be(data.FirstName);
-        user.LastName.Should().Be(data.LastName);
-    }
-
-    [Theory]
-    [ClassData(typeof(CreateUserRequestData))]
-    public void Change_ShouldRaiseUserChangedDomainEvent(CreateUserRequest data)
-    {
-        // Arrange
-        User user = User.Create(data.Id, data.IdentityProviderId, data.Email, string.Empty, string.Empty).Value;
-        user.ClearDomainEvents();
-
-        // Act
-        user.Change(data.FirstName, data.LastName);
-
-        // Assert
-        AndWhichConstraint<ObjectAssertions, UserChangedDomainEvent> domainEvent = user
-            .GetDomainEvents()
-            .Single()
-            .Should()
-            .BeOfType<UserChangedDomainEvent>();
-
-        domainEvent.Which.UserId.Should().Be(data.Id);
-        domainEvent.Which.FirstName.Should().Be(data.FirstName);
-        domainEvent.Which.LastName.Should().Be(data.LastName);
     }
 }

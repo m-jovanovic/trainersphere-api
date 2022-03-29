@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Modules.Users.Application.UnitTests.Data.Users;
 
-internal class RegisterUserCommandData : TheoryData<RegisterUserCommand>
+internal sealed class RegisterUserCommandData : TheoryData<RegisterUserCommand>
 {
     public RegisterUserCommandData()
     {

@@ -14,7 +14,7 @@ public sealed class UserRegisteredDomainEventHandlerTests
 {
     [Theory]
     [ClassData(typeof(UserRegisteredDomainEventData))]
-    public async Task Handle_When(UserRegisteredDomainEvent domainEvent)
+    public async Task Handle_ShouldPublishIntegrationEvent_WhenDomainEventIsHandled(UserRegisteredDomainEvent domainEvent)
     {
         // Arrange
         var eventBusMock = new Mock<IEventBus>();

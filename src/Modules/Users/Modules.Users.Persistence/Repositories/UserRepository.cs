@@ -20,7 +20,7 @@ internal sealed class UserRepository : IUserRepository, IScoped
 
     /// <inheritdoc />
     public async Task<Result<User>> GetByIdAsync(UserId id, CancellationToken cancellationToken = default) =>
-        Result.Create(await _dbContext.Set<User>().FirstOrDefaultAsync(user => user.Id == id, cancellationToken));
+        Result.Create(await _dbContext.Set<User>().Include(user => user.Roles).FirstOrDefaultAsync(user => user.Id == id, cancellationToken));
 
     /// <inheritdoc />
     public async Task<Result> IsEmailUniqueAsync(string email, CancellationToken cancellationToken = default) =>

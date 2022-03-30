@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.EventBus;
@@ -25,6 +26,7 @@ public sealed class UserRegisteredDomainEventHandlerTests
         await handler.Handle(domainEvent, default);
 
         // Assert
+        Guid? userRegistrationId = domainEvent.UserRegistrationId?.Value;
         eventBusMock.Verify(
             x => x.PublishAsync(
                 It.Is<UserRegisteredIntegrationEvent>(
@@ -32,6 +34,7 @@ public sealed class UserRegisteredDomainEventHandlerTests
                         integrationEvent.Id == domainEvent.Id &&
                         integrationEvent.OccurredOnUtc == domainEvent.OccurredOnUtc &&
                         integrationEvent.UserId == domainEvent.UserId.Value &&
+                        integrationEvent.UserRegistrationId == userRegistrationId &&
                         integrationEvent.Email == domainEvent.Email &&
                         integrationEvent.FirstName == domainEvent.FirstName &&
                         integrationEvent.LastName == domainEvent.LastName &&

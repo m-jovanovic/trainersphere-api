@@ -77,6 +77,7 @@ public sealed class UserCreateFromRegistrationTests
             .BeOfType<UserRegisteredDomainEvent>();
 
         domainEvent.Which.UserId.Should().Be(result.Value.Id);
+        domainEvent.Which.UserRegistrationId.Should().Be(userRegistration.Id);
         domainEvent.Which.Email.Should().Be(result.Value.Email);
         domainEvent.Which.FirstName.Should().Be(result.Value.FirstName);
         domainEvent.Which.LastName.Should().Be(result.Value.LastName);

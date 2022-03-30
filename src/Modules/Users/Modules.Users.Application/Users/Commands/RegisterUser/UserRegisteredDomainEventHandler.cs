@@ -25,6 +25,7 @@ internal sealed class UserRegisteredDomainEventHandler : IDomainEventHandler<Use
                 notification.Id,
                 notification.OccurredOnUtc,
                 notification.UserId.Value,
+                notification.UserRegistrationId?.Value,
                 notification.Email,
                 notification.FirstName,
                 notification.LastName,

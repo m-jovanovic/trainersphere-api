@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Bogus;
 using Domain.Time;
+using Modules.Users.Domain.UserRegistrations;
 using Modules.Users.Domain.Users;
 using Modules.Users.Domain.Users.Events;
 using Xunit;
@@ -17,6 +18,17 @@ internal sealed class UserRegisteredDomainEventData : TheoryData<UserRegisteredD
             faker.Random.Guid(),
             SystemTimeProvider.UtcNow(),
             new UserId(faker.Random.Guid()),
+            null,
+            faker.Name.FirstName(),
+            faker.Name.LastName(),
+            faker.Internet.Email(),
+            new[] { faker.Name.JobTitle() }.ToHashSet()));
+
+        Add(new UserRegisteredDomainEvent(
+            faker.Random.Guid(),
+            SystemTimeProvider.UtcNow(),
+            new UserId(faker.Random.Guid()),
+            new UserRegistrationId(faker.Random.Guid()),
             faker.Name.FirstName(),
             faker.Name.LastName(),
             faker.Internet.Email(),

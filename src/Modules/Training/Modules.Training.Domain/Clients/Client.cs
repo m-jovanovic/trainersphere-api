@@ -10,6 +10,11 @@ namespace Modules.Training.Domain.Clients;
 public sealed class Client : Entity<ClientId>, IAuditable
 {
     /// <summary>
+    /// The role name.
+    /// </summary>
+    public const string Role = "Client";
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="Client"/> class.
     /// </summary>
     /// <param name="id">The identifier.</param>

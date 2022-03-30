@@ -124,6 +124,16 @@ public static class ResultExtensions
     /// <summary>
     /// Binds the success result based on the specified binding function, otherwise returns a failure result.
     /// </summary>
+    /// <typeparam name="TOut">The output type.</typeparam>
+    /// <param name="result">The result.</param>
+    /// <param name="func">The binding function.</param>
+    /// <returns>The bound result.</returns>
+    public static async Task<Result<TOut>> Bind<TOut>(this Result result, Func<Task<Result<TOut>>> func) =>
+        result.IsSuccess ? await func() : Result.Failure<TOut>(result.Error);
+
+    /// <summary>
+    /// Binds the success result based on the specified binding function, otherwise returns a failure result.
+    /// </summary>
     /// <typeparam name="TIn">The input type.</typeparam>
     /// <typeparam name="TOut">The output type.</typeparam>
     /// <param name="resultTask">The result task.</param>
@@ -254,5 +264,22 @@ public static class ResultExtensions
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Filter will return the success result if the specified predicate evaluates to true.
+    /// </summary>
+    /// <typeparam name="TIn">The input type.</typeparam>
+    /// <param name="result">The result.</param>
+    /// <param name="predicate">The predicate.</param>
+    /// <returns>The same result if the specified predicate evaluates to true.</returns>
+    public static Result<TIn> Filter<TIn>(this Result<TIn> result, Func<TIn, bool> predicate)
+    {
+        if (result.IsFailure)
+        {
+            return result;
+        }
+
+        return predicate(result.Value) ? result : Result.Failure<TIn>(Error.ConditionNotMet);
     }
 }

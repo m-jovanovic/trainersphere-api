@@ -35,7 +35,9 @@ internal sealed class UserChangedIntegrationEventHandler : IntegrationEventHandl
 
     /// <inheritdoc />
     public override async Task Handle(UserChangedIntegrationEvent integrationEvent, CancellationToken cancellationToken = default) =>
-        await GetTrainerByIdAsync(new TrainerId(integrationEvent.UserId), cancellationToken)
+        await Result.Create(integrationEvent)
+            .Filter(userRegisteredIntegrationEvent => userRegisteredIntegrationEvent.Roles.Contains(Trainer.Role))
+            .Bind(() => GetTrainerByIdAsync(new TrainerId(integrationEvent.UserId), cancellationToken))
             .Tap(trainer => trainer.Change(integrationEvent.FirstName, integrationEvent.LastName))
             .Tap(() => _unitOfWork.SaveChangesAsync(cancellationToken))
             .OnFailure(error => _logger.LogError(integrationEvent, error));

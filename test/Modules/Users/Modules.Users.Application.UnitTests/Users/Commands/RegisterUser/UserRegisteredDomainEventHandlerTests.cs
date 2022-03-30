@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Application.EventBus;
 using Modules.Users.Application.UnitTests.Data.Users;
@@ -33,7 +34,8 @@ public sealed class UserRegisteredDomainEventHandlerTests
                         integrationEvent.UserId == domainEvent.UserId.Value &&
                         integrationEvent.Email == domainEvent.Email &&
                         integrationEvent.FirstName == domainEvent.FirstName &&
-                        integrationEvent.LastName == domainEvent.LastName),
+                        integrationEvent.LastName == domainEvent.LastName &&
+                        integrationEvent.Roles.SequenceEqual(domainEvent.Roles)),
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }

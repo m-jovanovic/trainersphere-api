@@ -10,6 +10,11 @@ namespace Modules.Training.Domain.Trainers;
 public sealed class Trainer : Entity<TrainerId>, IAuditable
 {
     /// <summary>
+    /// The role name.
+    /// </summary>
+    public const string Role = "Trainer";
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="Trainer"/> class.
     /// </summary>
     /// <param name="id">The identifier.</param>

@@ -9,17 +9,17 @@ namespace Modules.Training.Application.Trainers.Events;
 /// <summary>
 /// Represents the <see cref="UserRegisteredIntegrationEvent"/> handler.
 /// </summary>
-internal sealed class TrainerUserRegisteredIntegrationEventHandler : IntegrationEventHandler<UserRegisteredIntegrationEvent>
+internal sealed class UserRegisteredIntegrationEventHandler : IntegrationEventHandler<UserRegisteredIntegrationEvent>
 {
     private readonly ITrainerRepository _trainerRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="TrainerUserRegisteredIntegrationEventHandler"/> class.
+    /// Initializes a new instance of the <see cref="UserRegisteredIntegrationEventHandler"/> class.
     /// </summary>
     /// <param name="trainerRepository">The trainer repository.</param>
     /// <param name="unitOfWork">The unit of work.</param>
-    public TrainerUserRegisteredIntegrationEventHandler(ITrainerRepository trainerRepository, IUnitOfWork unitOfWork)
+    public UserRegisteredIntegrationEventHandler(ITrainerRepository trainerRepository, IUnitOfWork unitOfWork)
     {
         _trainerRepository = trainerRepository;
         _unitOfWork = unitOfWork;
@@ -27,11 +27,13 @@ internal sealed class TrainerUserRegisteredIntegrationEventHandler : Integration
 
     /// <inheritdoc />
     public override async Task Handle(UserRegisteredIntegrationEvent integrationEvent, CancellationToken cancellationToken = default) =>
-        await Trainer.Create(
-                new TrainerId(integrationEvent.UserId),
-                integrationEvent.Email,
-                integrationEvent.FirstName,
-                integrationEvent.LastName)
+        await Result.Create(integrationEvent)
+            .Filter(userRegisteredIntegrationEvent => userRegisteredIntegrationEvent.Roles.Contains(Trainer.Role))
+            .Bind(userRegisteredIntegrationEvent => Trainer.Create(
+                new TrainerId(userRegisteredIntegrationEvent.UserId),
+                userRegisteredIntegrationEvent.Email,
+                userRegisteredIntegrationEvent.FirstName,
+                userRegisteredIntegrationEvent.LastName))
             .Tap(trainer => _trainerRepository.Add(trainer))
             .Tap(() => _unitOfWork.SaveChangesAsync(cancellationToken));
 }

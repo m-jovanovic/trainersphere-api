@@ -25,6 +25,7 @@ internal sealed class UserChangedDomainEventHandler : IDomainEventHandler<UserCh
                 notification.OccurredOnUtc,
                 notification.UserId.Value,
                 notification.FirstName,
-                notification.LastName),
+                notification.LastName,
+                notification.Roles),
             cancellationToken);
 }

@@ -10,9 +10,9 @@ using Shared.Results;
 namespace Modules.Training.Application.Clients.Events;
 
 /// <summary>
-/// Represents the <see cref="ClientUserRegisteredIntegrationEvent"/> handler.
+/// Represents the <see cref="UserRegisteredIntegrationEvent"/> handler.
 /// </summary>
-internal sealed class ClientUserRegisteredIntegrationEventHandler : IntegrationEventHandler<ClientUserRegisteredIntegrationEvent>
+internal sealed class ClientUserRegisteredIntegrationEventHandler : IntegrationEventHandler<UserRegisteredIntegrationEvent>
 {
     private readonly IInvitationRepository _invitationRepository;
     private readonly IClientRepository _clientRepository;
@@ -39,8 +39,8 @@ internal sealed class ClientUserRegisteredIntegrationEventHandler : IntegrationE
     }
 
     /// <inheritdoc />
-    public override async Task Handle(ClientUserRegisteredIntegrationEvent integrationEvent, CancellationToken cancellationToken = default) =>
-        await GetInvitationById(new InvitationId(integrationEvent.UserRegistrationId), cancellationToken)
+    public override async Task Handle(UserRegisteredIntegrationEvent integrationEvent, CancellationToken cancellationToken = default) =>
+        await GetInvitationById(new InvitationId(integrationEvent.UserId), cancellationToken)
             .Bind(invitation => invitation.Accept(
                 new ClientId(integrationEvent.UserId),
                 integrationEvent.Email,

@@ -11,10 +11,12 @@ namespace Modules.Users.IntegrationEvents;
 /// <param name="Email">The email.</param>
 /// <param name="FirstName">The first name.</param>
 /// <param name="LastName">The last name.</param>
+/// <param name="Roles">The roles.</param>
 public sealed record UserRegisteredIntegrationEvent(
     Guid Id,
     DateTime OccurredOnUtc,
     Guid UserId,
     string Email,
     string FirstName,
-    string LastName) : IntegrationEvent(Id, OccurredOnUtc);
+    string LastName,
+    HashSet<string> Roles) : IntegrationEvent(Id, OccurredOnUtc);

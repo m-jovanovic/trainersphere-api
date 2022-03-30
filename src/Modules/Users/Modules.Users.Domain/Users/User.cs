@@ -84,15 +84,8 @@ public sealed class User : Entity<UserId>, IAuditable
             user.Id,
             user.Email,
             user.FirstName,
-            user.LastName));
-
-        user.RaiseDomainEvent(new TrainerUserRegisteredDomainEvent(
-            Guid.NewGuid(),
-            SystemTimeProvider.UtcNow(),
-            user.Id,
-            user.Email,
-            user.FirstName,
-            user.LastName));
+            user.LastName,
+            user._roles.Select(role => role.Name).ToHashSet()));
 
         return user;
     }
@@ -132,16 +125,8 @@ public sealed class User : Entity<UserId>, IAuditable
             user.Id,
             user.Email,
             user.FirstName,
-            user.LastName));
-
-        user.RaiseDomainEvent(new ClientUserRegisteredDomainEvent(
-            Guid.NewGuid(),
-            SystemTimeProvider.UtcNow(),
-            userRegistration.Id,
-            user.Id,
-            user.Email,
-            user.FirstName,
-            user.LastName));
+            user.LastName,
+            user._roles.Select(role => role.Name).ToHashSet()));
 
         return user;
     }
@@ -165,7 +150,8 @@ public sealed class User : Entity<UserId>, IAuditable
                 SystemTimeProvider.UtcNow(),
                 Id,
                 FirstName,
-                LastName));
+                LastName,
+                _roles.Select(role => role.Name).ToHashSet()));
         }
     }
 }

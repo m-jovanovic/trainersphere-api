@@ -27,6 +27,7 @@ internal sealed class UserRegisteredDomainEventHandler : IDomainEventHandler<Use
                 notification.UserId.Value,
                 notification.Email,
                 notification.FirstName,
-                notification.LastName),
+                notification.LastName,
+                notification.Roles),
             cancellationToken);
 }

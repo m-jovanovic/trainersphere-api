@@ -55,27 +55,8 @@ public sealed class UserCreateTests
         domainEvent.Which.Email.Should().Be(data.Email);
         domainEvent.Which.FirstName.Should().Be(data.FirstName);
         domainEvent.Which.LastName.Should().Be(data.LastName);
-    }
-
-    [Theory]
-    [ClassData(typeof(CreateUserRequestData))]
-    public void Create_ShouldRaiseTrainerUserRegisteredDomainEvent_WhenItSucceeds(CreateUserRequest data)
-    {
-        // Arrange
-        // Act
-        Result<User> user = User.Create(data.Id, data.IdentityProviderId, data.Email, data.FirstName, data.LastName);
-
-        // Assert
-        AndWhichConstraint<ObjectAssertions, TrainerUserRegisteredDomainEvent> domainEvent = user.Value
-            .GetDomainEvents()
-            .Single(domainEvent => domainEvent is TrainerUserRegisteredDomainEvent)
-            .Should()
-            .BeOfType<TrainerUserRegisteredDomainEvent>();
-
-        domainEvent.Which.UserId.Should().Be(data.Id);
-        domainEvent.Which.Email.Should().Be(data.Email);
-        domainEvent.Which.FirstName.Should().Be(data.FirstName);
-        domainEvent.Which.LastName.Should().Be(data.LastName);
+        domainEvent.Which.Roles.Should().Contain(Role.Registered.Name);
+        domainEvent.Which.Roles.Should().Contain(Role.Trainer.Name);
     }
 
     [Theory]

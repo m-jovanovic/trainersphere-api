@@ -10,9 +10,11 @@ namespace Modules.Users.Domain.Users.Events;
 /// <param name="UserId">The user identifier.</param>
 /// <param name="FirstName">The first name.</param>
 /// <param name="LastName">The last name.</param>
+/// <param name="Roles">The roles.</param>
 public sealed record UserChangedDomainEvent(
     Guid Id,
     DateTime OccurredOnUtc,
     UserId UserId,
     string FirstName,
-    string LastName) : DomainEvent(Id, OccurredOnUtc);
+    string LastName,
+    HashSet<string> Roles) : DomainEvent(Id, OccurredOnUtc);

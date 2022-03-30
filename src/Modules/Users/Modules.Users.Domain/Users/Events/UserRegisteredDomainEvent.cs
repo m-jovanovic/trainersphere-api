@@ -11,10 +11,12 @@ namespace Modules.Users.Domain.Users.Events;
 /// <param name="Email">The email.</param>
 /// <param name="FirstName">The first name.</param>
 /// <param name="LastName">The last name.</param>
+/// <param name="Roles">The roles.</param>
 public sealed record UserRegisteredDomainEvent(
     Guid Id,
     DateTime OccurredOnUtc,
     UserId UserId,
     string Email,
     string FirstName,
-    string LastName) : DomainEvent(Id, OccurredOnUtc);
+    string LastName,
+    HashSet<string> Roles) : DomainEvent(Id, OccurredOnUtc);

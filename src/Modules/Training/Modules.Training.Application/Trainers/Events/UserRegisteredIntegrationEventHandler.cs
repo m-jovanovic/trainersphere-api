@@ -1,4 +1,6 @@
 ﻿using Application.EventBus;
+using Application.Extensions;
+using Microsoft.Extensions.Logging;
 using Modules.Training.Domain;
 using Modules.Training.Domain.Trainers;
 using Modules.Users.IntegrationEvents;
@@ -13,16 +15,22 @@ internal sealed class UserRegisteredIntegrationEventHandler : IntegrationEventHa
 {
     private readonly ITrainerRepository _trainerRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<UserRegisteredIntegrationEventHandler> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UserRegisteredIntegrationEventHandler"/> class.
     /// </summary>
     /// <param name="trainerRepository">The trainer repository.</param>
     /// <param name="unitOfWork">The unit of work.</param>
-    public UserRegisteredIntegrationEventHandler(ITrainerRepository trainerRepository, IUnitOfWork unitOfWork)
+    /// <param name="logger">The logger.</param>
+    public UserRegisteredIntegrationEventHandler(
+        ITrainerRepository trainerRepository,
+        IUnitOfWork unitOfWork,
+        ILogger<UserRegisteredIntegrationEventHandler> logger)
     {
         _trainerRepository = trainerRepository;
         _unitOfWork = unitOfWork;
+        _logger = logger;
     }
 
     /// <inheritdoc />
@@ -35,5 +43,6 @@ internal sealed class UserRegisteredIntegrationEventHandler : IntegrationEventHa
                 userRegisteredIntegrationEvent.FirstName,
                 userRegisteredIntegrationEvent.LastName))
             .Tap(trainer => _trainerRepository.Add(trainer))
-            .Tap(() => _unitOfWork.SaveChangesAsync(cancellationToken));
+            .Tap(() => _unitOfWork.SaveChangesAsync(cancellationToken))
+            .OnFailure(error => _logger.LogError(integrationEvent, error));
 }

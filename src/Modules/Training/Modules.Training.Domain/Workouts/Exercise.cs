@@ -1,6 +1,6 @@
 ﻿using Domain.Primitives;
 
-namespace Modules.Training.Domain.Exercises;
+namespace Modules.Training.Domain.Workouts;
 
 /// <summary>
 /// Represents the exercise entity.

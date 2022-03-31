@@ -12,14 +12,23 @@ public sealed class Exercise : Entity<ExerciseId>, IAuditable
     /// </summary>
     /// <param name="id">The identifier.</param>
     /// <param name="name">The name.</param>
-    public Exercise(ExerciseId id, string name)
-        : base(id) =>
+    /// <param name="description">Th description.</param>
+    public Exercise(ExerciseId id, string name, string? description = null)
+        : base(id)
+    {
         Name = name;
+        Description = description;
+    }
 
     /// <summary>
     /// Gets the name.
     /// </summary>
     public string Name { get; private set; }
+
+    /// <summary>
+    /// Gets the description, if it exists.
+    /// </summary>
+    public string? Description { get; private set; }
 
     /// <inheritdoc />
     public DateTime CreatedOnUtc { get; private set; }

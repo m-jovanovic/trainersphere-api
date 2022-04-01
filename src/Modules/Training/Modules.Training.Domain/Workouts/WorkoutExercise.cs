@@ -26,7 +26,7 @@ public sealed class WorkoutExercise
     /// <summary>
     /// Gets the exercise identifier.
     /// </summary>
-    public ExerciseId ExerciseId{ get; private set; }
+    public ExerciseId ExerciseId { get; private set; }
 
     /// <summary>
     /// Gets the rest interval type.

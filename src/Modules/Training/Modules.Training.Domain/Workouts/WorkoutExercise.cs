@@ -10,12 +10,12 @@ public sealed class WorkoutExercise
     /// </summary>
     /// <param name="workoutId">The workout identifier.</param>
     /// <param name="exerciseId">The exercise identifier.</param>
-    /// <param name="restIntervalType">The rest interval type.</param>
-    public WorkoutExercise(WorkoutId workoutId, ExerciseId exerciseId, RestIntervalType restIntervalType)
+    /// <param name="restInterval">The rest interval.</param>
+    public WorkoutExercise(WorkoutId workoutId, ExerciseId exerciseId, RestInterval restInterval)
     {
         WorkoutId = workoutId;
         ExerciseId = exerciseId;
-        RestIntervalType = restIntervalType;
+        RestInterval = restInterval;
     }
 
     /// <summary>
@@ -29,7 +29,7 @@ public sealed class WorkoutExercise
     public ExerciseId ExerciseId { get; private set; }
 
     /// <summary>
-    /// Gets the rest interval type.
+    /// Gets the rest interval.
     /// </summary>
-    public RestIntervalType RestIntervalType { get; private set; }
+    public RestInterval RestInterval { get; private set; }
 }

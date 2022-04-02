@@ -10,12 +10,14 @@ public sealed class WorkoutExercise
     /// </summary>
     /// <param name="workoutId">The workout identifier.</param>
     /// <param name="exerciseId">The exercise identifier.</param>
+    /// <param name="goal">The goal.</param>
     /// <param name="restInterval">The rest interval.</param>
-    public WorkoutExercise(WorkoutId workoutId, ExerciseId exerciseId, RestInterval restInterval)
+    internal WorkoutExercise(WorkoutId workoutId, ExerciseId exerciseId, Goal goal, RestInterval restInterval)
     {
         WorkoutId = workoutId;
         ExerciseId = exerciseId;
         RestInterval = restInterval;
+        Goal = goal;
     }
 
     /// <summary>
@@ -27,6 +29,11 @@ public sealed class WorkoutExercise
     /// Gets the exercise identifier.
     /// </summary>
     public ExerciseId ExerciseId { get; private set; }
+
+    /// <summary>
+    /// Gets the goal.
+    /// </summary>
+    public Goal Goal { get; private set; }
 
     /// <summary>
     /// Gets the rest interval.

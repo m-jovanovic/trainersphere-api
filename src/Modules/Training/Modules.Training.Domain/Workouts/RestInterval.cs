@@ -13,7 +13,7 @@ public sealed class RestInterval : ValueObject
     /// </summary>
     /// <param name="type">The type.</param>
     /// <param name="value">The value.</param>
-    private RestInterval(RestIntervalType type, string value)
+    private RestInterval(RestIntervalType type, int value)
     {
         Type = type;
         Value = value;
@@ -27,7 +27,7 @@ public sealed class RestInterval : ValueObject
     /// <summary>
     /// Gets the value.
     /// </summary>
-    public string Value { get; }
+    public int Value { get; }
 
     /// <summary>
     /// Creates a new rest interval instance based on the specified parameters.
@@ -35,7 +35,10 @@ public sealed class RestInterval : ValueObject
     /// <param name="type">The type.</param>
     /// <param name="value">The value.</param>
     /// <returns>The newly created rest interval instance.</returns>
-    public static Result<RestInterval> Create(RestIntervalType type, string value) => Result.Success(new RestInterval(type, value));
+    public static Result<RestInterval> Create(RestIntervalType type, int value) =>
+        value >= 0 ?
+            Result.Success(new RestInterval(type, value)) :
+            Result.Failure<RestInterval>(RestIntervalErrors.Invalid);
 
     /// <inheritdoc />
     protected override IEnumerable<object> GetAtomicValues()

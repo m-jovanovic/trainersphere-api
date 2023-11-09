@@ -41,10 +41,14 @@ internal sealed class UserRegisteredIntegrationEventHandler : IntegrationEventHa
     /// <inheritdoc />
     public override async Task Handle(UserRegisteredIntegrationEvent integrationEvent, CancellationToken cancellationToken = default) =>
         await Result.Create(integrationEvent)
-            .Filter(userRegisteredIntegrationEvent => userRegisteredIntegrationEvent.Roles.Contains(Client.Role))
-            .Filter(userRegisteredIntegrationEvent => userRegisteredIntegrationEvent.UserRegistrationId.HasValue)
+            .Filter(userRegisteredIntegrationEvent =>
+                userRegisteredIntegrationEvent.Roles.Contains(Client.Role))
+            .Filter(userRegisteredIntegrationEvent =>
+                userRegisteredIntegrationEvent.UserRegistrationId.HasValue)
             .Bind(userRegisteredIntegrationEvent =>
-                GetInvitationById(new InvitationId(userRegisteredIntegrationEvent.UserRegistrationId!.Value), cancellationToken))
+                GetInvitationById(
+                    new InvitationId(userRegisteredIntegrationEvent.UserRegistrationId!.Value),
+                    cancellationToken))
             .Bind(invitation => invitation.Accept(
                 new ClientId(integrationEvent.UserId),
                 integrationEvent.Email,

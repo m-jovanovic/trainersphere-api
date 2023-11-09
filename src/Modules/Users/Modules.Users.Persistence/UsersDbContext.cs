@@ -21,11 +21,8 @@ public sealed class UsersDbContext : DbContext
     protected override void OnModelCreating(
         ModelBuilder modelBuilder)
     {
-        modelBuilder
-            .HasDefaultSchema(
-                "users");
+        modelBuilder.HasDefaultSchema(Schemas.Users);
 
-        modelBuilder
-            .ApplyConfigurationsFromAssembly(AssemblyReference.Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(AssemblyReference.Assembly);
     }
 }

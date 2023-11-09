@@ -1,9 +1,8 @@
 ﻿using FluentAssertions;
 using FluentValidation.TestHelper;
-using Modules.Users.Application.Boundary.Users.Commands.RegisterUser;
 using Modules.Users.Application.UnitTests.Data.Users;
 using Modules.Users.Application.UnitTests.Utilities;
-using Modules.Users.Application.Users.Commands.RegisterUser;
+using Modules.Users.Application.Users.RegisterUser;
 using Modules.Users.Application.ValidationErrors;
 using Xunit;
 

@@ -4,7 +4,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Modules.Users.Application.Boundary.UserRegistrations.Commands.ConfirmUserRegistration;
+using Modules.Users.Application.UserRegistrations.ConfirmUserRegistration;
 using Modules.Users.Endpoints.Contracts.UserRegistrations;
 using Modules.Users.Endpoints.Routes;
 using Shared.Results;

@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Application.EventBus;
 using Modules.Users.Application.UnitTests.Data.Users;
-using Modules.Users.Application.Users.Commands.RegisterUser;
+using Modules.Users.Application.Users.RegisterUser;
 using Modules.Users.Domain.Users.Events;
 using Modules.Users.IntegrationEvents;
 using Moq;

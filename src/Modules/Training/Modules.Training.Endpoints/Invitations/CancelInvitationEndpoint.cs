@@ -4,7 +4,7 @@ using Endpoints.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Modules.Training.Application.Boundary.Invitations.Commands.CancelInvitation;
+using Modules.Training.Application.Invitations.CancelInvitation;
 using Modules.Training.Endpoints.Routes;
 using Shared.Results;
 using Swashbuckle.AspNetCore.Annotations;

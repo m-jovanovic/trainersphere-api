@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Common\Endpoints\Endpoints.csproj" />
-    <ProjectReference Include="..\Modules.Training.Application.Boundary\Modules.Training.Application.Boundary.csproj" />
+    <ProjectReference Include="..\Modules.Training.Application\Modules.Training.Application.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,5 +1,5 @@
 ﻿using Bogus;
-using Modules.Users.Application.Boundary.Users.Commands.RegisterUser;
+using Modules.Users.Application.Users.RegisterUser;
 using Xunit;
 
 namespace Modules.Users.Application.UnitTests.Data.Users;

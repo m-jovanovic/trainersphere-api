@@ -1,5 +1,4 @@
-﻿using Application.Contracts.EventBus;
-using Application.EventBus;
+﻿using Application.EventBus;
 using Application.ServiceLifetimes;
 using MassTransit;
 

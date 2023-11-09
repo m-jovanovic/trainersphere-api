@@ -1,5 +1,4 @@
-﻿using Application.Contracts.EventBus;
-using Application.Data;
+﻿using Application.Data;
 using Application.EventBus;
 using Application.Time;
 using Microsoft.Extensions.Options;

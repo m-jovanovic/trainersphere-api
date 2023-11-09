@@ -9,7 +9,7 @@ namespace App.ServiceInstallers.Swagger;
 /// <summary>
 /// Represents the authorize operation filter.
 /// </summary>
-internal class AuthorizeOperationFilter : IOperationFilter
+internal sealed class AuthorizeOperationFilter : IOperationFilter
 {
     private static readonly HttpStatusCode[] ResponseStatusCodes =
     {

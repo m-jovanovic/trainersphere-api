@@ -1,5 +1,4 @@
-﻿using Application.Contracts.EventBus;
-using Application.Data;
+﻿using Application.Data;
 using Application.EventBus;
 
 namespace Modules.Notifications.Infrastructure.Idempotence;

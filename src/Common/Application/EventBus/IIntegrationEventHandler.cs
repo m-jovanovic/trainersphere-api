@@ -1,6 +1,4 @@
-﻿using Application.Contracts.EventBus;
-
-namespace Application.EventBus;
+﻿namespace Application.EventBus;
 
 /// <summary>
 /// Represents the integration event handler interface.

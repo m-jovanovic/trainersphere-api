@@ -18,10 +18,14 @@ public sealed class UsersDbContext : DbContext
     }
 
     /// <inheritdoc />
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(
+        ModelBuilder modelBuilder)
     {
-        modelBuilder.HasDefaultSchema(Schemas.Users);
+        modelBuilder
+            .HasDefaultSchema(
+                "users");
 
-        modelBuilder.ApplyConfigurationsFromAssembly(AssemblyReference.Assembly);
+        modelBuilder
+            .ApplyConfigurationsFromAssembly(AssemblyReference.Assembly);
     }
 }

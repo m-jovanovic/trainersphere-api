@@ -4,7 +4,7 @@ using Endpoints.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Modules.Users.Application.Boundary.Users.Queries.GetUserByIdentityProviderId;
+using Modules.Users.Application.Users.GetUserByIdentityProviderId;
 using Modules.Users.Endpoints.Routes;
 using Shared.Results;
 using Swashbuckle.AspNetCore.Annotations;

@@ -18,7 +18,6 @@ COPY ["src/Common/Endpoints/Endpoints.csproj", "src/Common/Endpoints/"]
 
 # Modules - Users
 COPY ["src/Modules/Users/Modules.Users.Domain/Modules.Users.Domain.csproj", "src/Modules/Users/Modules.Users.Domain/"]
-COPY ["src/Modules/Users/Modules.Users.Application.Boundary/Modules.Users.Application.Boundary.csproj", "src/Modules/Users/Modules.Application.Boundary/"]
 COPY ["src/Modules/Users/Modules.Users.Application/Modules.Users.Application.csproj", "src/Modules/Users/Modules.Users.Application/"]
 COPY ["src/Modules/Users/Modules.Users.Endpoints/Modules.Users.Endpoints.csproj", "src/Modules/Users/Modules.Users.Endpoints/"]
 COPY ["src/Modules/Users/Modules.Users.Infrastructure/Modules.Users.Infrastructure.csproj", "src/Modules/Users/Modules.Users.Infrastructure/"]
@@ -26,7 +25,6 @@ COPY ["src/Modules/Users/Modules.Users.Persistence/Modules.Users.Persistence.csp
 
 # Modules - Training
 COPY ["src/Modules/Training/Modules.Training.Domain/Modules.Training.Domain.csproj", "src/Modules/Training/Modules.Training.Domain/"]
-COPY ["src/Modules/Training/Modules.Training.Application.Boundary/Modules.Training.Application.Boundary.csproj", "src/Modules/Training/Modules.Application.Boundary/"]
 COPY ["src/Modules/Training/Modules.Training.Application/Modules.Training.Application.csproj", "src/Modules/Training/Modules.Training.Application/"]
 COPY ["src/Modules/Training/Modules.Training.Endpoints/Modules.Training.Endpoints.csproj", "src/Modules/Training/Modules.Training.Endpoints/"]
 COPY ["src/Modules/Training/Modules.Training.Infrastructure/Modules.Training.Infrastructure.csproj", "src/Modules/Training/Modules.Training.Infrastructure/"]

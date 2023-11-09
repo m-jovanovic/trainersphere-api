@@ -1,4 +1,4 @@
-﻿using Application.Contracts.EventBus;
+﻿using Application.EventBus;
 using Domain.Primitives;
 using Microsoft.Extensions.Logging;
 using Shared.Errors;

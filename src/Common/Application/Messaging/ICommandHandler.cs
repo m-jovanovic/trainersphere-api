@@ -1,5 +1,4 @@
-﻿using Application.Contracts.Messaging;
-using MediatR;
+﻿using MediatR;
 using Shared.Results;
 
 namespace Application.Messaging;

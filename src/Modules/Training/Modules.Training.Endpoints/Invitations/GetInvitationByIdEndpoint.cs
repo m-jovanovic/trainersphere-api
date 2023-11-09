@@ -4,7 +4,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Modules.Training.Application.Boundary.Invitations.Queries.GetInvitationById;
+using Modules.Training.Application.Invitations.GetInvitationById;
 using Modules.Training.Endpoints.Routes;
 using Shared.Results;
 using Swashbuckle.AspNetCore.Annotations;

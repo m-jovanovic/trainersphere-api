@@ -5,7 +5,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Modules.Users.Application.Boundary.Users.Queries.GetUserById;
+using Modules.Users.Application.Users.GetUserById;
 using Modules.Users.Endpoints.Routes;
 using Shared.Results;
 using Swashbuckle.AspNetCore.Annotations;

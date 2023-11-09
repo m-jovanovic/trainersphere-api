@@ -4,7 +4,7 @@ using Endpoints.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Modules.Training.Application.Boundary.Invitations.Queries.GetInvitations;
+using Modules.Training.Application.Invitations.GetInvitations;
 using Modules.Training.Endpoints.Routes;
 using Shared.Results;
 using Swashbuckle.AspNetCore.Annotations;

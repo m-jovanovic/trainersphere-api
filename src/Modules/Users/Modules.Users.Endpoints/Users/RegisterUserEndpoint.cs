@@ -4,7 +4,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Modules.Users.Application.Boundary.Users.Commands.RegisterUser;
+using Modules.Users.Application.Users.RegisterUser;
 using Modules.Users.Endpoints.Contracts.Users;
 using Modules.Users.Endpoints.Routes;
 using Shared.Results;

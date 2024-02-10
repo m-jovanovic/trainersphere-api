@@ -12,7 +12,7 @@ namespace Persistence.Data;
 internal sealed class SqlConnectionFactory : ISqlConnectionFactory, IDisposable, ITransient
 {
     private readonly ConnectionStringOptions _connectionString;
-    private IDbConnection? _connection;
+    private NpgsqlConnection? _connection;
 
     public SqlConnectionFactory(IOptions<ConnectionStringOptions> connectionString) => _connectionString = connectionString.Value;
 

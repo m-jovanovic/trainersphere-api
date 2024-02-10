@@ -35,7 +35,7 @@ public sealed class ConvertDomainEventsToOutboxMessagesInterceptor : SaveChanges
         return base.SavingChangesAsync(eventData, result, cancellationToken);
     }
 
-    private static IEnumerable<OutboxMessage> CreateOutboxMessages(DbContext dbContext) =>
+    private static List<OutboxMessage> CreateOutboxMessages(DbContext dbContext) =>
         dbContext
             .ChangeTracker
             .Entries<IEntity>()

@@ -153,7 +153,7 @@ public sealed class BodyMetricsTests(ApiFactory factory) : TrainingTest(factory)
         await response.ShouldHaveStatusAsync(HttpStatusCode.OK);
     }
 
-    [Fact(Skip = "QA-F12: range messages read ''Weight Kg' must be between 20 and 400 with at most 2 decimals.', not 'Must be between ...'")]
+    [Fact]
     public async Task PutBodyMetric_OutOfRange_MessageHasNoPropertyNamePrefix()
     {
         (_, TestUser client) = await CreateUtcTrainerWithClientAsync();

@@ -55,7 +55,7 @@ internal sealed class ListAssignmentsHandler(IAssignmentRepository assignments, 
 
         if (to < from)
         {
-            return ValidationError.For("to", "'to' must not be before 'from'.");
+            return ValidationError.For("to", "Must not be before 'from'.");
         }
 
         if (to.DayNumber - from.DayNumber + 1 > TrainingRules.MaxAssignmentRangeDays)

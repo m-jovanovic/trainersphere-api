@@ -135,7 +135,7 @@ internal sealed record ExerciseProgressQuery(Viewer Viewer, Guid ClientId, Guid 
 internal sealed class ExerciseProgressValidator : AbstractValidator<ExerciseProgressQuery>
 {
     public ExerciseProgressValidator() =>
-        RuleFor(q => q.To).Must((q, to) => q.From is null || to is null || to >= q.From).WithMessage("'to' must not be before 'from'.");
+        RuleFor(q => q.To).Must((q, to) => q.From is null || to is null || to >= q.From).WithMessage("Must not be before 'from'.");
 }
 
 internal sealed class ExerciseProgressHandler(IClientRepository clients, IExerciseRepository exercises, IDbSession db)

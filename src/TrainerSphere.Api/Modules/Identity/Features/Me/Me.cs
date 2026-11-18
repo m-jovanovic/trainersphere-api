@@ -30,7 +30,7 @@ internal sealed class UpdateMeValidator : AbstractValidator<UpdateMeCommand>
     {
         RuleFor(c => c.FirstName).ValidName();
         RuleFor(c => c.LastName).ValidName();
-        RuleFor(c => c.Units).IsInEnum();
+        RuleFor(c => c.Units).Must(Enum.IsDefined).WithMessage($"Must be one of: {KebabCase.Allowed<Units>()}.");
         RuleFor(c => c.TimeZone).NotEmpty().ValidTimeZone();
     }
 }

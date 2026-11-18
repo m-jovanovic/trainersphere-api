@@ -64,6 +64,11 @@ internal interface ISessionRepository
     Task<IReadOnlyList<PersonalRecord>> GetPersonalRecordsAsync(Guid sessionId, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Gets every completed session of the client with its volume and completed set count.
+    /// </summary>
+    Task<IReadOnlyList<SessionVolume>> GetCompletedAsync(Guid clientId, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Gets, per exercise, the completed sets of the client's most recent other completed session that logged it.
     /// </summary>
     Task<IReadOnlyList<PerformedSet>> GetLastPerformanceAsync(Guid clientId, Guid exceptSessionId, IReadOnlyCollection<Guid> exerciseIds, CancellationToken cancellationToken);
@@ -71,6 +76,10 @@ internal interface ISessionRepository
 
 internal interface IBodyMetricRepository
 {
+    Task<IReadOnlyList<BodyMetric>> ListAsync(Guid clientId, DateOnly? from, DateOnly? to, CancellationToken cancellationToken);
+
+    Task<BodyMetric?> GetLatestAsync(Guid clientId, CancellationToken cancellationToken);
+
     Task UpsertAsync(BodyMetric metric, CancellationToken cancellationToken);
 
     Task DeleteAsync(Guid clientId, DateOnly date, CancellationToken cancellationToken);
@@ -361,6 +370,24 @@ internal sealed class SessionRepository(IDbSession db) : ISessionRepository
         return [.. rows.Select(r => r.ToDomain())];
     }
 
+    public async Task<IReadOnlyList<SessionVolume>> GetCompletedAsync(Guid clientId, CancellationToken cancellationToken)
+    {
+        IReadOnlyList<SessionVolumeRow> rows = await db.QueryAsync<SessionVolumeRow>(
+            """
+            SELECT s.id, s.started_at,
+                   COALESCE(sum(ss.weight_kg * ss.reps) FILTER (WHERE ss.completed), 0) AS volume_kg,
+                   count(ss.id) FILTER (WHERE ss.completed)::int AS completed_sets
+            FROM training.sessions s
+            LEFT JOIN training.session_sets ss ON ss.session_id = s.id
+            WHERE s.client_id = @ClientId AND s.status = 'Completed'
+            GROUP BY s.id, s.started_at
+            """,
+            new { ClientId = clientId },
+            cancellationToken);
+
+        return [.. rows.Select(r => new SessionVolume(r.Id, r.StartedAt, r.VolumeKg, r.CompletedSets))];
+    }
+
     public async Task<IReadOnlyList<PerformedSet>> GetLastPerformanceAsync(Guid clientId, Guid exceptSessionId, IReadOnlyCollection<Guid> exerciseIds, CancellationToken cancellationToken)
     {
         if (exerciseIds.Count == 0)
@@ -414,6 +441,17 @@ internal sealed record PersonalRecordRow
 
     public PersonalRecord ToDomain() =>
         new(Id, ClientId, TrainerId, ExerciseId, Enum.Parse<PersonalRecordType>(Type), Value, PreviousValue, WeightKg, Reps, SessionId, AchievedAt);
+}
+
+internal sealed record SessionVolumeRow
+{
+    public Guid Id { get; init; }
+
+    public DateTime StartedAt { get; init; }
+
+    public decimal VolumeKg { get; init; }
+
+    public int CompletedSets { get; init; }
 }
 
 internal sealed record PerformedSetRow
@@ -520,6 +558,33 @@ internal sealed record SessionSetRow
 
 internal sealed class BodyMetricRepository(IDbSession db) : IBodyMetricRepository
 {
+    public const string Columns =
+        "client_id, date, weight_kg, body_fat_percent, waist_cm, chest_cm, hips_cm, arm_cm, thigh_cm, resting_heart_rate, notes, recorded_by, updated_at";
+
+    public async Task<IReadOnlyList<BodyMetric>> ListAsync(Guid clientId, DateOnly? from, DateOnly? to, CancellationToken cancellationToken)
+    {
+        IReadOnlyList<BodyMetricRow> rows = await db.QueryAsync<BodyMetricRow>(
+            $"""
+            SELECT {Columns} FROM training.body_metrics
+            WHERE client_id = @ClientId AND (@From::date IS NULL OR date >= @From::date) AND (@To::date IS NULL OR date <= @To::date)
+            ORDER BY date
+            """,
+            new { ClientId = clientId, From = from, To = to },
+            cancellationToken);
+
+        return [.. rows.Select(r => r.ToDomain())];
+    }
+
+    public async Task<BodyMetric?> GetLatestAsync(Guid clientId, CancellationToken cancellationToken)
+    {
+        BodyMetricRow? row = await db.QuerySingleOrDefaultAsync<BodyMetricRow>(
+            $"SELECT {Columns} FROM training.body_metrics WHERE client_id = @ClientId ORDER BY date DESC LIMIT 1",
+            new { ClientId = clientId },
+            cancellationToken);
+
+        return row?.ToDomain();
+    }
+
     public Task UpsertAsync(BodyMetric metric, CancellationToken cancellationToken) =>
         db.ExecuteAsync(
             """
@@ -550,4 +615,49 @@ internal sealed class BodyMetricRepository(IDbSession db) : IBodyMetricRepositor
 
     public Task DeleteAsync(Guid clientId, DateOnly date, CancellationToken cancellationToken) =>
         db.ExecuteAsync("DELETE FROM training.body_metrics WHERE client_id = @ClientId AND date = @Date", new { ClientId = clientId, Date = date }, cancellationToken);
+}
+
+internal sealed record BodyMetricRow
+{
+    public Guid ClientId { get; init; }
+
+    public DateOnly Date { get; init; }
+
+    public decimal? WeightKg { get; init; }
+
+    public decimal? BodyFatPercent { get; init; }
+
+    public decimal? WaistCm { get; init; }
+
+    public decimal? ChestCm { get; init; }
+
+    public decimal? HipsCm { get; init; }
+
+    public decimal? ArmCm { get; init; }
+
+    public decimal? ThighCm { get; init; }
+
+    public int? RestingHeartRate { get; init; }
+
+    public string? Notes { get; init; }
+
+    public string RecordedBy { get; init; } = string.Empty;
+
+    public DateTime UpdatedAt { get; init; }
+
+    public BodyMetric ToDomain() =>
+        new(
+            ClientId,
+            Date,
+            WeightKg,
+            BodyFatPercent,
+            WaistCm,
+            ChestCm,
+            HipsCm,
+            ArmCm,
+            ThighCm,
+            RestingHeartRate,
+            Notes,
+            Enum.Parse<Domain.RecordedBy>(RecordedBy),
+            UpdatedAt);
 }

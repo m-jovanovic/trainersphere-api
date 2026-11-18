@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using TrainerSphere.Api.Host;
 using TrainerSphere.Api.Modules.Identity.Data;
+using TrainerSphere.Api.Modules.Identity.Features.DemoSeed;
 using TrainerSphere.Api.Modules.Identity.Infrastructure;
 using TrainerSphere.SharedKernel.Http;
 using TrainerSphere.SharedKernel.Migrations;
@@ -50,5 +52,6 @@ internal sealed class IdentityModule : IModule
         services.AddScoped<RefreshTokenRepository>();
         services.AddScoped<InvitationRepository>();
         services.AddScoped<PasswordResetRepository>();
+        services.AddScoped<IDemoSeeder, IdentityDemoSeeder>();
     }
 }

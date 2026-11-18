@@ -42,6 +42,7 @@ internal static class HostingExtensions
 
         services.AddSingleton<MigrationRunner>();
         services.AddScoped<IStartupTask, MigrationStartupTask>();
+        services.AddScoped<IStartupTask, DemoSeedStartupTask>();
 
         foreach (IModule module in ModuleCatalog.All)
         {

@@ -1,0 +1,13 @@
+node_modules
+dist
+.tanstack
+coverage
+playwright-report
+test-results
+blob-report
+e2e/.auth
+*.local
+.env.local
+*.log
+Dockerfile
+.dockerignore

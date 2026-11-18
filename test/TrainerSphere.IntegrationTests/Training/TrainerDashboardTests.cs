@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using TrainerSphere.Api.Modules.Identity.Contracts;
 using TrainerSphere.IntegrationTests.Builders;
 using TrainerSphere.IntegrationTests.Contracts;
 using TrainerSphere.IntegrationTests.Infrastructure;
@@ -165,7 +166,7 @@ public sealed class TrainerDashboardTests(ApiFactory factory) : TrainingTest(fac
         sessions[0].GetProperty("client").GetProperty("id").GetGuid().ShouldBe(sessions[0].GetProperty("clientId").GetGuid());
     }
 
-    [Fact(Skip = "QA-F13: dashboard invitation createdAt is the event time, not the invitation's createdAt from GET /api/invitations")]
+    [Fact]
     public async Task PendingInvitations_CountsAllAndListsTheTenNewestAsTheInvitationList()
     {
         TestUser trainer = await CreateUtcTrainerAsync();
@@ -204,7 +205,7 @@ public sealed class TrainerDashboardTests(ApiFactory factory) : TrainingTest(fac
         pending.GetProperty("items").EnumerateArray().ShouldNotContain(i => i.GetProperty("id").GetGuid() == expired.Invitation.Id);
     }
 
-    [Fact(Skip = "QA-F13: a resend overwrites the projected createdAt with the resend time, so the item and its order differ from GET /api/invitations")]
+    [Fact]
     public async Task PendingInvitations_AfterAResend_MatchTheInvitationList()
     {
         TestUser trainer = await CreateUtcTrainerAsync();
@@ -235,6 +236,29 @@ public sealed class TrainerDashboardTests(ApiFactory factory) : TrainingTest(fac
         JsonElement pending = (await DashboardAsync(trainer)).GetProperty("pendingInvitations");
         pending.GetProperty("count").GetInt32().ShouldBe(1);
         pending.GetProperty("items")[0].GetProperty("id").GetGuid().ShouldBe(invitation.Invitation.Id);
+    }
+
+    [Fact]
+    public async Task PendingInvitations_AStaleIssueEventRedeliveredAfterAResend_KeepsTheLaterExpiry()
+    {
+        TestUser trainer = await CreateUtcTrainerAsync();
+        IssuedInvitation invitation = await InviteAsync(trainer);
+        await Factory.WaitForMessagesAsync();
+        InvitationIssued original = Factory.Events.OfType<InvitationIssued>().First(e => e.InvitationId == invitation.Invitation.Id);
+        await Task.Delay(20, Ct);
+        await (await trainer.Client.PostAsync(IdentityRoutes.Resend(invitation.Invitation.Id), null, Ct)).ShouldHaveStatusAsync(HttpStatusCode.OK);
+        await Factory.WaitForMessagesAsync();
+        Invitation resent = (await (await trainer.Client.GetAsync($"{IdentityRoutes.Invitations}?status=pending", Ct)).ShouldHaveJsonAsync<Paged<Invitation>>()).Items.ShouldHaveSingleItem();
+        resent.ExpiresAt.ShouldBeGreaterThan(new DateTimeOffset(original.ExpiresAt, TimeSpan.Zero));
+
+        // Redeliver the first issue event to Training as if it arrived late: unprocessed and its handler not yet run.
+        (await Factory.ExecuteAsync("UPDATE training.inbox_messages SET processed_at = NULL WHERE id = @Id", new { original.Id })).ShouldBe(1);
+        (await Factory.ExecuteAsync("DELETE FROM training.inbox_message_consumers WHERE message_id = @Id", new { original.Id })).ShouldBeGreaterThan(0);
+        await Factory.WaitForMessagesAsync();
+
+        Invitation[] items = (await DashboardAsync(trainer)).GetProperty("pendingInvitations").GetProperty("items").Deserialize<Invitation[]>(HttpAssertions.Json)!;
+
+        items.ShouldBeJson(new[] { resent });
     }
 
     [Fact]

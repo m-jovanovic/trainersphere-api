@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import type { User } from '@/lib/api/types';
+import type { Units, User } from '@/lib/api/types';
 import { refreshSession } from '@/lib/api/http';
 import { session, type SessionState } from './session';
 
@@ -15,6 +15,10 @@ export function useUser(): User {
   const user = useSession().user ?? session.lastUser();
   if (!user) throw new Error('useUser called outside an authenticated route');
   return user;
+}
+
+export function useUnits(): Units {
+  return useUser().units;
 }
 
 let bootstrap: Promise<void> | null = null;

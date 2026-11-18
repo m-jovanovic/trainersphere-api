@@ -28,7 +28,7 @@ public sealed class EmailTemplateTests
     [Fact]
     public void InvitationEmail_ContainsLinkExpiryAndTrainerMessage()
     {
-        InvitationIssued invitation = new(Guid.NewGuid(), Now, Guid.NewGuid(), Guid.NewGuid(), "alex@example.com", "Alex", "Novak", "Maya Novak", "Excited to work with you!", "tok_123", Now.AddDays(7));
+        InvitationIssued invitation = new(Guid.NewGuid(), Now, Guid.NewGuid(), Guid.NewGuid(), "alex@example.com", "Alex", "Novak", "Maya Novak", "Excited to work with you!", "tok_123", Now, Now.AddDays(7));
 
         EmailMessage email = InvitationEmail.Compose(invitation, Links);
 
@@ -44,7 +44,7 @@ public sealed class EmailTemplateTests
     [Fact]
     public void InvitationEmail_WithoutMessage_HasNoQuote()
     {
-        InvitationIssued invitation = new(Guid.NewGuid(), Now, Guid.NewGuid(), Guid.NewGuid(), "alex@example.com", "Alex", "Novak", "Maya Novak", Message: "  ", "tok", Now.AddDays(7));
+        InvitationIssued invitation = new(Guid.NewGuid(), Now, Guid.NewGuid(), Guid.NewGuid(), "alex@example.com", "Alex", "Novak", "Maya Novak", Message: "  ", "tok", Now, Now.AddDays(7));
 
         EmailMessage email = InvitationEmail.Compose(invitation, Links);
 
@@ -55,7 +55,7 @@ public sealed class EmailTemplateTests
     [Fact]
     public void Emails_HtmlEncodeEveryDynamicValue()
     {
-        InvitationIssued invitation = new(Guid.NewGuid(), Now, Guid.NewGuid(), Guid.NewGuid(), "alex@example.com", "<b>Alex</b>", "Novak", "Maya & Co", "<img src=x onerror=alert(1)>", "tok", Now.AddDays(7));
+        InvitationIssued invitation = new(Guid.NewGuid(), Now, Guid.NewGuid(), Guid.NewGuid(), "alex@example.com", "<b>Alex</b>", "Novak", "Maya & Co", "<img src=x onerror=alert(1)>", "tok", Now, Now.AddDays(7));
 
         EmailMessage email = InvitationEmail.Compose(invitation, Links);
 

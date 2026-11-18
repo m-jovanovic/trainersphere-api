@@ -8,6 +8,20 @@ namespace TrainerSphere.IntegrationTests.Identity;
 public sealed class InvitationResendTests(ApiFactory factory) : IntegrationTest(factory), IClassFixture<ApiFactory>
 {
     [Fact]
+    public async Task ResendInvitation_ExpiresAt_IsTheValueTheListReturns()
+    {
+        TestUser trainer = await CreateTrainerAsync();
+        IssuedInvitation issued = await InviteAsync(trainer);
+
+        HttpResponseMessage response = await trainer.Client.PostAsync(IdentityRoutes.Resend(issued.Invitation.Id), content: null, Ct);
+
+        System.Text.Json.JsonElement resent = await (await response.ShouldHaveStatusAsync(HttpStatusCode.OK)).ReadJsonAsync();
+        System.Text.Json.JsonElement listed = (await (await trainer.Client.GetAsync(IdentityRoutes.Invitations, Ct)).ReadJsonAsync())
+            .GetProperty("items").EnumerateArray().Single(i => i.GetProperty("id").GetString() == issued.Invitation.Id.ToString());
+        listed.GetProperty("expiresAt").GetString().ShouldBe(resent.GetProperty("expiresAt").GetString());
+    }
+
+    [Fact]
     public async Task ResendInvitation_WhenPending_Returns200WithRestartedExpiry()
     {
         TestUser trainer = await CreateTrainerAsync();

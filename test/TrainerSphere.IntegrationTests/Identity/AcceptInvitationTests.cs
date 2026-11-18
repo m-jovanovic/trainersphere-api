@@ -13,6 +13,20 @@ public sealed class AcceptInvitationTests(ApiFactory factory) : IntegrationTest(
     public static TheoryData<string> InvalidNames => [string.Empty, "   ", new string('n', 101)];
 
     [Fact]
+    public async Task AcceptInvitation_CreatedAt_IsTheSameValueGetMeReturns()
+    {
+        TestUser trainer = await CreateTrainerAsync();
+        IssuedInvitation issued = await InviteAsync(trainer);
+        HttpResponseMessage response = await Factory.AcceptInvitationAsync(issued.Token);
+        AuthResponse auth = await response.ShouldHaveJsonAsync<AuthResponse>(HttpStatusCode.Created);
+        string? acceptedAt = (await response.ReadJsonAsync()).Property("user.createdAt").GetString();
+
+        HttpResponseMessage me = await Factory.CreateBearerClient(auth.AccessToken).GetAsync(IdentityRoutes.Me, Ct);
+
+        (await me.ReadJsonAsync()).GetProperty("createdAt").GetString().ShouldBe(acceptedAt);
+    }
+
+    [Fact]
     public async Task AcceptInvitation_WhenPending_Returns201AuthResponseForNewClient()
     {
         TestUser trainer = await CreateTrainerAsync();

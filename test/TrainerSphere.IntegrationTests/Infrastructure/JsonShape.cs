@@ -30,6 +30,21 @@ public static class JsonShape
         return element;
     }
 
+    /// <summary>
+    /// Asserts two deserialized values are equal by their JSON, for records whose list members make record
+    /// equality reference-based. Numbers compare numerically: reads serialize some decimals with trailing zeros
+    /// ("60.00") where writes return "60", which is the same JSON number.
+    /// </summary>
+    public static void ShouldBeJson<T>(this T actual, T expected)
+    {
+        using var actualDocument = JsonDocument.Parse(JsonSerializer.Serialize(actual, HttpAssertions.Json));
+        using var expectedDocument = JsonDocument.Parse(JsonSerializer.Serialize(expected, HttpAssertions.Json));
+        if (!JsonEquals(actualDocument.RootElement, expectedDocument.RootElement))
+        {
+            actualDocument.RootElement.GetRawText().ShouldBe(expectedDocument.RootElement.GetRawText());
+        }
+    }
+
     public static JsonElement Property(this JsonElement element, string path)
     {
         JsonElement current = element;
@@ -55,4 +70,17 @@ public static class JsonShape
         value.ShouldEndWith("Z", Case.Sensitive, $"'{name}' must be UTC: {value}");
         DateTimeOffset.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, out _).ShouldBeTrue(value);
     }
+
+    private static bool JsonEquals(JsonElement actual, JsonElement expected) =>
+        (actual.ValueKind, expected.ValueKind) switch
+        {
+            (JsonValueKind.Number, JsonValueKind.Number) => actual.GetDecimal() == expected.GetDecimal(),
+            (JsonValueKind.Object, JsonValueKind.Object) =>
+                actual.EnumerateObject().Count() == expected.EnumerateObject().Count() &&
+                actual.EnumerateObject().All(p => expected.TryGetProperty(p.Name, out JsonElement match) && JsonEquals(p.Value, match)),
+            (JsonValueKind.Array, JsonValueKind.Array) =>
+                actual.GetArrayLength() == expected.GetArrayLength() &&
+                actual.EnumerateArray().Zip(expected.EnumerateArray()).All(pair => JsonEquals(pair.First, pair.Second)),
+            _ => actual.GetRawText() == expected.GetRawText(),
+        };
 }

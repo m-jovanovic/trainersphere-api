@@ -393,6 +393,7 @@ export interface SessionSummary {
   completedAt: Iso | null;
   totalVolumeKg: number;
   completedSets: number;
+  /** Exercises that set at least one record in the session (not the number of record types). */
   personalRecordCount: number;
 }
 

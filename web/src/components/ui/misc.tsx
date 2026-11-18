@@ -26,7 +26,8 @@ const badgeTones = {
   primary: 'bg-primary-soft text-primary-soft-fg border-transparent',
   pr: 'bg-pr-soft text-pr border-transparent',
   danger: 'bg-danger-soft text-danger border-transparent',
-  warning: 'bg-pr-soft text-warning border-transparent',
+  // Amber belongs to personal records; warnings use a neutral outline.
+  warning: 'bg-surface text-fg border-border-strong',
 };
 
 export function Badge({ tone = 'neutral', className, ...props }: ComponentProps<'span'> & { tone?: keyof typeof badgeTones }) {

@@ -18,7 +18,7 @@ export function SyncStatus({ compact }: { compact?: boolean }) {
       className={cn(
         'flex items-center gap-1.5 rounded-full border border-border bg-surface-2 text-xs font-medium',
         compact ? 'px-2 py-1' : 'px-3 py-1.5',
-        !online && 'text-warning',
+        !online && 'border-border-strong text-fg',
       )}
     >
       {online ? <RefreshCw className="size-3.5 animate-spin" aria-hidden /> : <CloudOff className="size-3.5" aria-hidden />}

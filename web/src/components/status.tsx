@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/misc';
 const statusMeta = {
   scheduled: { tone: 'neutral', label: 'Scheduled', icon: CalendarClock },
   completed: { tone: 'primary', label: 'Completed', icon: CircleCheck },
-  skipped: { tone: 'warning', label: 'Skipped', icon: CircleSlash },
+  skipped: { tone: 'neutral', label: 'Skipped', icon: CircleSlash },
   missed: { tone: 'danger', label: 'Missed', icon: CircleX },
 } as const;
 
@@ -30,9 +30,10 @@ export function AssignmentStatusBadge({ status, inProgress }: { status: Assignme
   );
 }
 
+// Amber is reserved for personal records; below target is neutral, and only a collapse is red.
 function adherenceTone(rate: number) {
   if (rate >= 0.8) return 'bg-primary';
-  if (rate >= 0.5) return 'bg-warning';
+  if (rate >= 0.34) return 'bg-muted';
   return 'bg-danger';
 }
 

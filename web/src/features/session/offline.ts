@@ -1,6 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { sessionsApi } from '@/lib/api/endpoints';
-import { ApiError, NetworkError } from '@/lib/api/http';
+import { ApiError, NetworkError, errorMessage } from '@/lib/api/http';
 import { keys, queries } from '@/lib/api/queries';
 import type { Assignment, PutSetRequest, Session, SessionSet, StartSessionRequest } from '@/lib/api/types';
 
@@ -10,6 +11,8 @@ export const sessionKeys = {
   deleteSet: ['session', 'delete-set'] as const,
   complete: ['session', 'complete'] as const,
 };
+
+export type StartVars = StartSessionRequest & { id: string };
 
 export interface PutSetVars {
   sessionId: string;
@@ -24,6 +27,18 @@ export interface CompleteVars {
   sessionId: string;
   completedAt: string;
   notes: string | null;
+}
+
+type SessionKey = (typeof sessionKeys)[keyof typeof sessionKeys];
+
+/**
+ * Runs a session write through the mutation defaults below. Every write for one session shares a
+ * scope, so queued writes replay in order after reconnecting: start, then sets, then complete.
+ * Returns the mutation promise; callers that don't await it must not let it reject unhandled.
+ */
+export function runSessionWrite(qc: QueryClient, key: SessionKey, sessionId: string, variables: StartVars | PutSetVars | DeleteSetVars | CompleteVars): Promise<unknown> {
+  const mutation = qc.getMutationCache().build<unknown, unknown, unknown, unknown>(qc, { mutationKey: key, scope: { id: `session:${sessionId}` } });
+  return mutation.execute(variables);
 }
 
 /** Network failures retry until the write lands; the API makes every session write idempotent. */
@@ -44,6 +59,17 @@ export function upsertSet(session: Session, set: SessionSet): Session {
       return { ...e, sets: [...others, set].sort((a, b) => a.setNumber - b.setNumber) };
     }),
   };
+}
+
+/**
+ * Server copy plus what exists only on this device: sets logged while the start request was
+ * queued, and exercises added mid-session that have no sets on the server yet.
+ */
+export function mergeLocal(server: Session, local: Session): Session {
+  const known = new Set(server.exercises.map((e) => e.position));
+  const extra = local.exercises.filter((e) => !known.has(e.position)).map((e) => ({ ...e, sets: [] }));
+  const withExtra = { ...server, exercises: [...server.exercises, ...extra].sort((a, b) => a.position - b.position) };
+  return local.exercises.flatMap((e) => e.sets).reduce(upsertSet, withExtra);
 }
 
 export function removeSet(session: Session, setId: string): Session {
@@ -81,6 +107,21 @@ export function optimisticSession(id: string, assignment: Assignment, startedAt:
   };
 }
 
+export function optimisticAdHocSession(id: string, clientId: string, workoutName: string, startedAt: string): Session {
+  return {
+    id,
+    clientId,
+    assignmentId: null,
+    workoutName,
+    status: 'in-progress',
+    startedAt,
+    completedAt: null,
+    notes: null,
+    exercises: [],
+    summary: { totalVolumeKg: 0, completedSets: 0, totalReps: 0, durationSeconds: null, personalRecords: [] },
+  };
+}
+
 /**
  * Mutation functions are registered by key (not inline in components) so that writes queued
  * offline and persisted to storage can resume after a reload, when no component is mounted.
@@ -89,14 +130,12 @@ export function registerMutationDefaults(qc: QueryClient) {
   const detailKey = (id: string) => queries.session(id).queryKey;
 
   qc.setMutationDefaults(sessionKeys.start, {
-    mutationFn: (body: StartSessionRequest & { id: string }) => sessionsApi.start(body),
+    mutationFn: (body: StartVars) => sessionsApi.start(body),
     retry: retryWrite,
     retryDelay,
     onSuccess: (session: Session) => {
       const local = qc.getQueryData<Session>(detailKey(session.id));
-      // Keep sets logged locally while the start request was queued.
-      const merged = local ? local.exercises.flatMap((e) => e.sets).reduce(upsertSet, session) : session;
-      qc.setQueryData(detailKey(session.id), merged);
+      qc.setQueryData(detailKey(session.id), local ? mergeLocal(session, local) : session);
       void qc.invalidateQueries({ queryKey: keys.dashboard });
       void qc.invalidateQueries({ queryKey: keys.assignments });
     },
@@ -112,9 +151,10 @@ export function registerMutationDefaults(qc: QueryClient) {
       if (prev) qc.setQueryData(detailKey(sessionId), upsertSet(prev, { id: setId, ...body, updatedAt: new Date().toISOString() }));
       return { prev };
     },
-    onError: (_err, { sessionId }: PutSetVars, ctx) => {
+    onError: (err, { sessionId }: PutSetVars, ctx) => {
       const prev = (ctx as { prev?: Session } | undefined)?.prev;
       if (prev) qc.setQueryData(detailKey(sessionId), prev);
+      toast.error(`Set not saved: ${errorMessage(err)}`);
     },
   });
 
@@ -128,6 +168,11 @@ export function registerMutationDefaults(qc: QueryClient) {
       if (prev) qc.setQueryData(detailKey(sessionId), removeSet(prev, setId));
       return { prev };
     },
+    onError: (err, { sessionId }: DeleteSetVars, ctx) => {
+      const prev = (ctx as { prev?: Session } | undefined)?.prev;
+      if (prev) qc.setQueryData(detailKey(sessionId), prev);
+      toast.error(`Set not removed: ${errorMessage(err)}`);
+    },
   });
 
   qc.setMutationDefaults(sessionKeys.complete, {
@@ -137,6 +182,12 @@ export function registerMutationDefaults(qc: QueryClient) {
     onMutate: ({ sessionId, completedAt, notes }: CompleteVars) => {
       const prev = qc.getQueryData<Session>(detailKey(sessionId));
       if (prev) qc.setQueryData(detailKey(sessionId), { ...prev, status: 'completed', completedAt, notes });
+      return { prev };
+    },
+    onError: (err, { sessionId }: CompleteVars, ctx) => {
+      const prev = (ctx as { prev?: Session } | undefined)?.prev;
+      if (prev) qc.setQueryData(detailKey(sessionId), prev);
+      toast.error(`Workout not finished: ${errorMessage(err)}`);
     },
     onSuccess: (session: Session) => {
       qc.setQueryData(detailKey(session.id), session);

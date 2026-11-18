@@ -132,7 +132,26 @@ function emptyState(): DbState {
 
 // ---- Projections ------------------------------------------------------------
 
-export const nowIso = () => new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+export const toUtcIso = (ms: number) => new Date(ms).toISOString().replace(/\.\d{3}Z$/, 'Z');
+export const nowIso = () => toUtcIso(Date.now());
+
+/**
+ * Seeded session times: `hour:minute` local time on `date`, as UTC ISO strings like the real API
+ * sends. A session seeded for today never ends in the future, even early in the morning.
+ */
+export function seedSessionTimes(date: string, today: string, hour: number, minute: number, minutes: number): { start: string; end: string } {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  let start = new Date(`${date}T${pad(hour)}:${pad(minute)}:00`).getTime();
+  let end = start + minutes * 60_000;
+  if (date === today) {
+    const now = Date.now();
+    const midnight = new Date(`${today}T00:00:00`).getTime();
+    end = Math.min(end, now - 5 * 60_000);
+    start = Math.max(midnight, Math.min(start, end - minutes * 60_000));
+    if (end <= start) end = Math.min(now, start + 60_000);
+  }
+  return { start: toUtcIso(start), end: toUtcIso(end) };
+}
 
 export function exerciseRef(id: string): T.ExerciseRef {
   const e = db.state.exercises.find((x) => x.id === id);
@@ -233,7 +252,7 @@ export function toSessionSummary(s: DbSession): T.SessionSummary {
     completedAt: s.completedAt,
     totalVolumeKg: t.totalVolumeKg,
     completedSets: t.completedSets,
-    personalRecordCount: s.personalRecords.length,
+    personalRecordCount: new Set(s.personalRecords.map((p) => p.exerciseId)).size,
   };
 }
 
@@ -683,7 +702,7 @@ export function seed(today = todayIso()): DbState {
         if (r() < 0.4) a.status = 'skipped';
         continue;
       }
-      const start = `${d.date}T${String(16 + ci).padStart(2, '0')}:0${ci}:00Z`;
+      const { start, end } = seedSessionTimes(d.date, today, 16 + ci, ci, 45 + Math.floor(r() * 25));
       const s: DbSession = {
         id: newId(),
         clientId: id,
@@ -697,7 +716,8 @@ export function seed(today = todayIso()): DbState {
         sets: [],
         personalRecords: [],
       };
-      const progress = 1 + sessionIndex * 0.012;
+      // Loads step up every third session, so records come now and then rather than every time.
+      const progress = 1 + Math.floor(sessionIndex / 3) * 0.03;
       for (const p of s.plan) {
         const target = p.prescription;
         for (let n = 1; n <= target.sets; n++) {
@@ -721,8 +741,7 @@ export function seed(today = todayIso()): DbState {
       }
       a.sessionId = s.id;
       state.sessions.push(s);
-      const minutes = 45 + Math.floor(r() * 25);
-      completeSession(s, new Date(Date.parse(start) + minutes * 60_000).toISOString().replace(/\.\d{3}Z$/, 'Z'));
+      completeSession(s, end);
       sessionIndex += 1;
     }
 
@@ -743,7 +762,7 @@ export function seed(today = todayIso()): DbState {
         restingHeartRate: 60 - ci * 2 + Math.round(r() * 4),
         notes: null,
         recordedBy: wk % 3 === 0 ? 'trainer' : 'client',
-        updatedAt: `${date}T07:00:00Z`,
+        updatedAt: toUtcIso(Math.min(new Date(`${date}T07:00:00`).getTime(), Date.now())),
       });
     }
   });

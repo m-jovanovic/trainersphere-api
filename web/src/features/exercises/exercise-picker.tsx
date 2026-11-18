@@ -14,7 +14,7 @@ import { ExerciseArt } from '@/components/exercise-art';
 import { ExerciseFormDialog } from './exercise-form';
 
 /** Multi-select exercise browser used by the workout builder. Selection order is kept. */
-export function ExercisePicker({ open, onOpenChange, onAdd }: { open: boolean; onOpenChange: (o: boolean) => void; onAdd: (exercises: Exercise[]) => void }) {
+export function ExercisePicker({ open, onOpenChange, onAdd, allowCreate = true }: { open: boolean; onOpenChange: (o: boolean) => void; onAdd: (exercises: Exercise[]) => void; allowCreate?: boolean }) {
   const [text, setText] = useState('');
   const [muscle, setMuscle] = useState('');
   const [selected, setSelected] = useState<Exercise[]>([]);
@@ -39,10 +39,12 @@ export function ExercisePicker({ open, onOpenChange, onAdd }: { open: boolean; o
         title="Add exercises"
         footer={
           <>
-            <Button variant="ghost" className="sm:mr-auto" onClick={() => setCreating(true)}>
-              <Plus aria-hidden />
-              New custom exercise
-            </Button>
+            {allowCreate && (
+              <Button variant="ghost" className="sm:mr-auto" onClick={() => setCreating(true)}>
+                <Plus aria-hidden />
+                New custom exercise
+              </Button>
+            )}
             <Button
               disabled={selected.length === 0}
               onClick={() => {
@@ -73,7 +75,7 @@ export function ExercisePicker({ open, onOpenChange, onAdd }: { open: boolean; o
             ))}
           </div>
         ) : list.data.items.length === 0 ? (
-          <EmptyState title="No exercises found" description="Try another search or create a custom exercise." />
+          <EmptyState title="No exercises found" description={allowCreate ? 'Try another search or create a custom exercise.' : 'Try another search.'} />
         ) : (
           <ul aria-label="Exercises" className="flex flex-col gap-1">
             {list.data.items.map((e) => {

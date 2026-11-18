@@ -97,6 +97,40 @@ export const prLabels: Record<PrType, string> = {
   'max-volume': 'Session volume',
 };
 
+export const prShortLabels: Record<PrType, string> = {
+  'estimated-1rm': 'e1RM',
+  'max-weight': 'heaviest set',
+  'max-reps': 'most reps',
+  'max-volume': 'volume',
+};
+
+/** Which record leads when one exercise sets several in a session: the most tangible first. */
+const prPriority: PrType[] = ['max-weight', 'estimated-1rm', 'max-reps', 'max-volume'];
+
+export interface PrGroup<T extends PersonalRecord = PersonalRecord> {
+  key: string;
+  primary: T;
+  others: T[];
+}
+
+/** One entry per exercise per session, keeping the input order (newest first from the API). */
+export function groupPersonalRecords<T extends PersonalRecord>(prs: T[]): PrGroup<T>[] {
+  const groups = new Map<string, T[]>();
+  for (const pr of prs) {
+    const key = `${pr.sessionId}|${pr.exerciseId}`;
+    groups.set(key, [...(groups.get(key) ?? []), pr]);
+  }
+  return [...groups.entries()].map(([key, list]) => {
+    const primary = list.reduce((best, p) => (prPriority.indexOf(p.type) < prPriority.indexOf(best.type) ? p : best));
+    return { key, primary, others: list.filter((p) => p !== primary).sort((a, b) => prPriority.indexOf(a.type) - prPriority.indexOf(b.type)) };
+  });
+}
+
+export function prGroupLabel(g: PrGroup): string {
+  const also = g.others.map((o) => prShortLabels[o.type]).join(', ');
+  return also ? `${prLabels[g.primary.type]} · also ${also}` : prLabels[g.primary.type];
+}
+
 /** Headline value of a PR in the user's units. */
 export function formatPrValue(pr: Pick<PersonalRecord, 'type' | 'value'>, units: Units): string {
   switch (pr.type) {

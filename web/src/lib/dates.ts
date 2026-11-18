@@ -34,9 +34,14 @@ export function relativeDay(d: IsoDate, today: IsoDate = todayIso()): string {
   return formatDay(d, diff > -7 && diff < 7 ? 'EEEE' : 'EEE d MMM');
 }
 
-export function formatAgo(iso: Iso | null, never = 'Never'): string {
+const CLOCK_SKEW_MS = 5 * 60_000;
+
+/** "3 hours ago". A timestamp slightly ahead of the device clock reads as "just now" rather than "in 2 minutes". */
+export function formatAgo(iso: Iso | null, never = 'Never', now: number = Date.now()): string {
   if (!iso) return never;
-  return formatDistanceToNowStrict(parseISO(iso), { addSuffix: true });
+  const t = parseISO(iso).getTime();
+  if (t >= now - 30_000 && t - now < CLOCK_SKEW_MS) return 'just now';
+  return formatDistanceToNowStrict(t, { addSuffix: true });
 }
 
 export function formatDateTime(iso: Iso, pattern = 'EEE d MMM, HH:mm'): string {

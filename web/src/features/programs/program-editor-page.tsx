@@ -159,7 +159,7 @@ function Editor({ program }: { program: Program | undefined }) {
           )}
         </div>
         {outOfRange > 0 && (
-          <p role="status" className="rounded-lg bg-pr-soft px-3 py-2 text-sm text-warning">
+          <p role="status" className="rounded-lg border border-border-strong bg-surface-2 px-3 py-2 text-sm">
             {outOfRange} workout{outOfRange === 1 ? '' : 's'} in weeks beyond {draft.weeks} will be dropped when you save.
           </p>
         )}
@@ -178,8 +178,8 @@ function Editor({ program }: { program: Program | undefined }) {
                       <span className="w-12 shrink-0 pt-1.5 text-xs font-medium text-muted md:w-auto md:pt-0">Day {day}</span>
                       <div className="flex min-w-0 flex-1 flex-wrap gap-1.5 md:w-full md:flex-col md:flex-nowrap">
                         {slots.map((s) => (
-                          <span key={s.key} className="flex min-h-8 min-w-0 items-center gap-1 rounded-md border border-border bg-surface py-0.5 pr-0.5 pl-2 text-xs font-medium">
-                            <span className="truncate">{s.workoutName}</span>
+                          <span key={s.key} title={s.workoutName} className="flex min-h-8 min-w-0 items-center gap-1 rounded-md border border-border bg-surface py-0.5 pr-0.5 pl-2 text-xs font-medium">
+                            <span className="line-clamp-2 min-w-0 flex-1 leading-tight break-words">{s.workoutName}</span>
                             <button type="button" aria-label={`Remove ${s.workoutName} from week ${week}, day ${day}`} onClick={() => removeSlot(s.key)} className="flex size-7 shrink-0 items-center justify-center rounded text-muted hover:bg-surface-2 hover:text-fg">
                               <X className="size-3.5" aria-hidden />
                             </button>

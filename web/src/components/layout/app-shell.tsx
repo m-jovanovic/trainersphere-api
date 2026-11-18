@@ -66,7 +66,9 @@ export function AppShell() {
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-lg focus:bg-surface focus:px-3 focus:py-2">
         Skip to content
       </a>
-      <aside className="sticky top-0 hidden h-dvh flex-col border-r border-border bg-surface lg:flex">
+      {/* The column wrapper carries the background so it spans the whole page height. */}
+      <div className="hidden border-r border-border bg-surface lg:block">
+      <aside className="sticky top-0 flex h-dvh flex-col">
         <div className="flex h-16 items-center px-5">
           <Link to="/" aria-label="TrainerSphere home">
             <Logo />
@@ -90,6 +92,7 @@ export function AppShell() {
           </UserMenu>
         </div>
       </aside>
+      </div>
 
       <div className="flex min-w-0 flex-col">
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-border bg-bg/90 px-4 backdrop-blur lg:hidden">

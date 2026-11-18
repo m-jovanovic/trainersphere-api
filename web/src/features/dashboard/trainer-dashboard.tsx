@@ -1,14 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { CalendarPlus, ChevronRight, Dumbbell, Trophy, UserPlus } from 'lucide-react';
+import { CalendarPlus, ChevronRight, Dumbbell, UserPlus } from 'lucide-react';
 import { useState } from 'react';
 import { queries } from '@/lib/api/queries';
 import type { TrainerDashboard as Dashboard } from '@/lib/api/types';
 import { useUnits, useUser } from '@/lib/auth/hooks';
 import { formatAgo, formatDay } from '@/lib/dates';
-import { formatPercent, formatPrDelta, formatPrValue, formatVolume, fullName, prLabels } from '@/lib/domain';
+import { formatPercent, formatVolume, fullName } from '@/lib/domain';
 import { Button } from '@/components/ui/button';
-import { Avatar, Badge, Card, CardBody, CardHeader, EmptyState, PageHeader, Skeleton, Stat } from '@/components/ui/misc';
+import { Avatar, Card, CardBody, CardHeader, EmptyState, PageHeader, Skeleton } from '@/components/ui/misc';
+import { PrList, SessionPrBadge } from '@/components/pr-list';
 import { AdherenceMeter, AssignmentStatusBadge } from '@/components/status';
 import { QueryError } from '@/components/layout/page-states';
 import { InviteClientDialog, PendingInvitationList } from '@/features/clients/invitations';
@@ -54,12 +55,8 @@ export function TrainerDashboard() {
 function DashboardSkeleton() {
   return (
     <div className="flex flex-col gap-4" aria-busy="true" aria-label="Loading dashboard">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {[0, 1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-24" />
-        ))}
-      </div>
       <Skeleton className="h-64" />
+      <Skeleton className="h-48" />
     </div>
   );
 }
@@ -72,25 +69,10 @@ function DashboardBody({ data, onInvite }: { data: Dashboard; onInvite: () => vo
 
   return (
     <div className="flex flex-col gap-4 sm:gap-6">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Card className="p-4">
-          <Stat label="Active clients" value={data.activeClients} />
-        </Card>
-        <Card className="p-4">
-          <Stat label="Done today" value={`${doneToday}/${data.today.length}`} hint="Workouts completed" />
-        </Card>
-        <Card className="p-4">
-          <Stat label="Adherence 7d" value={formatPercent(avg)} hint="Average across clients" />
-        </Card>
-        <Card className="p-4">
-          <Stat label="Pending invites" value={data.pendingInvitations.count} />
-        </Card>
-      </div>
-
       <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-4 sm:gap-6 lg:col-span-2">
           <Card>
-            <CardHeader title="Today" description={`${data.today.length} workout${data.today.length === 1 ? '' : 's'} on the schedule`} />
+            <CardHeader title={data.today.length ? `Today · ${doneToday} of ${data.today.length} done` : 'Today'} description={`${data.today.length} workout${data.today.length === 1 ? '' : 's'} on the schedule`} />
             <CardBody>
               {data.today.length === 0 ? (
                 <EmptyState
@@ -131,7 +113,7 @@ function DashboardBody({ data, onInvite }: { data: Dashboard; onInvite: () => vo
 
           <Card>
             <CardHeader
-              title="Adherence"
+              title={avg === null ? 'Adherence' : `Adherence · avg ${formatPercent(avg)} (7d)`}
               description="Completed vs due, lowest first"
               action={
                 <Button variant="link" size="sm" asChild>
@@ -174,32 +156,14 @@ function DashboardBody({ data, onInvite }: { data: Dashboard; onInvite: () => vo
               {data.recentPersonalRecords.length === 0 ? (
                 <p className="text-sm text-muted">No new records yet. They show up here as clients log sessions.</p>
               ) : (
-                <ul className="flex flex-col gap-3">
-                  {data.recentPersonalRecords.slice(0, 6).map((pr) => (
-                    <li key={pr.id} className="flex items-start gap-3">
-                      <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-pr-soft text-pr">
-                        <Trophy className="size-4" aria-hidden />
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium">{pr.exercise.name}</p>
-                        <p className="truncate text-xs text-muted">
-                          {fullName(pr.client)} · {prLabels[pr.type]} · {formatAgo(pr.achievedAt)}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="tabular text-sm font-semibold">{formatPrValue(pr, units)}</p>
-                        <p className="tabular text-xs text-pr">{formatPrDelta(pr, units)}</p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                <PrList records={data.recentPersonalRecords} units={units} limit={6} showClient />
               )}
             </CardBody>
           </Card>
 
           <Card>
             <CardHeader
-              title="Pending invitations"
+              title={data.pendingInvitations.count ? `Pending invitations · ${data.pendingInvitations.count}` : 'Pending invitations'}
               action={
                 <Button variant="ghost" size="sm" onClick={onInvite}>
                   <UserPlus aria-hidden />
@@ -232,12 +196,7 @@ function DashboardBody({ data, onInvite }: { data: Dashboard; onInvite: () => vo
                             {fullName(s.client)} · {formatAgo(s.completedAt ?? s.startedAt)}
                           </p>
                         </div>
-                        {s.personalRecordCount > 0 && (
-                          <Badge tone="pr">
-                            <Trophy aria-hidden />
-                            {s.personalRecordCount}
-                          </Badge>
-                        )}
+                        <SessionPrBadge count={s.personalRecordCount} />
                         <span className="tabular text-xs text-muted">{formatVolume(s.totalVolumeKg, units)}</span>
                       </Link>
                     </li>

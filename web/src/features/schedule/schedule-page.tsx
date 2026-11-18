@@ -20,7 +20,7 @@ const route = getRouteApi('/_authed/_shell/_trainer/schedule');
 const statusDotClass: Record<AssignmentStatus, string> = {
   scheduled: 'bg-muted',
   completed: 'bg-primary',
-  skipped: 'bg-warning',
+  skipped: 'bg-muted',
   missed: 'bg-danger',
 };
 

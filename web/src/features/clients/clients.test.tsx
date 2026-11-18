@@ -14,14 +14,13 @@ describe('trainer dashboard', () => {
     renderApp('/');
     await findHeading('Dashboard');
 
-    const today = await findCard('Today');
+    const today = await findCard('Today · 1 of 3 done');
     expect(today.getByText('3 workouts on the schedule')).toBeInTheDocument();
     for (const name of ['Alex Rivera', 'Sam Lee', 'Jordan Patel']) expect(today.getByRole('link', { name })).toBeInTheDocument();
     expect(today.getByText('Completed')).toBeInTheDocument();
     expect(today.getByRole('link', { name: "View Jordan Patel's session" })).toBeInTheDocument();
-    expect(screen.getByText('1/3')).toBeInTheDocument();
 
-    const adherence = await findCard('Adherence');
+    const adherence = await findCard(/^Adherence · avg \d+% \(7d\)$/);
     for (const name of ['Alex Rivera', 'Sam Lee', 'Jordan Patel'])
       expect(adherence.getByRole('meter', { name: `${name} adherence, last 7 days` })).toBeInTheDocument();
 
@@ -29,7 +28,7 @@ describe('trainer dashboard', () => {
     expect(db.state.personalRecords.length).toBeGreaterThan(0);
     expect(prs.getAllByRole('listitem').length).toBeGreaterThan(0);
 
-    const invites = await findCard('Pending invitations');
+    const invites = await findCard(/^Pending invitations · \d+$/);
     expect(invites.getByText('Riley Morgan')).toBeInTheDocument();
     expect(invites.getByRole('button', { name: 'Actions for invitation to Riley Morgan' })).toBeInTheDocument();
   });

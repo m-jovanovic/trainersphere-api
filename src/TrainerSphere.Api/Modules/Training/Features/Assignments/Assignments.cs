@@ -40,7 +40,6 @@ internal sealed class ListAssignmentsValidator : AbstractValidator<ListAssignmen
 internal sealed class ListAssignmentsHandler(IAssignmentRepository assignments, IClientRepository clients, TimeProvider timeProvider)
     : IQueryHandler<ListAssignmentsQuery, IReadOnlyList<AssignmentResponse>>
 {
-    public const int MaxRangeDays = 92;
     public const int DefaultDaysBack = 7;
     public const int DefaultDaysAhead = 28;
 
@@ -59,9 +58,9 @@ internal sealed class ListAssignmentsHandler(IAssignmentRepository assignments, 
             return ValidationError.For("to", "'to' must not be before 'from'.");
         }
 
-        if (to.DayNumber - from.DayNumber + 1 > MaxRangeDays)
+        if (to.DayNumber - from.DayNumber + 1 > TrainingRules.MaxAssignmentRangeDays)
         {
-            return ValidationError.For("to", $"The date range can span at most {MaxRangeDays} days.");
+            return ValidationError.For("to", $"The date range can span at most {TrainingRules.MaxAssignmentRangeDays} days.");
         }
 
         IReadOnlyList<Assignment> found = await assignments.ListAsync(target.TrainerId, target.ClientId, from, to, cancellationToken);

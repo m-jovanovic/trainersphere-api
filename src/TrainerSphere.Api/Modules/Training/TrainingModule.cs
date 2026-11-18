@@ -21,6 +21,7 @@ internal sealed class TrainingModule : IModule
         services.AddScoped<IStartupTask, ExerciseLibrarySeeder>();
 
         services.AddScoped<IProfileProjection, ProfileProjection>();
+        services.AddScoped<IInvitationProjection, InvitationProjection>();
         services.AddScoped<IClientRepository, ClientRepository>();
         services.AddScoped<IExerciseRepository, ExerciseRepository>();
         services.AddScoped<IWorkoutRepository, WorkoutRepository>();

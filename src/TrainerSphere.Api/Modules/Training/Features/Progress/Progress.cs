@@ -20,16 +20,6 @@ internal sealed record ProgressSummaryResponse(
     decimal? Adherence28d,
     int StreakWeeks);
 
-internal static class ProgressViews
-{
-    public static async Task<IReadOnlyList<PersonalRecordResponse>> ToResponsesAsync(IReadOnlyList<PersonalRecord> records, IExerciseRepository exercises, CancellationToken cancellationToken)
-    {
-        IReadOnlyDictionary<Guid, ExerciseSummary> summaries = await exercises.GetSummariesAsync(records.Select(r => r.ExerciseId), cancellationToken);
-
-        return [.. records.Select(r => PersonalRecordResponse.From(r, summaries.GetValueOrDefault(r.ExerciseId) ?? new ExerciseSummary(r.ExerciseId, null, string.Empty, null)))];
-    }
-}
-
 internal sealed record ListPersonalRecordsQuery(Viewer Viewer, Guid ClientId) : IQuery<IReadOnlyList<PersonalRecordResponse>>;
 
 internal sealed class ListPersonalRecordsHandler(IClientRepository clients, IExerciseRepository exercises, IDbSession db)

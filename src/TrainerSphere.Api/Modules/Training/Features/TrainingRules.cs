@@ -17,6 +17,9 @@ internal interface IPagedQuery
 internal static class TrainingRules
 {
     public const int MaxPageSize = 100;
+
+    /// <summary>The widest date window an assignment list may span.</summary>
+    public const int MaxAssignmentRangeDays = 92;
     public const int SearchMaxLength = 100;
 
     public static IRuleBuilderOptions<T, string> ValidName<T>(this IRuleBuilder<T, string> rule, int maxLength) =>

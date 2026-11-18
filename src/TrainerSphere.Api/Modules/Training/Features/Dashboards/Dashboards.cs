@@ -1,8 +1,5 @@
 using TrainerSphere.Api.Modules.Training.Data;
 using TrainerSphere.Api.Modules.Training.Domain;
-using TrainerSphere.Api.Modules.Training.Features.Assignments;
-using TrainerSphere.Api.Modules.Training.Features.Clients;
-using TrainerSphere.Api.Modules.Training.Features.Progress;
 using TrainerSphere.SharedKernel.Data;
 using TrainerSphere.SharedKernel.Domain;
 using TrainerSphere.SharedKernel.Http;
@@ -67,6 +64,7 @@ internal sealed class TrainerDashboardHandler(
     IClientRepository clients,
     IAssignmentRepository assignments,
     IExerciseRepository exercises,
+    IInvitationProjection invitations,
     IDbSession db,
     TimeProvider timeProvider) : IQueryHandler<TrainerDashboardQuery, TrainerDashboardResponse>
 {
@@ -107,7 +105,7 @@ internal sealed class TrainerDashboardHandler(
             .ToList();
 
         IReadOnlyList<ClientPersonalRecordResponse> recentRecords = await GetRecentPersonalRecordsAsync(trainerId, now, cancellationToken);
-        PendingInvitationsResponse invitations = await GetPendingInvitationsAsync(trainerId, now, cancellationToken);
+        PendingInvitationsResponse pendingInvitations = await GetPendingInvitationsAsync(trainerId, now, cancellationToken);
 
         IReadOnlyList<SessionSummaryRow> recent = await db.QueryAsync<SessionSummaryRow>(
             $"{SessionSummarySql.Select} WHERE s.trainer_id = @TrainerId ORDER BY s.started_at DESC, s.id DESC LIMIT {RecentSessionLimit}",
@@ -120,7 +118,7 @@ internal sealed class TrainerDashboardHandler(
             todayItems,
             adherence,
             recentRecords,
-            invitations,
+            pendingInvitations,
             [.. recent.Select(r => r.ToClientSummary())]);
     }
 
@@ -202,46 +200,11 @@ internal sealed class TrainerDashboardHandler(
 
     private async Task<PendingInvitationsResponse> GetPendingInvitationsAsync(Guid trainerId, DateTime now, CancellationToken cancellationToken)
     {
-        // Reads the Identity schema directly: Identity exposes no query contract, and the dashboard needs the count.
-        var parameters = new { TrainerId = trainerId, Now = now };
-        const string Filter = "trainer_id = @TrainerId AND status = 'Pending' AND expires_at > @Now";
-
-        int count = await db.QuerySingleAsync<int>($"SELECT count(*)::int FROM identity.invitations WHERE {Filter}", parameters, cancellationToken);
-        IReadOnlyList<InvitationRow> rows = await db.QueryAsync<InvitationRow>(
-            $"""
-            SELECT id, email, first_name, last_name, message, created_at, expires_at, accepted_at, client_id
-            FROM identity.invitations
-            WHERE {Filter}
-            ORDER BY created_at DESC, id DESC
-            LIMIT {PendingInvitationLimit}
-            """,
-            parameters,
-            cancellationToken);
+        (int count, IReadOnlyList<PendingInvitation> pending) = await invitations.GetPendingAsync(trainerId, now, PendingInvitationLimit, cancellationToken);
 
         return new PendingInvitationsResponse(
             count,
-            [.. rows.Select(r => new DashboardInvitationResponse(r.Id, r.Email, r.FirstName, r.LastName, r.Message, "pending", r.CreatedAt, r.ExpiresAt, r.AcceptedAt, r.ClientId))]);
-    }
-
-    internal sealed record InvitationRow
-    {
-        public Guid Id { get; init; }
-
-        public string Email { get; init; } = string.Empty;
-
-        public string FirstName { get; init; } = string.Empty;
-
-        public string LastName { get; init; } = string.Empty;
-
-        public string? Message { get; init; }
-
-        public DateTime CreatedAt { get; init; }
-
-        public DateTime ExpiresAt { get; init; }
-
-        public DateTime? AcceptedAt { get; init; }
-
-        public Guid? ClientId { get; init; }
+            [.. pending.Select(i => new DashboardInvitationResponse(i.Id, i.Email, i.FirstName, i.LastName, i.Message, "pending", i.CreatedAt, i.ExpiresAt, AcceptedAt: null, ClientId: null))]);
     }
 }
 
@@ -271,7 +234,7 @@ internal sealed class ClientDashboardHandler(
 
         DateOnly weekStart = IsoWeek.Start(today);
         DateOnly from = weekStart < today.AddDays(-27) ? weekStart : today.AddDays(-27);
-        IReadOnlyList<Assignment> range = await assignments.ListAsync(trainerId: null, client.Id, from, today.AddDays(ListAssignmentsHandler.MaxRangeDays), cancellationToken);
+        IReadOnlyList<Assignment> range = await assignments.ListAsync(trainerId: null, client.Id, from, today.AddDays(TrainingRules.MaxAssignmentRangeDays), cancellationToken);
 
         var todayItems = range.Where(a => a.Date == today).Select(a => AssignmentResponse.From(a, client, today)).ToList();
         AssignmentResponse? next = range

@@ -55,8 +55,10 @@ internal static class InvitationIssuing
                 Ids.New(timeProvider),
                 timeProvider.UtcNow(),
                 invitation.Id,
+                invitation.TrainerId,
                 invitation.Email,
                 invitation.FirstName,
+                invitation.LastName,
                 trainerName,
                 invitation.Message,
                 token,
@@ -149,7 +151,7 @@ internal sealed class ResendInvitationHandler(
 
 internal sealed record CancelInvitationCommand(Guid TrainerId, Guid InvitationId) : ICommand<Unit>;
 
-internal sealed class CancelInvitationHandler(InvitationRepository invitations, TimeProvider timeProvider) : ICommandHandler<CancelInvitationCommand, Unit>
+internal sealed class CancelInvitationHandler(InvitationRepository invitations, IEventBus eventBus, TimeProvider timeProvider) : ICommandHandler<CancelInvitationCommand, Unit>
 {
     public async Task<Result<Unit>> Handle(CancelInvitationCommand command, CancellationToken cancellationToken)
     {
@@ -161,7 +163,8 @@ internal sealed class CancelInvitationHandler(InvitationRepository invitations, 
         }
 
         return await invitation.Cancel(timeProvider.UtcNow())
-            .Tap(_ => invitations.UpdateAsync(invitation, cancellationToken));
+            .Tap(_ => invitations.UpdateAsync(invitation, cancellationToken))
+            .Tap(_ => eventBus.PublishAsync(new InvitationCancelled(Ids.New(timeProvider), timeProvider.UtcNow(), invitation.Id, invitation.TrainerId), cancellationToken));
     }
 }
 

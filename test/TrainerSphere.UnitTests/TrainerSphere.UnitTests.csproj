@@ -20,7 +20,10 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\TrainerSphere.Api\TrainerSphere.Api.csproj" />
     <ProjectReference Include="..\..\src\TrainerSphere.SharedKernel\TrainerSphere.SharedKernel.csproj" />
-    <ProjectReference Include="..\..\src\TrainerSphere.Api\TrainerSphere.Api.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="MigrationFixtures\**\*.sql" />
   </ItemGroup>
 
   <ItemGroup>

@@ -427,6 +427,35 @@ public sealed class InvitationTests(ApiFactory factory) : IntegrationTest(factor
         await ShouldOnlyFailOn(response, field);
     }
 
+    [Theory]
+    [InlineData("Pending")]
+    [InlineData("PENDING")]
+    [InlineData("open")]
+    public async Task ListInvitations_WithNonContractStatus_Returns400StatusError(string status)
+    {
+        TestUser trainer = await CreateTrainerAsync();
+
+        HttpResponseMessage response = await trainer.Client.GetAsync(IdentityRoutes.Invitations + "?status=" + status, Ct);
+
+        await response.ShouldBeValidationProblemAsync("status");
+    }
+
+    [Fact]
+    public async Task CreateInvitation_Timestamps_AreTheValuesTheListReturns()
+    {
+        TestUser trainer = await CreateTrainerAsync();
+        HttpResponseMessage created = await trainer.Client.PostJsonAsync(IdentityRoutes.Invitations, new InvitationBuilder().Build());
+        JsonElement invitation = await (await created.ShouldHaveStatusAsync(HttpStatusCode.Created)).ReadJsonAsync();
+
+        JsonElement listed = (await (await trainer.Client.GetAsync(IdentityRoutes.Invitations, Ct)).ReadJsonAsync())
+            .GetProperty("items").EnumerateArray().Single(i => i.GetProperty("id").GetString() == invitation.GetProperty("id").GetString());
+
+        invitation.ShouldHaveAtMostMicroseconds("createdAt");
+        invitation.ShouldHaveAtMostMicroseconds("expiresAt");
+        listed.GetProperty("createdAt").GetString().ShouldBe(invitation.GetProperty("createdAt").GetString());
+        listed.GetProperty("expiresAt").GetString().ShouldBe(invitation.GetProperty("expiresAt").GetString());
+    }
+
     [Fact]
     public async Task ListInvitations_WithNonNumericPage_Returns400Validation()
     {

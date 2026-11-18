@@ -231,6 +231,43 @@ public sealed class MeTests(ApiFactory factory) : IntegrationTest(factory), ICla
         await response.ShouldBeValidationProblemAsync("units");
     }
 
+    [Theory]
+    [InlineData("firstName")]
+    [InlineData("lastName")]
+    [InlineData("timeZone")]
+    [InlineData("units")]
+    public async Task PutMe_OmittingAMember_Returns400ForThatMemberAndChangesNothing(string omitted)
+    {
+        TestUser trainer = await CreateTrainerAsync();
+        await trainer.Client.PutJsonAsync(IdentityRoutes.Me, new UpdateMeRequest("Mia", "Novak", "lb", "Europe/Belgrade"));
+        Dictionary<string, string> body = new(StringComparer.Ordinal) { ["firstName"] = "Changed", ["lastName"] = "Changed", ["units"] = "kg", ["timeZone"] = "UTC" };
+        body.Remove(omitted);
+
+        HttpResponseMessage response = await trainer.Client.SendRawJsonAsync(HttpMethod.Put, IdentityRoutes.Me, JsonSerializer.Serialize(body));
+
+        await ShouldOnlyFailOn(response, omitted);
+        User me = await (await trainer.Client.GetAsync(IdentityRoutes.Me, Ct)).ShouldHaveJsonAsync<User>();
+        me.ShouldBe(me with { FirstName = "Mia", LastName = "Novak", Units = "lb", TimeZone = "Europe/Belgrade" });
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("1")]
+    [InlineData("\"Kg\"")]
+    [InlineData("\"pounds\"")]
+    public async Task PutMe_WithNonContractUnits_Returns400ListingTheAllowedValues(string units)
+    {
+        TestUser trainer = await CreateTrainerAsync();
+
+        HttpResponseMessage response = await trainer.Client.SendRawJsonAsync(
+            HttpMethod.Put,
+            IdentityRoutes.Me,
+            $$"""{ "firstName": "Mia", "lastName": "Novak", "units": {{units}}, "timeZone": "UTC" }""");
+
+        Problem problem = await response.ShouldBeValidationProblemAsync("units");
+        problem.Errors.ShouldNotBeNull()["units"].ShouldBe(["Must be one of: kg, lb."]);
+    }
+
     private static async Task ShouldOnlyFailOn(HttpResponseMessage response, string field)
     {
         Problem problem = await response.ShouldBeValidationProblemAsync(field);

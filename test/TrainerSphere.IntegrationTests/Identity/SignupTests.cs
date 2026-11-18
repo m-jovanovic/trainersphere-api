@@ -314,7 +314,37 @@ public sealed class SignupTests(ApiFactory factory) : IntegrationTest(factory), 
     {
         HttpResponseMessage response = await CreateAnonymousClient().SendRawJsonAsync(HttpMethod.Post, IdentityRoutes.Signup, """{ "email": "maya@example.com", """);
 
-        await response.ShouldBeProblemAsync(HttpStatusCode.BadRequest, "Validation");
+        Problem problem = await response.ShouldBeValidationProblemAsync("$");
+        problem.Errors.ShouldNotBeNull().Keys.ShouldBe(["$"]);
+    }
+
+    [Fact]
+    public async Task Signup_WithoutBody_Returns400KeyedByTheRoot()
+    {
+        HttpResponseMessage response = await CreateAnonymousClient().SendRawJsonAsync(HttpMethod.Post, IdentityRoutes.Signup, string.Empty);
+
+        Problem problem = await response.ShouldBeValidationProblemAsync("$");
+        problem.Errors.ShouldNotBeNull().Keys.ShouldBe(["$"]);
+    }
+
+    [Fact]
+    public async Task Signup_WithNullPassword_Returns400PasswordError()
+    {
+        HttpResponseMessage response = await CreateAnonymousClient().SendRawJsonAsync(
+            HttpMethod.Post,
+            IdentityRoutes.Signup,
+            $$"""{ "email": "{{Unique.Email("nullpass")}}", "password": null, "firstName": "Maya", "lastName": "Novak" }""");
+
+        await response.ShouldBeValidationProblemAsync("password");
+    }
+
+    [Fact]
+    public async Task Signup_CreatedAt_HasAtMostMicrosecondPrecision()
+    {
+        HttpResponseMessage response = await SignupAsync(new SignupBuilder().Build());
+
+        await response.ShouldHaveStatusAsync(HttpStatusCode.Created);
+        (await response.ReadJsonAsync()).GetProperty("user").ShouldHaveAtMostMicroseconds("createdAt");
     }
 
     [Fact]

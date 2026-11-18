@@ -66,4 +66,26 @@ public sealed class HealthTests(ApiFactory factory) : IntegrationTest(factory), 
             await Factory.ExecuteAsync("DROP TABLE public.schema_migrations_pending");
         }
     }
+
+    [Fact]
+    public async Task HealthReady_WithChangedMigrationChecksum_Returns503()
+    {
+        const string Latest = "(module, version) = (SELECT module, version FROM public.schema_migrations ORDER BY applied_at DESC, version DESC LIMIT 1)";
+        await Factory.ExecuteAsync($"CREATE TABLE public.schema_migrations_checksums AS SELECT module, version, checksum FROM public.schema_migrations WHERE {Latest}");
+        await Factory.ExecuteAsync("UPDATE public.schema_migrations m SET checksum = 'tampered' FROM public.schema_migrations_checksums c WHERE m.module = c.module AND m.version = c.version");
+
+        try
+        {
+            HttpResponseMessage response = await CreateAnonymousClient().GetAsync(Ready, Ct);
+
+            await response.ShouldHaveStatusAsync(HttpStatusCode.ServiceUnavailable);
+        }
+        finally
+        {
+            await Factory.ExecuteAsync("UPDATE public.schema_migrations m SET checksum = c.checksum FROM public.schema_migrations_checksums c WHERE m.module = c.module AND m.version = c.version");
+            await Factory.ExecuteAsync("DROP TABLE public.schema_migrations_checksums");
+        }
+
+        await (await CreateAnonymousClient().GetAsync(Ready, Ct)).ShouldHaveStatusAsync(HttpStatusCode.OK);
+    }
 }

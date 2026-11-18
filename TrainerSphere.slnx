@@ -6,6 +6,7 @@
     <File Path="global.json" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/TrainerSphere.Api/TrainerSphere.Api.csproj" />
     <Project Path="src/TrainerSphere.SharedKernel/TrainerSphere.SharedKernel.csproj" />
   </Folder>
   <Folder Name="/test/">

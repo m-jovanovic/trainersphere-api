@@ -128,7 +128,7 @@ public sealed class WorkoutTemplatesTests(ApiFactory factory) : TrainingTest(fac
         await response.ShouldBeValidationProblemAsync("exercises[0].load.type");
     }
 
-    [Fact(Skip = "QA-F9 (partial): taxonomy messages are fixed, but KebabEnum still reads ''Type' must be one of: ...' instead of 'Must be one of: ...' for workout goal/load types")]
+    [Fact]
     public async Task CreateWorkout_WithANonContractGoalType_ReturnsTheContractMessage()
     {
         TestUser trainer = await CreateUtcTrainerAsync();

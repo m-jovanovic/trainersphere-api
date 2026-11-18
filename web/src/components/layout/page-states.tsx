@@ -37,6 +37,26 @@ export function PageError({ error, reset }: ErrorComponentProps) {
   );
 }
 
+/** Inline error for a failed query inside a page that otherwise rendered. */
+export function QueryError({ error, onRetry, className }: { error: unknown; onRetry?: () => void; className?: string }) {
+  const offline = error instanceof NetworkError;
+  return (
+    <EmptyState
+      className={className}
+      icon={offline ? <WifiOff /> : <TriangleAlert />}
+      title={offline ? 'You are offline' : 'Could not load this'}
+      description={offline ? 'Reconnect and try again.' : errorMessage(error)}
+      action={
+        onRetry && (
+          <Button variant="secondary" size="sm" onClick={onRetry}>
+            Try again
+          </Button>
+        )
+      }
+    />
+  );
+}
+
 export function NotFound() {
   return (
     <EmptyState

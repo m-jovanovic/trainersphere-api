@@ -1,59 +1,8 @@
-import type { Exercise } from '@/lib/api/types';
+import manifest from './exercises.json';
+import type { Exercise, Taxonomy } from '@/lib/api/types';
 
-type SeedExercise = Omit<Exercise, 'id' | 'isCustom' | 'archived' | 'illustration'> & { illustration?: string | null };
+type SeedExercise = Omit<Exercise, 'id' | 'isCustom' | 'archived'>;
 
-const s = (
-  slug: string,
-  name: string,
-  category: string,
-  movementPattern: string,
-  primaryMuscles: string[],
-  secondaryMuscles: string[],
-  equipment: string[],
-  cue: string,
-  unilateral = false,
-): SeedExercise => ({ slug, name, category, movementPattern, primaryMuscles, secondaryMuscles, equipment, cue, unilateral });
-
-// Placeholder library until exercises/exercises.json lands; taxonomy values follow api/contract.md section 6.
-export const seedExercises: SeedExercise[] = [
-  s('barbell-back-squat', 'Barbell Back Squat', 'strength', 'squat', ['quads', 'glutes'], ['hamstrings', 'adductors', 'lower-back'], ['barbell'], 'Brace, sit between your hips, drive the floor away keeping the bar over mid-foot.'),
-  s('front-squat', 'Front Squat', 'strength', 'squat', ['quads'], ['glutes', 'upper-back', 'abs'], ['barbell'], 'Elbows high, stay tall, knees travel forward over toes.'),
-  s('goblet-squat', 'Goblet Squat', 'strength', 'squat', ['quads', 'glutes'], ['abs'], ['dumbbell'], 'Hold the bell at your chest, elbows inside knees at the bottom.'),
-  s('leg-press', 'Leg Press', 'strength', 'squat', ['quads', 'glutes'], ['hamstrings'], ['machine'], 'Lower until hips start to tuck, press through the whole foot.'),
-  s('conventional-deadlift', 'Conventional Deadlift', 'strength', 'hinge', ['hamstrings', 'glutes', 'lower-back'], ['upper-back', 'forearms', 'traps'], ['barbell'], 'Bar over mid-foot, push the floor away, hips and shoulders rise together.'),
-  s('romanian-deadlift', 'Romanian Deadlift', 'strength', 'hinge', ['hamstrings', 'glutes'], ['lower-back'], ['barbell'], 'Soft knees, push hips back, bar slides down the thighs.'),
-  s('hip-thrust', 'Barbell Hip Thrust', 'strength', 'hinge', ['glutes'], ['hamstrings'], ['barbell', 'bench'], 'Chin tucked, ribs down, squeeze glutes hard at the top.'),
-  s('kettlebell-swing', 'Kettlebell Swing', 'strength', 'hinge', ['glutes', 'hamstrings'], ['lower-back', 'abs'], ['kettlebell'], 'Hike the bell back, snap the hips, let the arms float.'),
-  s('walking-lunge', 'Walking Lunge', 'strength', 'lunge', ['quads', 'glutes'], ['adductors'], ['dumbbell'], 'Long stride, back knee kisses the floor, stay tall.', true),
-  s('bulgarian-split-squat', 'Bulgarian Split Squat', 'strength', 'lunge', ['quads', 'glutes'], ['adductors'], ['dumbbell', 'bench'], 'Rear foot on the bench, drop straight down, front heel stays planted.', true),
-  s('step-up', 'Box Step-Up', 'strength', 'lunge', ['quads', 'glutes'], [], ['dumbbell', 'box'], 'Whole foot on the box, drive through the heel, control the descent.', true),
-  s('barbell-bench-press', 'Barbell Bench Press', 'strength', 'horizontal-push', ['chest'], ['triceps', 'front-delts'], ['barbell', 'bench'], 'Shoulder blades pinned, bar to lower chest, press back over the shoulders.'),
-  s('incline-dumbbell-press', 'Incline Dumbbell Press', 'strength', 'horizontal-push', ['chest', 'front-delts'], ['triceps'], ['dumbbell', 'bench'], 'Bench at 30 degrees, elbows at 45, press up and slightly in.'),
-  s('push-up', 'Push-Up', 'strength', 'horizontal-push', ['chest'], ['triceps', 'front-delts', 'abs'], ['bodyweight'], 'Body in one line, chest to the floor, screw hands into the ground.'),
-  s('dip', 'Parallel Bar Dip', 'strength', 'vertical-push', ['chest', 'triceps'], ['front-delts'], ['bodyweight'], 'Slight forward lean, lower until shoulders are below elbows.'),
-  s('overhead-press', 'Overhead Press', 'strength', 'vertical-push', ['front-delts', 'side-delts'], ['triceps', 'upper-back'], ['barbell'], 'Squeeze glutes, press the bar past your face, finish with biceps by ears.'),
-  s('dumbbell-shoulder-press', 'Seated Dumbbell Shoulder Press', 'strength', 'vertical-push', ['front-delts', 'side-delts'], ['triceps'], ['dumbbell', 'bench'], 'Wrists over elbows, press up without arching the low back.'),
-  s('barbell-row', 'Barbell Row', 'strength', 'horizontal-pull', ['upper-back', 'lats'], ['biceps', 'rear-delts', 'lower-back'], ['barbell'], 'Hinge to 45 degrees, pull the bar to your belly button.'),
-  s('one-arm-dumbbell-row', 'One-Arm Dumbbell Row', 'strength', 'horizontal-pull', ['lats', 'upper-back'], ['biceps', 'rear-delts'], ['dumbbell', 'bench'], 'Pull the elbow toward the hip, pause, lower with control.', true),
-  s('seated-cable-row', 'Seated Cable Row', 'strength', 'horizontal-pull', ['upper-back', 'lats'], ['biceps'], ['cable'], 'Chest up, pull handles to the lower ribs, let shoulders reach forward.'),
-  s('pull-up', 'Pull-Up', 'strength', 'vertical-pull', ['lats'], ['biceps', 'upper-back', 'forearms'], ['pull-up-bar'], 'Start from a dead hang, drive elbows down, chin over the bar.'),
-  s('lat-pulldown', 'Lat Pulldown', 'strength', 'vertical-pull', ['lats'], ['biceps', 'upper-back'], ['cable', 'machine'], 'Lean back slightly, pull the bar to the upper chest.'),
-  s('farmers-carry', "Farmer's Carry", 'strength', 'carry', ['forearms', 'traps'], ['abs', 'obliques'], ['dumbbell'], 'Tall posture, short quick steps, do not let the bells swing.'),
-  s('suitcase-carry', 'Suitcase Carry', 'strength', 'carry', ['obliques', 'forearms'], ['abs'], ['kettlebell'], 'One heavy bell, stay perfectly upright.', true),
-  s('plank', 'Plank', 'strength', 'core', ['abs'], ['obliques', 'front-delts'], ['mat'], 'Elbows under shoulders, squeeze glutes, breathe behind the brace.'),
-  s('dead-bug', 'Dead Bug', 'strength', 'core', ['abs'], ['hip-flexors'], ['mat'], 'Low back glued to the floor, reach opposite arm and leg slowly.'),
-  s('hanging-knee-raise', 'Hanging Knee Raise', 'strength', 'core', ['abs', 'hip-flexors'], ['forearms'], ['pull-up-bar'], 'Curl the pelvis up, no swinging.'),
-  s('cable-pallof-press', 'Pallof Press', 'strength', 'core', ['obliques', 'abs'], [], ['cable'], 'Press straight out and resist the rotation.', true),
-  s('barbell-curl', 'Barbell Curl', 'strength', 'isolation', ['biceps'], ['forearms'], ['barbell'], 'Elbows pinned to your sides, no hip swing.'),
-  s('hammer-curl', 'Hammer Curl', 'strength', 'isolation', ['biceps', 'forearms'], [], ['dumbbell'], 'Neutral grip, curl to the shoulder, lower slowly.'),
-  s('triceps-pushdown', 'Triceps Pushdown', 'strength', 'isolation', ['triceps'], [], ['cable'], 'Elbows still, lock out fully, control the return.'),
-  s('lateral-raise', 'Dumbbell Lateral Raise', 'strength', 'isolation', ['side-delts'], ['traps'], ['dumbbell'], 'Lead with the elbows, stop at shoulder height.'),
-  s('face-pull', 'Face Pull', 'strength', 'isolation', ['rear-delts', 'upper-back'], ['traps'], ['cable'], 'Pull to the eyes, thumbs back, elbows high.'),
-  s('leg-curl', 'Lying Leg Curl', 'strength', 'isolation', ['hamstrings'], ['calves'], ['machine'], 'Hips pressed down, curl and squeeze, slow on the way down.'),
-  s('leg-extension', 'Leg Extension', 'strength', 'isolation', ['quads'], [], ['machine'], 'Pause at the top, lower over three seconds.'),
-  s('standing-calf-raise', 'Standing Calf Raise', 'strength', 'isolation', ['calves'], [], ['machine'], 'Full stretch at the bottom, pause at the top.'),
-  s('rowing-machine', 'Rowing Machine', 'cardio', 'cardio', ['upper-back', 'quads'], ['glutes', 'biceps'], ['cardio-machine'], 'Legs, body, arms; then arms, body, legs.'),
-  s('assault-bike', 'Air Bike', 'cardio', 'cardio', ['quads'], ['glutes', 'chest'], ['cardio-machine'], 'Push and pull the handles, stay seated.'),
-  s('box-jump', 'Box Jump', 'strength', 'squat', ['quads', 'glutes'], ['calves'], ['box'], 'Land soft and quiet, step down.'),
-  s('worlds-greatest-stretch', "World's Greatest Stretch", 'mobility', 'mobility', ['hip-flexors', 'hamstrings'], ['upper-back'], ['mat'], 'Lunge, elbow to instep, rotate and reach to the ceiling.', true),
-];
+// Library and vocabulary from the illustration set's manifest (exercises/exercises.json), which the API seeds from too.
+export const seedTaxonomy: Taxonomy = manifest.taxonomy;
+export const seedExercises: SeedExercise[] = manifest.exercises;

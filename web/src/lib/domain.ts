@@ -1,4 +1,4 @@
-import type { Goal, Load, Units } from '@/lib/api/types';
+import type { Goal, Load, PersonalRecord, PrType, Units } from '@/lib/api/types';
 
 /** Epley estimate; the contract counts 1-12 rep sets and treats a single as the weight itself. */
 export function estimateOneRepMax(weightKg: number, reps: number): number | null {
@@ -88,6 +88,42 @@ export function initials(p: { firstName: string; lastName: string }): string {
 export function humanize(value: string): string {
   const s = value.replace(/-/g, ' ');
   return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+export const prLabels: Record<PrType, string> = {
+  'estimated-1rm': 'Estimated 1RM',
+  'max-weight': 'Heaviest set',
+  'max-reps': 'Most reps',
+  'max-volume': 'Session volume',
+};
+
+/** Headline value of a PR in the user's units. */
+export function formatPrValue(pr: Pick<PersonalRecord, 'type' | 'value'>, units: Units): string {
+  switch (pr.type) {
+    case 'max-reps':
+      return `${pr.value} reps`;
+    case 'max-volume':
+      return formatVolume(pr.value, units);
+    default:
+      return formatWeight(pr.value, units);
+  }
+}
+
+/** "+2.5 kg" style improvement over the previous best. */
+export function formatPrDelta(pr: Pick<PersonalRecord, 'type' | 'value' | 'previousValue'>, units: Units): string {
+  const diff = pr.value - pr.previousValue;
+  if (pr.type === 'max-reps') return `+${diff} reps`;
+  if (pr.type === 'max-volume') return `+${formatVolume(diff, units)}`;
+  return `+${formatWeight(diff, units)}`;
+}
+
+export function formatSetLine(s: { weightKg: number | null; reps: number | null; durationSeconds?: number | null; distanceMeters?: number | null }, units: Units): string {
+  const parts: string[] = [];
+  if (s.weightKg !== null && s.weightKg > 0) parts.push(formatWeight(s.weightKg, units));
+  if (s.reps !== null) parts.push(`${s.reps} reps`);
+  if (s.durationSeconds != null) parts.push(formatDuration(s.durationSeconds));
+  if (s.distanceMeters != null) parts.push(`${s.distanceMeters} m`);
+  return parts.length ? parts.join(' × ') : '–';
 }
 
 export function browserTimeZone(): string {

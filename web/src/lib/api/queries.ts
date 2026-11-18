@@ -1,4 +1,4 @@
-import { keepPreviousData, queryOptions } from '@tanstack/react-query';
+import { infiniteQueryOptions, keepPreviousData, queryOptions } from '@tanstack/react-query';
 import {
   assignmentsApi,
   clientsApi,
@@ -67,6 +67,13 @@ export const queries = {
 
   sessions: (q: SessionQuery) =>
     queryOptions({ queryKey: [...keys.sessions, 'list', q], queryFn: () => sessionsApi.list(q), placeholderData: keepPreviousData }),
+  sessionsInfinite: (q: Omit<SessionQuery, 'page'>) =>
+    infiniteQueryOptions({
+      queryKey: [...keys.sessions, 'list', 'infinite', q],
+      queryFn: ({ pageParam }) => sessionsApi.list({ pageSize: 20, ...q, page: pageParam }),
+      initialPageParam: 1,
+      getNextPageParam: (last) => (last.page < last.totalPages ? last.page + 1 : undefined),
+    }),
   session: (id: string) => queryOptions({ queryKey: [...keys.sessions, 'detail', id], queryFn: () => sessionsApi.get(id) }),
 
   clients: (q: ClientQuery) =>

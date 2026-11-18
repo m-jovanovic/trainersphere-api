@@ -27,6 +27,7 @@ import {
   type DbUser,
   type DbWorkoutExercise,
 } from './db';
+import { seedTaxonomy } from './seed-exercises';
 
 export const mockConfig = {
   delayMs: 0,
@@ -202,6 +203,15 @@ function validateExercise(b: Partial<T.UpsertExerciseRequest>) {
   if (!b.movementPattern) errors.movementPattern = ['Required.'];
   if (!b.primaryMuscles?.length) errors.primaryMuscles = ['Pick at least one primary muscle.'];
   if (b.cue && b.cue.length > 1000) errors.cue = ['Must be at most 1000 characters.'];
+  const t = seedTaxonomy;
+  if (b.category && !t.categories.includes(b.category)) errors.category = [`'${b.category}' is not a known category.`];
+  if (b.movementPattern && !t.movementPatterns.includes(b.movementPattern)) errors.movementPattern = [`'${b.movementPattern}' is not a known movement pattern.`];
+  for (const field of ['primaryMuscles', 'secondaryMuscles'] as const) {
+    const bad = (b[field] ?? []).find((m) => !t.muscles.includes(m));
+    if (bad) errors[field] = [`'${bad}' is not a known muscle.`];
+  }
+  const badEquipment = (b.equipment ?? []).find((x) => !t.equipment.includes(x));
+  if (badEquipment) errors.equipment = [`'${badEquipment}' is not known equipment.`];
   return errors;
 }
 
@@ -471,16 +481,7 @@ export const handlers = [
   })),
 
   // Exercises
-  http.get(`${API}/exercises/taxonomy`, authed('any', () => {
-    const all = db.state.exercises;
-    const uniq = (xs: string[]) => [...new Set(xs)].sort();
-    return HttpResponse.json({
-      categories: uniq(all.map((e) => e.category)),
-      movementPatterns: uniq(all.map((e) => e.movementPattern)),
-      muscles: uniq(all.flatMap((e) => [...e.primaryMuscles, ...e.secondaryMuscles])),
-      equipment: uniq(all.flatMap((e) => e.equipment)),
-    } satisfies T.Taxonomy);
-  })),
+  http.get(`${API}/exercises/taxonomy`, authed('any', () => HttpResponse.json(seedTaxonomy))),
 
   http.get(`${API}/exercises`, authed('any', ({ user, url }) => {
     const p = url.searchParams;

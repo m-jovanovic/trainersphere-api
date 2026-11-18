@@ -3,7 +3,7 @@ import { todayIso } from '@/lib/dates';
 import { db, seed, type DbState } from './db';
 import { handlers, mockConfig } from './handlers';
 
-const DB_KEY = 'ts-mock-db-v1';
+const DB_KEY = 'ts-mock-db-v2';
 const COOKIE_KEY = 'ts-mock-refresh';
 
 function load(): void {

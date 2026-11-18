@@ -10,7 +10,8 @@ export function Menu({ trigger, children, align = 'end' }: { trigger: ReactNode;
         <M.Content
           align={align}
           sideOffset={6}
-          className="z-50 min-w-48 rounded-xl border border-border bg-surface p-1 shadow-lg"
+          collisionPadding={8}
+          className="z-50 max-h-[var(--radix-dropdown-menu-content-available-height)] min-w-48 overflow-y-auto rounded-xl border border-border bg-surface p-1 shadow-lg"
         >
           {children}
         </M.Content>

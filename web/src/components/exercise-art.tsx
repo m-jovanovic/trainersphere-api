@@ -2,51 +2,59 @@ import { Dumbbell } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 
-// Bundled, trusted SVGs from the illustration set; loaded lazily per exercise and inlined so
-// they pick up theme colours through CSS variables (--art-line, --art-fill, --art-accent).
+// Bundled, trusted SVGs from the illustration set, loaded lazily per exercise and inlined (an <img>
+// cannot see page CSS variables) so they follow the theme through the --ex-* variables in styles.css.
 const svgs = import.meta.glob<string>('/src/assets/exercises/*.svg', { query: '?raw', import: 'default' });
 
 const cache = new Map<string, string>();
+
+/** `illustration` is always the detail file; the thumbnail variant swaps `.svg` for `-sm.svg`. */
+function fileFor(illustration: string | null, variant: 'sm' | 'detail'): string | null {
+  if (!illustration) return null;
+  return variant === 'sm' ? illustration.replace(/\.svg$/, '-sm.svg') : illustration;
+}
 
 function loaderFor(file: string | null) {
   if (!file) return undefined;
   return svgs[`/src/assets/exercises/${file}`];
 }
 
-export function hasArt(file: string | null): boolean {
-  return loaderFor(file) !== undefined;
-}
-
 interface ExerciseArtProps {
   illustration: string | null;
   name: string;
+  /** `sm` is drawn for 32-64px (thicker lines, primary muscles only); `detail` for 96px and up. */
+  variant?: 'sm' | 'detail';
   className?: string;
   /** Decorative when the exercise name is already visible next to the art. */
   decorative?: boolean;
 }
 
-export function ExerciseArt({ illustration, name, className, decorative = true }: ExerciseArtProps) {
-  const load = loaderFor(illustration);
-  const [svg, setSvg] = useState<string | null>(() => (illustration ? (cache.get(illustration) ?? null) : null));
+export function ExerciseArt({ illustration, name, variant = 'detail', className, decorative = true }: ExerciseArtProps) {
+  const requested = fileFor(illustration, variant);
+  // Fall back to the detail drawing if a thumbnail is missing.
+  const file = loaderFor(requested) ? requested : fileFor(illustration, 'detail');
+  const load = loaderFor(file);
+  const [loaded, setLoaded] = useState<{ file: string; svg: string } | null>(null);
 
   useEffect(() => {
-    if (!load || !illustration || cache.has(illustration)) return;
+    if (!load || !file || cache.has(file)) return;
     let cancelled = false;
     void load().then((text) => {
-      cache.set(illustration, text);
-      if (!cancelled) setSvg(text);
+      cache.set(file, text);
+      if (!cancelled) setLoaded({ file, svg: text });
     });
     return () => {
       cancelled = true;
     };
-  }, [load, illustration]);
+  }, [load, file]);
 
+  const svg = file ? (cache.get(file) ?? (loaded?.file === file ? loaded.svg : undefined)) : undefined;
   const a11y = decorative ? { 'aria-hidden': true } : { role: 'img', 'aria-label': `${name} illustration` };
-  const shown = svg ?? (illustration ? cache.get(illustration) : undefined);
   return (
     <div className={cn('exercise-art flex aspect-square items-center justify-center overflow-hidden rounded-lg bg-surface-2 text-muted', className)} {...a11y}>
-      {shown ? (
-        <div className="size-full [&>svg]:size-full" dangerouslySetInnerHTML={{ __html: shown }} />
+      {svg ? (
+        // The SVGs carry a <title>; it is hidden with the wrapper so names are not announced twice.
+        <div className="size-full [&>svg]:size-full" dangerouslySetInnerHTML={{ __html: svg }} />
       ) : (
         <Dumbbell className="size-1/3 opacity-40" aria-hidden />
       )}

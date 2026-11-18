@@ -92,9 +92,9 @@ public abstract class TrainingTest(ApiFactory factory) : IntegrationTest(factory
         return await response.ReadJsonAsync();
     }
 
-    protected static async Task<JsonElement> LogSetAsync(TestUser client, Guid sessionId, Guid setId, Guid exerciseId, Action<SetBuilder>? configure = null)
+    protected static async Task<JsonElement> LogSetAsync(TestUser client, Guid sessionId, Guid setId, Guid exerciseId, Action<SetBuilder>? configure = null, int position = 1)
     {
-        SetBuilder builder = new(exerciseId);
+        SetBuilder builder = new(exerciseId, position);
         configure?.Invoke(builder);
         HttpResponseMessage response = await client.Client.PutAsJsonAsync(TrainingRoutes.SessionSet(sessionId, setId), builder.Build(), HttpAssertions.Json, Ct);
         await response.ShouldHaveStatusAsync(HttpStatusCode.OK);

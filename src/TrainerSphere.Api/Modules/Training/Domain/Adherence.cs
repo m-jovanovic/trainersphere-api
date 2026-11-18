@@ -10,7 +10,7 @@ internal sealed record AdherenceStats(int Due, int Completed)
     /// <summary>
     /// Gets completed / due rounded to 2 decimals, or null when nothing was due.
     /// </summary>
-    public decimal? Rate => Due == 0 ? null : decimal.Round((decimal)Completed / Due, 2);
+    public decimal? Rate => Due == 0 ? null : decimal.Round((decimal)Completed / Due, 2, MidpointRounding.AwayFromZero);
 }
 
 /// <summary>

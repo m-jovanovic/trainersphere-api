@@ -43,6 +43,19 @@ internal static class TrainingRules
             ? null
             : "%" + search.Trim().Replace("\\", "\\\\", StringComparison.Ordinal).Replace("%", "\\%", StringComparison.Ordinal).Replace("_", "\\_", StringComparison.Ordinal) + "%";
 
+    public static async Task<IReadOnlyDictionary<Guid, ExerciseSummary>> GetSummariesAsync(this IExerciseRepository exercises, IEnumerable<Guid> ids, CancellationToken cancellationToken)
+    {
+        Guid[] distinct = [.. ids.Distinct()];
+
+        if (distinct.Length == 0)
+        {
+            return new Dictionary<Guid, ExerciseSummary>();
+        }
+
+        IReadOnlyList<Exercise> found = await exercises.GetManyAsync(distinct, cancellationToken);
+        return found.ToDictionary(e => e.Id, e => e.Summary);
+    }
+
     /// <summary>
     /// Loads a client the viewer may see: a trainer's own client or the client themself. Anything else is not found.
     /// </summary>

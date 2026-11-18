@@ -132,6 +132,63 @@ public abstract class TrainingTest(ApiFactory factory) : IntegrationTest(factory
         return (sessionId, completed);
     }
 
+    /// <summary>
+    /// A completed-by-default set for the ad-hoc session helpers; sets at one position are numbered in order.
+    /// </summary>
+    protected static SetWrite Set(Guid exerciseId, decimal? weightKg, int? reps, int position = 1, bool completed = true) =>
+        new SetBuilder(exerciseId, position).WithWeightKg(weightKg).WithReps(reps).WithCompleted(completed).Build();
+
+    /// <summary>
+    /// Logs and completes an ad-hoc session now and returns the completed session.
+    /// </summary>
+    protected static Task<JsonElement> CompleteAdHocSessionAsync(TestUser client, params SetWrite[] sets) =>
+        CompleteAdHocSessionStartedAtAsync(client, null, sets);
+
+    /// <summary>
+    /// Logs and completes an ad-hoc session started at <paramref name="startedAt"/> (completed 30 minutes later), or
+    /// now when null, and returns the completed session.
+    /// </summary>
+    protected static async Task<JsonElement> CompleteAdHocSessionStartedAtAsync(TestUser client, DateTimeOffset? startedAt, params SetWrite[] sets)
+    {
+        object start = startedAt is null ? new { workoutName = Unique.Name("Ad-hoc") } : new { workoutName = Unique.Name("Ad-hoc"), startedAt };
+        HttpResponseMessage response = await client.Client.PostAsJsonAsync(TrainingRoutes.Sessions, start, HttpAssertions.Json, Ct);
+        await response.ShouldHaveStatusAsync(HttpStatusCode.Created);
+        Guid sessionId = (await response.ReadJsonAsync()).GetProperty("id").GetGuid();
+
+        Dictionary<int, int> numbers = [];
+        foreach (SetWrite set in sets)
+        {
+            int number = numbers[set.Position] = numbers.GetValueOrDefault(set.Position) + 1;
+            await (await client.Client.PutAsJsonAsync(TrainingRoutes.SessionSet(sessionId, Guid.NewGuid()), set with { SetNumber = number }, HttpAssertions.Json, Ct))
+                .ShouldHaveStatusAsync(HttpStatusCode.OK);
+        }
+
+        return await CompleteSessionAsync(client, sessionId, startedAt is null ? null : new { completedAt = startedAt.Value.AddMinutes(30) });
+    }
+
+    /// <summary>
+    /// Assignments with a known adherence: completed yesterday and 10 days ago, missed 2 days ago, skipped 3 days
+    /// ago, and one still scheduled today (not due yet). 7 days: 1 of 3 (0.33); 28 days: 2 of 4 (0.5).
+    /// </summary>
+    protected static async Task CreateAdherenceHistoryAsync(TestUser trainer, TestUser client)
+    {
+        WorkoutItem workout = await CreateWorkoutAsync(trainer);
+
+        foreach (int days in new[] { -10, -1 })
+        {
+            AssignmentItem done = await CreateAssignmentAsync(trainer, client.Id, workout.Id, TrainingDates.Offset(days));
+            Guid sessionId = (await StartSessionAsync(client, done.Id)).GetProperty("id").GetGuid();
+            await LogSetAsync(client, sessionId, Guid.NewGuid(), workout.Exercises[0].ExerciseId);
+            await CompleteSessionAsync(client, sessionId);
+        }
+
+        await CreateAssignmentAsync(trainer, client.Id, workout.Id, TrainingDates.Offset(-2));
+        AssignmentItem skipped = await CreateAssignmentAsync(trainer, client.Id, workout.Id, TrainingDates.Offset(-3));
+        await (await trainer.Client.PostAsJsonAsync(TrainingRoutes.AssignmentSkip(skipped.Id), new { }, HttpAssertions.Json, Ct))
+            .ShouldHaveStatusAsync(HttpStatusCode.OK);
+        await CreateAssignmentAsync(trainer, client.Id, workout.Id);
+    }
+
     protected async Task<TestUser> CreateUtcTrainerAsync() =>
         await CreateTrainerAsync(b => b.WithTimeZone("UTC"));
 

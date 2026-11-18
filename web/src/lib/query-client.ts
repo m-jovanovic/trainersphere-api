@@ -1,5 +1,6 @@
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
-import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
+import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
+import { del, get, set } from 'idb-keyval';
 import { toast } from 'sonner';
 import { ApiError, NetworkError, errorMessage } from '@/lib/api/http';
 
@@ -34,8 +35,21 @@ export function createQueryClient(): QueryClient {
 
 export const CACHE_KEY = 'ts-query-cache';
 
+// IndexedDB rather than localStorage: room for a few weeks of history and queued writes.
 export function createPersister() {
-  return createSyncStoragePersister({ storage: typeof window === 'undefined' ? undefined : window.localStorage, key: CACHE_KEY, throttleTime: 500 });
+  return createAsyncStoragePersister({
+    storage: { getItem: (k: string) => get<string>(k), setItem: (k: string, v: string) => set(k, v), removeItem: (k: string) => del(k) },
+    key: CACHE_KEY,
+    throttleTime: 500,
+  });
+}
+
+export async function clearPersistedCache(): Promise<void> {
+  try {
+    await del(CACHE_KEY);
+  } catch {
+    // IndexedDB unavailable (private mode); nothing persisted.
+  }
 }
 
 export const PERSIST_BUSTER = 'contract-v1';

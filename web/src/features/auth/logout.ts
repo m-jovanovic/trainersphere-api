@@ -1,7 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query';
 import { authApi } from '@/lib/api/endpoints';
 import { session } from '@/lib/auth/session';
-import { CACHE_KEY } from '@/lib/query-client';
+import { clearPersistedCache } from '@/lib/query-client';
 
 export async function logout(queryClient: QueryClient): Promise<void> {
   try {
@@ -11,9 +11,5 @@ export async function logout(queryClient: QueryClient): Promise<void> {
   }
   session.clear();
   queryClient.clear();
-  try {
-    localStorage.removeItem(CACHE_KEY);
-  } catch {
-    // storage unavailable
-  }
+  await clearPersistedCache();
 }

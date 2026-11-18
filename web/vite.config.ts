@@ -7,7 +7,7 @@ import { fileURLToPath, URL } from 'node:url';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const apiTarget = env.VITE_API_PROXY ?? 'http://localhost:5000';
+  const apiTarget = env.VITE_API_PROXY || 'http://localhost:5000';
 
   return {
     plugins: [

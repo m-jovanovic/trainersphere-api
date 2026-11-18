@@ -1,5 +1,5 @@
 import { Minus, Plus } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
 interface NumberStepperProps {
@@ -20,17 +20,22 @@ const decimals = (n: number) => (String(n).split('.')[1] ?? '').length;
 
 /** Big-target numeric input with -/+ buttons; typing is allowed for jumps. */
 export function NumberStepper({ label, value, onChange, step, min = 0, max = 10_000, suffix, size = 'md', disabled, className }: NumberStepperProps) {
-  const [text, setText] = useState(value === null ? '' : String(value));
-  useEffect(() => setText(value === null ? '' : String(value)), [value]);
+  // Draft text exists only while the user is typing; otherwise the value prop is shown.
+  const [draft, setDraft] = useState<string | null>(null);
+  const text = draft ?? (value === null ? '' : String(value));
 
   const clamp = (n: number) => Math.min(max, Math.max(min, Number(n.toFixed(Math.max(2, decimals(step))))));
   const bump = (dir: 1 | -1) => onChange(clamp((value ?? 0) + dir * step));
   const commit = () => {
-    const normalized = text.replace(',', '.').trim();
-    if (normalized === '') return onChange(null);
+    if (draft === null) return;
+    const normalized = draft.replace(',', '.').trim();
+    setDraft(null);
+    if (normalized === '') {
+      onChange(null);
+      return;
+    }
     const n = Number(normalized);
     if (Number.isFinite(n)) onChange(clamp(n));
-    else setText(value === null ? '' : String(value));
   };
 
   const btn = cn(
@@ -48,7 +53,7 @@ export function NumberStepper({ label, value, onChange, step, min = 0, max = 10_
           aria-label={label}
           value={text}
           disabled={disabled}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => setDraft(e.target.value)}
           onBlur={commit}
           onKeyDown={(e) => {
             if (e.key === 'Enter') e.currentTarget.blur();

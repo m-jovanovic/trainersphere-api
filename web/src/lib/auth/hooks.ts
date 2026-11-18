@@ -7,17 +7,14 @@ export function useSession(): SessionState {
   return useSyncExternalStore(session.subscribe, session.get, session.get);
 }
 
-let lastUser: User | null = null;
-
 /**
  * The signed-in user. Only use below the authenticated route. After logout the previous user is
  * returned for the one render that happens before the route guard redirects to /login.
  */
 export function useUser(): User {
-  const { user } = useSession();
-  if (user) lastUser = user;
-  if (!lastUser) throw new Error('useUser called outside an authenticated route');
-  return user ?? lastUser;
+  const user = useSession().user ?? session.lastUser();
+  if (!user) throw new Error('useUser called outside an authenticated route');
+  return user;
 }
 
 let bootstrap: Promise<void> | null = null;

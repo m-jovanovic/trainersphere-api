@@ -11,7 +11,7 @@ function load(): void {
     const raw = localStorage.getItem(DB_KEY);
     const saved = raw ? (JSON.parse(raw) as DbState) : null;
     // Reseed daily so the demo always has workouts scheduled for "today".
-    if (saved && saved.seededOn === todayIso()) {
+    if (saved?.seededOn === todayIso()) {
       db.state = saved;
       return;
     }
@@ -45,7 +45,7 @@ export async function startMockWorker(): Promise<void> {
         location.reload();
       },
       setOffline(offline: boolean) {
-        if (offline) worker.stop();
+        if (offline) void worker.stop();
         else void worker.start({ onUnhandledFrame: 'bypass', quiet: true });
       },
     },

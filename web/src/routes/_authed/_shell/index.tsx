@@ -5,10 +5,12 @@ import { TrainerDashboard } from '@/features/dashboard/trainer-dashboard';
 import { ClientToday } from '@/features/today/client-today';
 
 export const Route = createFileRoute('/_authed/_shell/')({
-  loader: ({ context }) =>
-    context.user.role === 'trainer'
-      ? context.queryClient.prefetchQuery(queries.trainerDashboard())
-      : context.queryClient.prefetchQuery(queries.clientDashboard()),
+  loader: async ({ context }) => {
+    const qc = context.queryClient;
+    // Errors surface through the page's own query.
+    const pending: Promise<unknown> = context.user.role === 'trainer' ? qc.query(queries.trainerDashboard()) : qc.query(queries.clientDashboard());
+    await pending.catch(() => undefined);
+  },
   component: Home,
 });
 

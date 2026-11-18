@@ -69,7 +69,7 @@ export function PageHeader({ title, description, actions, back }: { title: React
 export function Avatar({ name, className }: { name: { firstName: string; lastName: string }; className?: string }) {
   const text = `${name.firstName.charAt(0)}${name.lastName.charAt(0)}`.toUpperCase();
   // Stable hue per person so the same client is recognisable across screens.
-  const hue = [...`${name.firstName}${name.lastName}`].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7);
+  const hue = Array.from(`${name.firstName}${name.lastName}`).reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7);
   return (
     <span
       aria-hidden

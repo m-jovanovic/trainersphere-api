@@ -269,7 +269,7 @@ export const handlers = [
   http.post(`${API}/auth/login`, open(async ({ request }) => {
     const b = await body<T.LoginRequest>(request);
     const user = db.state.users.find((u) => u.email === (b.email ?? '').trim().toLowerCase());
-    if (!user || user.password !== b.password) return problem(401, 'Auth.InvalidCredentials', 'Email or password is incorrect.');
+    if (user?.password !== b.password || !user) return problem(401, 'Auth.InvalidCredentials', 'Email or password is incorrect.');
     return issueAuth(user);
   })),
 

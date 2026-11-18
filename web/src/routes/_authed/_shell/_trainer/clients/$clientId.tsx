@@ -8,7 +8,7 @@ export const Route = createFileRoute('/_authed/_shell/_trainer/clients/$clientId
     tab: z.enum(['overview', 'schedule', 'history', 'progress', 'body']).optional(),
     exercise: z.string().optional(),
   }),
-  loader: ({ context, params }) => context.queryClient.ensureQueryData(queries.client(params.clientId)),
+  loader: ({ context, params }) => context.queryClient.query({ ...queries.client(params.clientId), staleTime: 'static' }),
   head: () => ({ meta: [{ title: 'Client · TrainerSphere' }] }),
   component: ClientDetailPage,
 });

@@ -1,0 +1,63 @@
+using TrainerSphere.Api.Modules.Training.Domain;
+using TrainerSphere.SharedKernel.Results;
+
+namespace TrainerSphere.UnitTests.Training.Domain;
+
+public sealed class ClientProfileTests
+{
+    [Fact]
+    public void Archiving_twice_reports_the_second_call_as_a_no_op()
+    {
+        ClientProfile client = TrainingTestData.Client();
+
+        client.Archive(TrainingTestData.Now).ShouldBeTrue();
+        client.IsArchived.ShouldBeTrue();
+        client.ArchivedAt.ShouldBe(TrainingTestData.Now);
+        client.Archive(TrainingTestData.Now).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Unarchiving_restores_the_active_status()
+    {
+        ClientProfile client = TrainingTestData.Client();
+        client.Archive(TrainingTestData.Now);
+
+        client.Unarchive(TrainingTestData.Now).ShouldBeTrue();
+        client.IsArchived.ShouldBeFalse();
+        client.ArchivedAt.ShouldBeNull();
+        client.Unarchive(TrainingTestData.Now).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void An_archived_client_cannot_be_scheduled()
+    {
+        ClientProfile client = TrainingTestData.Client(status: ClientStatus.Archived);
+
+        Result<ClientProfile> result = client.EnsureActive();
+
+        DomainError error = result.Value.ShouldBeOfType<DomainError>();
+        error.Code.ShouldBe("Client.Archived");
+    }
+
+    [Fact]
+    public void Notes_are_trimmed_and_blanks_become_null()
+    {
+        ClientProfile client = TrainingTestData.Client();
+
+        client.UpdateNotes("  Squat 120 kg  ", "   ", TrainingTestData.Now);
+
+        client.Goals.ShouldBe("Squat 120 kg");
+        client.TrainerNotes.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Only_the_owning_trainer_and_the_client_themself_have_access()
+    {
+        ClientProfile client = TrainingTestData.Client();
+
+        client.IsAccessibleBy(Viewer.Trainer(TrainingTestData.TrainerId)).ShouldBeTrue();
+        client.IsAccessibleBy(Viewer.Trainer(Guid.NewGuid())).ShouldBeFalse();
+        client.IsAccessibleBy(Viewer.Client(TrainingTestData.ClientId, TrainingTestData.TrainerId)).ShouldBeTrue();
+        client.IsAccessibleBy(Viewer.Client(Guid.NewGuid(), Guid.NewGuid())).ShouldBeFalse();
+    }
+}

@@ -4,7 +4,7 @@ import { server } from '@/mocks/node';
 import { mockConfig } from '@/mocks/handlers';
 import { api, ApiError, NetworkError, buildUrl, errorMessage, refreshSession } from '@/lib/api/http';
 import { session } from '@/lib/auth/session';
-import { signIn } from '@/test/utils';
+import { CLIENT_EMAIL, signIn } from '@/test/utils';
 
 describe('api client', () => {
   it('builds query strings, repeating array params and skipping empties', () => {
@@ -55,6 +55,16 @@ describe('api client', () => {
     const badEnum = (await api('/auth/me', { method: 'PUT', body: { firstName: 'Maya', lastName: 'Novak', units: 'KG', timeZone: 'UTC' } }).catch((e: unknown) => e)) as ApiError;
     expect(badEnum.problem.errors?.units).toEqual(['Must be one of: kg, lb.']);
     expect(errorMessage(badEnum)).toBe('Units: Must be one of: kg, lb.');
+  });
+
+  it('rejects PUT /sessions/{id} without a workoutName (full replace)', async () => {
+    await signIn(CLIENT_EMAIL);
+    const started = await api<{ id: string }>('/sessions', { method: 'POST', body: { workoutName: 'Ad hoc' } });
+    const missing = (await api('/sessions/' + started.id, { method: 'PUT', body: { notes: null } }).catch((e: unknown) => e)) as ApiError;
+    expect(missing.status).toBe(400);
+    expect(missing.problem.errors?.workoutName).toEqual(['Required.']);
+    const empty = (await api('/sessions/' + started.id, { method: 'PUT', body: { workoutName: '  ', notes: null } }).catch((e: unknown) => e)) as ApiError;
+    expect(empty.problem.errors?.workoutName).toEqual(['Required.']);
   });
 
   it('rejects unknown enum values in query parameters', async () => {

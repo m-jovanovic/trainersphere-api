@@ -933,7 +933,9 @@ export const handlers = [
     if (!s) return notFound('Session');
     const b = await body<{ workoutName: string; notes: string | null }>(ctx.request);
     requireMembers(b, ['workoutName', 'notes'], ['notes']);
-    s.workoutName = b.workoutName || s.workoutName;
+    if (typeof b.workoutName !== 'string' || !b.workoutName.trim()) return validation({ workoutName: ['Required.'] });
+    if (b.notes !== null && typeof b.notes !== 'string') return validation({ notes: ['Must be a string or null.'] });
+    s.workoutName = b.workoutName.trim();
     s.notes = b.notes;
     return HttpResponse.json(toSession(s));
   })),

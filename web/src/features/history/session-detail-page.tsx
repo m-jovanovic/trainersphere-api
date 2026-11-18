@@ -1,15 +1,16 @@
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { Link, getRouteApi, useRouter } from '@tanstack/react-router';
-import { ArrowLeft, Check, Play, Trophy } from 'lucide-react';
+import { ArrowLeft, Check, Play } from 'lucide-react';
 import { queries } from '@/lib/api/queries';
 import type { SessionExercise } from '@/lib/api/types';
 import { useUnits, useUser } from '@/lib/auth/hooks';
 import { formatDateTime } from '@/lib/dates';
-import { formatDuration, formatGoal, formatLoad, formatPrDelta, formatPrValue, formatVolume, formatWeight, fullName, prLabels } from '@/lib/domain';
+import { formatDuration, formatGoal, formatLoad, formatVolume, formatWeight, fullName, prHeading } from '@/lib/domain';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge, Card, CardBody, CardHeader, Stat } from '@/components/ui/misc';
 import { ExerciseArt } from '@/components/exercise-art';
+import { PrList } from '@/components/pr-list';
 
 const route = getRouteApi('/_authed/_shell/sessions/$sessionId');
 
@@ -71,25 +72,9 @@ export function SessionDetailPage() {
 
         {prs.length > 0 && (
           <Card className="border-pr/30 bg-pr-soft/40">
-            <CardHeader title={`${prs.length} personal record${prs.length === 1 ? '' : 's'}`} />
+            <CardHeader title={prHeading(prs)} />
             <CardBody>
-              <ul className="grid gap-3 sm:grid-cols-2">
-                {prs.map((pr) => (
-                  <li key={pr.id} className="flex items-center gap-3">
-                    <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-pr-soft text-pr">
-                      <Trophy className="size-4" aria-hidden />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-medium">{pr.exercise.name}</span>
-                      <span className="block text-xs text-muted">{prLabels[pr.type]}</span>
-                    </span>
-                    <span className="text-right">
-                      <span className="tabular block text-sm font-semibold">{formatPrValue(pr, units)}</span>
-                      <span className="tabular block text-xs text-pr">{formatPrDelta(pr, units)}</span>
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <PrList records={prs} units={units} showWhen={false} className="grid gap-3 sm:grid-cols-2" />
             </CardBody>
           </Card>
         )}

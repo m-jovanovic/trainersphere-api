@@ -1,7 +1,7 @@
 import { Trophy } from 'lucide-react';
 import type { PersonalRecord, PersonRef, Units } from '@/lib/api/types';
 import { formatAgo } from '@/lib/dates';
-import { formatPrDelta, formatPrValue, fullName, groupPersonalRecords, prGroupLabel } from '@/lib/domain';
+import { formatPrDelta, formatPrExact, formatPrValue, fullName, groupPersonalRecords, prGroupLabel } from '@/lib/domain';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/misc';
 import { ExerciseArt } from '@/components/exercise-art';
@@ -30,7 +30,9 @@ export function PrList({ records, units, limit, showClient, showWhen = true, art
               <p className="mt-0.5 text-xs text-muted">{meta}</p>
             </div>
             <div className="shrink-0 text-right">
-              <p className="tabular text-sm font-semibold">{formatPrValue(pr, units)}</p>
+              <p className="tabular text-sm font-semibold" title={formatPrExact(pr, units)}>
+                {formatPrValue(pr, units)}
+              </p>
               <p className="tabular text-xs text-pr">{formatPrDelta(pr, units)}</p>
             </div>
           </li>

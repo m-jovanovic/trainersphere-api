@@ -1,5 +1,5 @@
 import { onlineManager } from '@tanstack/react-query';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { assignmentsApi, sessionsApi } from '@/lib/api/endpoints';
 import { queries } from '@/lib/api/queries';
@@ -81,6 +81,23 @@ describe('live session logging', () => {
     expect(screen.getByText('Sets').parentElement).toHaveTextContent('1');
     await waitFor(() => expect(db.state.sessions.find((s) => s.id === sessionId)).toMatchObject({ status: 'completed', notes: 'Felt strong' }));
     expect(screen.getByRole('link', { name: 'View workout details' })).toHaveAttribute('href', `/sessions/${sessionId}`);
+  });
+
+  it('groups the new records per exercise on the completion summary', async () => {
+    const { user, assignment } = await openScheduledWorkout();
+    const first = assignment.snapshot.exercises[0]!;
+    // Any earlier best below today's set makes every record type for this exercise a PR.
+    for (const type of ['estimated-1rm', 'max-weight', 'max-reps', 'max-volume']) db.state.bests[`${assignment.clientId}|${first.exerciseId}|${type}`] = 0.5;
+    await user.click(screen.getByRole('button', { name: 'Set 1 done' }));
+    await user.click(screen.getByRole('button', { name: 'Skip rest' }));
+    await user.click(screen.getByRole('button', { name: 'Finish' }));
+    await user.click((await findDialog('Finish workout?')).getByRole('button', { name: 'Finish workout' }));
+
+    const heading = await screen.findByRole('heading', { name: 'New PRs on 1 exercise', level: 2 });
+    const rows = within(heading.parentElement!).getAllByRole('listitem');
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toHaveTextContent(first.exercise.name);
+    expect(rows[0]).toHaveTextContent(/· also /);
   });
 
   it('discards an in-progress workout after confirmation', async () => {

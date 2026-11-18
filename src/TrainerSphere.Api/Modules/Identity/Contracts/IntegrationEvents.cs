@@ -36,7 +36,8 @@ internal sealed record UserProfileUpdated(
 
 /// <summary>
 /// An invitation link was created or re-sent. Carries the raw token because only the email can deliver it;
-/// the token is never stored in the Identity schema.
+/// the token is never stored in the Identity schema. <c>CreatedAt</c> is the invitation's own creation time, which a
+/// re-send keeps; <c>OccurredAt</c> is when this link was issued.
 /// </summary>
 internal sealed record InvitationIssued(
     Guid Id,
@@ -49,6 +50,7 @@ internal sealed record InvitationIssued(
     string TrainerName,
     string? Message,
     string Token,
+    DateTime CreatedAt,
     DateTime ExpiresAt) : IntegrationEvent(Id, OccurredAt);
 
 /// <summary>A pending invitation was cancelled.</summary>

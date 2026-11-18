@@ -59,7 +59,7 @@ internal sealed class IdentityDemoSeeder(
         var pending = Invitation.Issue(Ids.New(timeProvider), trainer.Id, DemoAccounts.PendingInviteEmail, "Riley", "Morgan", "Hi Riley, here's your TrainerSphere invite. See you Monday!", SecureTokens.Hash(token), pendingSince);
         await invitations.AddAsync(pending, cancellationToken);
         await eventBus.PublishAsync(
-            new InvitationIssued(Ids.New(timeProvider), pendingSince, pending.Id, pending.TrainerId, pending.Email, pending.FirstName, pending.LastName, trainer.FullName, pending.Message, token, pending.ExpiresAt),
+            new InvitationIssued(Ids.New(timeProvider), pendingSince, pending.Id, pending.TrainerId, pending.Email, pending.FirstName, pending.LastName, trainer.FullName, pending.Message, token, pending.CreatedAt, pending.ExpiresAt),
             cancellationToken);
 
         return true;

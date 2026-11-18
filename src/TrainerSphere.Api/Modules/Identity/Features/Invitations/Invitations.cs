@@ -62,6 +62,7 @@ internal static class InvitationIssuing
                 trainerName,
                 invitation.Message,
                 token,
+                invitation.CreatedAt,
                 invitation.ExpiresAt),
             cancellationToken);
 }

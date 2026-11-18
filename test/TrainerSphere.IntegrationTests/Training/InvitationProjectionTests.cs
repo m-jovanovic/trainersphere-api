@@ -42,6 +42,26 @@ public sealed class InvitationProjectionTests(ApiFactory factory) : IntegrationT
         (await PendingInvitationsAsync(trainer)).GetProperty("count").GetInt32().ShouldBe(0);
     }
 
+    [Fact]
+    public async Task Dashboard_PendingInvitations_MatchTheInvitationList_AfterAResend()
+    {
+        TestUser trainer = await CreateTrainerAsync();
+        IssuedInvitation first = await InviteAsync(trainer);
+        await InviteAsync(trainer);
+        await Task.Delay(20, Ct);
+        await (await trainer.Client.PostAsync(IdentityRoutes.Resend(first.Invitation.Id), content: null, Ct)).ShouldHaveStatusAsync(HttpStatusCode.OK);
+        await Factory.WaitForMessagesAsync();
+
+        JsonElement listed = (await (await trainer.Client.GetAsync($"{IdentityRoutes.Invitations}?status=pending", Ct)).ReadJsonAsync()).GetProperty("items");
+        JsonElement pending = (await PendingInvitationsAsync(trainer)).GetProperty("items");
+
+        Times(pending).ShouldBe(Times(listed));
+        Times(pending)[^1].Id.ShouldBe(first.Invitation.Id);
+    }
+
+    private static (Guid Id, string? CreatedAt, string? ExpiresAt)[] Times(JsonElement items) =>
+        [.. items.EnumerateArray().Select(i => (i.GetProperty("id").GetGuid(), i.GetProperty("createdAt").GetString(), i.GetProperty("expiresAt").GetString()))];
+
     private static async Task<JsonElement> PendingInvitationsAsync(TestUser trainer) =>
         (await (await trainer.Client.GetAsync(TrainerDashboard, Ct)).ReadJsonAsync()).GetProperty("pendingInvitations");
 }

@@ -5,7 +5,8 @@ namespace TrainerSphere.Api.Modules.Training.Data;
 
 /// <summary>
 /// Maintains the trainer's pending-invitation projection from Identity events, so the dashboard never reads the
-/// Identity schema. Every write is idempotent: a re-sent invitation updates the row, accepts and cancels remove it.
+/// Identity schema. Every write is idempotent: a re-sent invitation only extends the expiry (its creation time and
+/// list position stay those of GET /api/invitations), accepts and cancels remove it.
 /// </summary>
 internal interface IInvitationProjection
 {
@@ -25,9 +26,7 @@ internal sealed class InvitationProjection(IDbSession db) : IInvitationProjectio
             """
             INSERT INTO training.invitations (id, trainer_id, email, first_name, last_name, message, created_at, expires_at)
             VALUES (@Id, @TrainerId, @Email, @FirstName, @LastName, @Message, @CreatedAt, @ExpiresAt)
-            ON CONFLICT (id) DO UPDATE SET
-                email = EXCLUDED.email, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name,
-                message = EXCLUDED.message, created_at = EXCLUDED.created_at, expires_at = EXCLUDED.expires_at
+            ON CONFLICT (id) DO UPDATE SET expires_at = GREATEST(training.invitations.expires_at, EXCLUDED.expires_at)
             """,
             new
             {
@@ -37,7 +36,7 @@ internal sealed class InvitationProjection(IDbSession db) : IInvitationProjectio
                 issued.FirstName,
                 issued.LastName,
                 issued.Message,
-                CreatedAt = issued.OccurredAt,
+                issued.CreatedAt,
                 issued.ExpiresAt,
             },
             cancellationToken);

@@ -209,8 +209,23 @@ dotnet_diagnostic.SA1101.severity = none
 # SA1309: Field names should not begin with underscore
 dotnet_diagnostic.SA1309.severity = none
 
+# SA1402: File may only contain a single type. Vertical slices keep request, handler and endpoint together,
+# and closed error hierarchies live in one file.
+dotnet_diagnostic.SA1402.severity = none
+
 # SA1413: Use trailing comma in multi-line initializers
 dotnet_diagnostic.SA1413.severity = none
+
+# XML documentation is optional; when a summary is written, do not force every parameter/return/typeparam tag.
+dotnet_diagnostic.SA1611.severity = none
+dotnet_diagnostic.SA1614.severity = none
+dotnet_diagnostic.SA1615.severity = none
+dotnet_diagnostic.SA1616.severity = none
+dotnet_diagnostic.SA1618.severity = none
+dotnet_diagnostic.SA1623.severity = none
+dotnet_diagnostic.SA1642.severity = none
+dotnet_diagnostic.SA1602.severity = none
+dotnet_diagnostic.SA1601.severity = none
 
 # SA1600: Elements should be documented
 dotnet_diagnostic.SA1600.severity = none
@@ -226,10 +241,17 @@ dotnet_diagnostic.SA1649.severity = none
 # S1121: Assignments should not be made from within sub-expressions
 dotnet_diagnostic.S1121.severity = none
 
+# S4136: Overloads should be adjacent. Sync and async combinator families are grouped by kind instead.
+dotnet_diagnostic.S4136.severity = none
+
 # NET.CodeAnalyzers
 
 # CA1000: Do not declare static members on generic types
 dotnet_diagnostic.CA1000.severity = none
+
+# CA1508: Avoid dead conditional code. The flow analysis does not understand C# 15 union patterns and reports
+# every union case test as always true/false.
+dotnet_diagnostic.CA1508.severity = none
 
 # CA1014: Mark assemblies with CLSCompliantAttribute
 dotnet_diagnostic.CA1014.severity = none

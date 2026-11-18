@@ -124,6 +124,26 @@ describe('workout builder', () => {
     expect(within(screen.getByRole('listitem', { name: `2. ${db.state.exercises.find((e) => e.id === lowerA.exercises[1]!.exerciseId)!.name}` })).queryByRole('alert')).not.toBeInTheDocument();
   });
 
+  it('keeps an archived exercise the workout already uses, but flags one that is newly referenced', async () => {
+    const lowerA = workout('Lower A');
+    const first = db.state.exercises.find((e) => e.id === lowerA.exercises[0]!.exerciseId)!;
+    first.archived = true;
+    await signIn();
+    const { user } = renderApp(`/workouts/${lowerA.id}`);
+    await findHeading('Edit workout');
+    await screen.findByRole('listitem', { name: `1. ${first.name}` });
+    await user.click(screen.getByRole('button', { name: 'Save workout' }));
+    await waitFor(() => expect(lowerA.exercises[0]!.exerciseId).toBe(first.id));
+    expect((await screen.findAllByText('Workout saved')).length).toBeGreaterThan(0);
+
+    // Another tab removed it from the saved workout, so this save adds it back as a new reference.
+    lowerA.exercises = lowerA.exercises.slice(1);
+    await user.click(screen.getByRole('button', { name: 'Save workout' }));
+    expect(await screen.findByText('Some fields need attention.')).toBeInTheDocument();
+    const item = within(screen.getByRole('listitem', { name: `1. ${first.name}` }));
+    expect(item.getByText('This exercise was archived. Remove it or pick another one.')).toBeInTheDocument();
+  });
+
   it('asks before leaving with unsaved changes', async () => {
     const lowerA = workout('Lower A');
     await signIn();

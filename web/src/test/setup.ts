@@ -6,6 +6,7 @@ import { seed } from '@/mocks/db';
 import { mockConfig } from '@/mocks/handlers';
 import { session } from '@/lib/auth/session';
 import { resetBootstrap } from '@/lib/auth/hooks';
+import { clearIdAliases } from '@/features/session/id-aliases';
 
 // jsdom lacks these; Radix and responsive code touch them.
 if (!window.matchMedia) {
@@ -40,6 +41,7 @@ beforeEach(() => {
   session.reset();
   resetBootstrap();
   localStorage.clear();
+  clearIdAliases();
 });
 afterEach(() => {
   cleanup();

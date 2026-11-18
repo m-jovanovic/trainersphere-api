@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { workoutsApi } from '@/lib/api/endpoints';
 import { applyProblem } from '@/lib/api/form-errors';
+import { ApiError } from '@/lib/api/http';
 import { keys, queries } from '@/lib/api/queries';
 import type { Exercise, ExerciseRef, GoalType, LoadType, Units, UpsertWorkoutRequest, Workout } from '@/lib/api/types';
 import { useUnits } from '@/lib/auth/hooks';
@@ -200,7 +201,16 @@ function Builder({ workout }: { workout: Workout | undefined }) {
           if (m) return Number(m[1]) < count && FORM_ITEM_FIELDS.has(m[2] ?? '');
           return path === 'name' || path === 'description' || path === 'exercises';
         },
-        setFieldError: (path, message) => setError(path as 'name', { type: 'server', message }),
+        // The API's per-item exercise messages name raw ids; say what the trainer can do instead.
+        setFieldError: (path, message) =>
+          setError(path as 'name', {
+            type: 'server',
+            message: !path.endsWith('.exerciseId')
+              ? message
+              : err instanceof ApiError && err.code === 'Exercise.Archived'
+                ? 'This exercise was archived. Remove it or pick another one.'
+                : 'This exercise is no longer available. Remove it or pick another one.',
+          }),
       });
       const keysWithErrors = new Set<string>();
       for (const path of fields) {
@@ -402,7 +412,7 @@ function SortableItem({ id, index, count, control, register, errors, units, expa
               {group && <span className="rounded bg-primary-soft px-1.5 text-xs font-semibold text-primary-soft-fg">{group}</span>}
               <span className="line-clamp-2 min-w-0 leading-snug font-medium">{name}</span>
             </span>
-            <span className={cn('block truncate text-sm', hasErrors ? 'text-danger' : 'text-muted')}>{hasErrors ? 'Fix the highlighted fields' : summary}</span>
+            <span className={cn('block truncate text-sm', hasErrors ? 'text-danger' : 'text-muted')}>{errors?.exerciseId?.message ?? (hasErrors ? 'Fix the highlighted fields' : summary)}</span>
           </span>
           <ChevronDown className={cn('size-4 shrink-0 text-muted transition-transform', expanded && 'rotate-180')} aria-hidden />
         </button>

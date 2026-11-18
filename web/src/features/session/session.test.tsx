@@ -3,6 +3,7 @@ import { screen, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { assignmentsApi, sessionsApi } from '@/lib/api/endpoints';
 import { queries } from '@/lib/api/queries';
+import type { Session } from '@/lib/api/types';
 import { todayIso } from '@/lib/dates';
 import { formatDuration } from '@/lib/domain';
 import { db } from '@/mocks/db';
@@ -126,6 +127,57 @@ describe('live session logging', () => {
     } finally {
       onlineManager.setOnline(true);
     }
+  });
+
+  it('moves a start to a fresh id when another client already owns the generated one', async () => {
+    const assignment = todaysAssignment();
+    const taken = db.state.sessions.find((s) => s.clientId !== assignment.clientId)!;
+    await signIn(CLIENT_EMAIL);
+    const fullAssignment = await assignmentsApi.get(assignment.id);
+    const { user, router, queryClient } = renderApp(`/log/${taken.id}`);
+    queryClient.setQueryData(queries.session(taken.id).queryKey, optimisticSession(taken.id, fullAssignment, new Date().toISOString()));
+    void runSessionWrite(queryClient, sessionKeys.start, taken.id, { id: taken.id, assignmentId: assignment.id }).catch(() => undefined);
+
+    await waitFor(() => expect(router.state.location.pathname).not.toBe(`/log/${taken.id}`));
+    const freshId = router.state.location.pathname.split('/').at(-1)!;
+    await waitFor(() => expect(db.state.sessions.find((s) => s.id === freshId)).toMatchObject({ clientId: assignment.clientId, assignmentId: assignment.id }));
+    await findHeading(assignment.snapshot.name);
+    const takenSets = taken.sets.length;
+    await user.click(screen.getByRole('button', { name: 'Set 1 done' }));
+    await waitFor(() => expect(db.state.sessions.find((s) => s.id === freshId)?.sets).toHaveLength(1));
+    expect(taken.sets).toHaveLength(takenSets);
+  });
+
+  it('moves a set to a fresh id when another session owns the generated one, and keeps later writes on it', async () => {
+    const { sessionId, queryClient } = await openScheduledWorkout();
+    const taken = db.state.sessions.find((s) => s.id !== sessionId && s.sets.length > 0)!.sets[0]!;
+    const first = queryClient.getQueryData<Session>(queries.session(sessionId).queryKey)!.exercises[0]!;
+    const body = { exerciseId: first.exerciseId, position: first.position, setNumber: 1, weightKg: 50, reps: 5, durationSeconds: null, distanceMeters: null, rpe: null, completed: true, notes: null };
+    await runSessionWrite(queryClient, sessionKeys.putSet, sessionId, { sessionId, setId: taken.id, body });
+    await runSessionWrite(queryClient, sessionKeys.putSet, sessionId, { sessionId, setId: taken.id, body: { ...body, reps: 7 } });
+
+    const sets = db.state.sessions.find((s) => s.id === sessionId)!.sets;
+    expect(sets).toHaveLength(1);
+    expect(sets[0]!.id).not.toBe(taken.id);
+    expect(sets[0]).toMatchObject({ reps: 7 });
+    const cached = queryClient.getQueryData<Session>(queries.session(sessionId).queryKey)!.exercises[0]!.sets;
+    expect(cached.map((s) => s.id)).toEqual([sets[0]!.id]);
+  });
+
+  it('explains when the workout was completed or skipped before the start reached the server', async () => {
+    const assignment = todaysAssignment();
+    await signIn(CLIENT_EMAIL);
+    const fullAssignment = await assignmentsApi.get(assignment.id);
+    assignment.status = 'skipped';
+    const attemptedId = crypto.randomUUID();
+    const { queryClient } = renderApp(`/log/${attemptedId}`);
+    queryClient.setQueryData(queries.session(attemptedId).queryKey, optimisticSession(attemptedId, fullAssignment, new Date().toISOString()));
+    void runSessionWrite(queryClient, sessionKeys.start, attemptedId, { id: attemptedId, assignmentId: assignment.id }).catch(() => undefined);
+
+    expect(await screen.findByText('This workout could not be started')).toBeInTheDocument();
+    expect(screen.getByText(/completed or skipped in the meantime/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Back to today' })).toHaveAttribute('href', '/');
+    expect(db.state.sessions.some((s) => s.id === attemptedId)).toBe(false);
   });
 
   it('redirects trainers from live logging to the read-only session', async () => {

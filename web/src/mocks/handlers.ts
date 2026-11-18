@@ -286,15 +286,13 @@ function validateExercise(b: Partial<T.UpsertExerciseRequest>) {
   return errors;
 }
 
-function validateWorkout(b: Partial<T.UpsertWorkoutRequest>, user: DbUser) {
+function validateWorkout(b: Partial<T.UpsertWorkoutRequest>) {
   const errors: Record<string, string[]> = {};
   checkName(b.name, 'name', errors);
   const list = b.exercises ?? [];
   if (list.length < 1) errors.exercises = ['Add at least one exercise.'];
   if (list.length > 30) errors.exercises = ['At most 30 exercises.'];
-  const visible = new Set(visibleExercises(user).map((e) => e.id));
   list.forEach((e, i) => {
-    if (!visible.has(e.exerciseId)) errors[`exercises[${i}].exerciseId`] = ['Exercise was not found.'];
     checkEnum(e.goal?.type, ['reps', 'time', 'distance'], `exercises[${i}].goal.type`, errors);
     checkEnum(e.load?.type, ['none', 'bodyweight', 'weight', 'percent-1rm', 'rpe'], `exercises[${i}].load.type`, errors);
     if (!(e.sets >= 1 && e.sets <= 20)) errors[`exercises[${i}].sets`] = ['Sets must be between 1 and 20.'];
@@ -303,6 +301,21 @@ function validateWorkout(b: Partial<T.UpsertWorkoutRequest>, user: DbUser) {
     if (e.tempo && !/^[0-9X]-[0-9X]-[0-9X]-[0-9X]$/.test(e.tempo)) errors[`exercises[${i}].tempo`] = ['Tempo must look like 3-1-X-0.'];
   });
   return errors;
+}
+
+/** Unknown or foreign exercises are 404, archived ones 422 unless the workout already used them; both per item. */
+function checkWorkoutExercises(list: T.UpsertWorkoutRequest['exercises'], user: DbUser, alreadyUsed: ReadonlySet<string> = new Set()) {
+  const visible = new Map(visibleExercises(user).map((e) => [e.id, e]));
+  const notFound: Record<string, string[]> = {};
+  const archived: Record<string, string[]> = {};
+  list.forEach((line, i) => {
+    const e = visible.get(line.exerciseId);
+    if (!e) notFound[`exercises[${i}].exerciseId`] = [`The exercise '${line.exerciseId}' was not found.`];
+    else if (e.archived && !alreadyUsed.has(e.id)) archived[`exercises[${i}].exerciseId`] = [`The exercise '${e.id}' is archived.`];
+  });
+  if (Object.keys(notFound).length) return problem(404, 'Exercise.NotFound', 'One or more referenced exercises were not found.', notFound);
+  if (Object.keys(archived).length) return problem(422, 'Exercise.Archived', 'One or more referenced exercises are archived.', archived);
+  return null;
 }
 
 function toDbWorkoutExercises(list: T.UpsertWorkoutRequest['exercises']): DbWorkoutExercise[] {
@@ -323,6 +336,13 @@ function visibleAssignment(user: DbUser, id: string): DbAssignment | null {
   const a = db.state.assignments.find((x) => x.id === id);
   if (!a) return null;
   return clientFor(user, a.clientId) ? a : null;
+}
+
+/** 409 `Assignment.NotScheduled`; a started (still scheduled) assignment carries the session's id. */
+function notScheduled(a: DbAssignment, { withSession = true } = {}) {
+  if (a.status === 'scheduled' && a.sessionId && withSession)
+    return problem(409, 'Assignment.NotScheduled', 'A session was already started from this assignment.', undefined, { sessionId: a.sessionId });
+  return problem(409, 'Assignment.NotScheduled', `The assignment is ${a.status}, not scheduled.`);
 }
 
 function visibleSession(user: DbUser, id: string): DbSession | null {
@@ -641,8 +661,10 @@ export const handlers = [
 
   http.post(`${API}/workouts`, authed('trainer', async ({ request, user }) => {
     const b = await body<T.UpsertWorkoutRequest>(request);
-    const errors = validateWorkout(b, user);
+    const errors = validateWorkout(b);
     if (Object.keys(errors).length) return validation(errors);
+    const refs = checkWorkoutExercises(b.exercises, user);
+    if (refs) return refs;
     const w = {
       id: newId(),
       trainerId: user.id,
@@ -663,8 +685,10 @@ export const handlers = [
     const b = await body<T.UpsertWorkoutRequest>(ctx.request);
     requireMembers(b, ['name', 'exercises']);
     (b.exercises as unknown[]).forEach((e, i) => requireMembers(e as object, ['exerciseId', 'sets', 'goal', 'load', 'restSeconds'], [], `exercises[${i}].`));
-    const errors = validateWorkout(b, ctx.user);
+    const errors = validateWorkout(b);
     if (Object.keys(errors).length) return validation(errors);
+    const refs = checkWorkoutExercises(b.exercises, ctx.user, new Set(w.exercises.map((e) => e.exerciseId)));
+    if (refs) return refs;
     Object.assign(w, { name: b.name.trim(), description: b.description ?? null, exercises: toDbWorkoutExercises(b.exercises), updatedAt: nowIso() });
     return HttpResponse.json(toWorkout(w));
   })),
@@ -709,19 +733,32 @@ export const handlers = [
       checkName(b.name, 'name', errors);
       if (!(b.weeks >= 1 && b.weeks <= 52)) errors.weeks = ['Weeks must be between 1 and 52.'];
       if (Object.keys(errors).length) return validation(errors);
-      if (b.slots.some((s) => s.week < 1 || s.week > b.weeks || s.day < 1 || s.day > 7))
-        return problem(422, 'Program.SlotOutOfRange', 'A slot falls outside the program weeks.');
-      const owned = new Set(db.state.workouts.filter((w) => w.trainerId === ctx.user.id).map((w) => w.id));
-      const missing = b.slots.findIndex((s) => !owned.has(s.workoutId));
-      if (missing >= 0) return validation({ [`slots[${missing}].workoutId`]: ['Workout was not found.'] });
+      const current = method === 'put' ? db.state.programs.find((x) => x.id === param(ctx, 'id') && x.trainerId === ctx.user.id) : undefined;
+      if (method === 'put' && !current) return notFound('Program');
+      const used = new Set(current?.slots.map((s) => s.workoutId));
+      const owned = new Map(db.state.workouts.filter((w) => w.trainerId === ctx.user.id).map((w) => [w.id, w]));
+      b.slots.forEach((s, i) => {
+        const w = owned.get(s.workoutId);
+        if (!w) errors[`slots[${i}].workoutId`] = [`The workout '${s.workoutId}' was not found.`];
+        else if (w.archived && !used.has(w.id)) errors[`slots[${i}].workoutId`] = [`The workout '${w.id}' is archived.`];
+      });
+      if (Object.keys(errors).length) return validation(errors);
+      const outside = b.slots.find((s) => s.week < 1 || s.week > b.weeks || s.day < 1 || s.day > 7);
+      if (outside)
+        return problem(422, 'Program.SlotOutOfRange', `The slot week ${outside.week}, day ${outside.day} is outside the program grid of ${b.weeks} week(s) x 7 days.`);
+      const perDay = new Map<string, number>();
+      for (const s of b.slots) {
+        const k = `${s.week}-${s.day}`;
+        perDay.set(k, (perDay.get(k) ?? 0) + 1);
+        if ((perDay.get(k) ?? 0) > 3) return problem(422, 'Program.TooManySlots', `Week ${s.week}, day ${s.day} has more than 3 workouts.`);
+      }
       const slots = b.slots.map((s) => ({ ...s, id: newId() }));
       if (method === 'post') {
         const p = { id: newId(), trainerId: ctx.user.id, name: b.name.trim(), description: b.description ?? null, weeks: b.weeks, archived: false, createdAt: nowIso(), updatedAt: nowIso(), slots };
         db.state.programs.push(p);
         return HttpResponse.json(toProgram(p), { status: 201 });
       }
-      const p = db.state.programs.find((x) => x.id === param(ctx, 'id') && x.trainerId === ctx.user.id);
-      if (!p) return notFound('Program');
+      const p = current!;
       Object.assign(p, { name: b.name.trim(), description: b.description ?? null, weeks: b.weeks, slots, updatedAt: nowIso() });
       return HttpResponse.json(toProgram(p));
     })),
@@ -849,7 +886,7 @@ export const handlers = [
   http.put(`${API}/assignments/:id`, authed('trainer', async (ctx) => {
     const a = visibleAssignment(ctx.user, param(ctx, 'id'));
     if (!a) return notFound('Assignment');
-    if (a.status !== 'scheduled' || a.sessionId) return problem(409, 'Assignment.NotScheduled', 'Only scheduled workouts can be changed.');
+    if (a.status !== 'scheduled') return notScheduled(a);
     const b = await body<T.UpdateAssignmentRequest>(ctx.request);
     requireMembers(b, ['date', 'notes'], ['notes']);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(b.date)) return validation({ date: ['Date must be a calendar date (yyyy-MM-dd).'] });
@@ -861,7 +898,7 @@ export const handlers = [
   http.delete(`${API}/assignments/:id`, authed('trainer', (ctx) => {
     const a = visibleAssignment(ctx.user, param(ctx, 'id'));
     if (!a) return notFound('Assignment');
-    if (a.status !== 'scheduled' || a.sessionId) return problem(409, 'Assignment.NotScheduled', 'Only scheduled workouts can be removed.');
+    if (a.status !== 'scheduled' || a.sessionId) return notScheduled(a);
     db.state.assignments = db.state.assignments.filter((x) => x.id !== a.id);
     return noContent();
   })),
@@ -869,7 +906,7 @@ export const handlers = [
   http.post(`${API}/assignments/:id/skip`, authed('any', (ctx) => {
     const a = visibleAssignment(ctx.user, param(ctx, 'id'));
     if (!a) return notFound('Assignment');
-    if (a.status !== 'scheduled' || a.sessionId) return problem(409, 'Assignment.NotScheduled', 'Only scheduled workouts can be skipped.');
+    if (a.status !== 'scheduled' || a.sessionId) return notScheduled(a);
     a.status = 'skipped';
     return HttpResponse.json(toAssignment(a));
   })),
@@ -878,16 +915,17 @@ export const handlers = [
   http.post(`${API}/sessions`, authed('client', async ({ request, user }) => {
     const b = await body<T.StartSessionRequest>(request);
     if (b.id) {
-      const existing = db.state.sessions.find((s) => s.id === b.id && s.clientId === user.id);
+      const existing = db.state.sessions.find((s) => s.id === b.id);
+      if (existing && existing.clientId !== user.id) return problem(409, 'Session.IdInUse', `The id '${b.id}' is already used by another session.`);
       if (existing) return HttpResponse.json(toSession(existing));
     }
     let assignment: DbAssignment | null = null;
     if (b.assignmentId) {
       assignment = visibleAssignment(user, b.assignmentId);
       if (!assignment) return notFound('Assignment');
+      if (assignment.status !== 'scheduled') return notScheduled(assignment, { withSession: false });
       if (assignment.sessionId)
-        return problem(409, 'Session.AlreadyStartedForAssignment', 'A session was already started for this workout.', undefined, { sessionId: assignment.sessionId });
-      if (assignment.status !== 'scheduled') return problem(409, 'Assignment.NotScheduled', 'This workout is not scheduled anymore.');
+        return problem(409, 'Session.AlreadyStartedForAssignment', 'A session was already started for this assignment.', undefined, { sessionId: assignment.sessionId });
     } else if (!b.workoutName?.trim()) {
       return validation({ workoutName: ['Name the workout or start it from an assignment.'] });
     }
@@ -965,6 +1003,9 @@ export const handlers = [
     if (b.rpe !== null && !(b.rpe >= 1 && b.rpe <= 10)) errors.rpe = ['RPE must be between 1 and 10.'];
     if (Object.keys(errors).length) return validation(errors);
     const setId = param(ctx, 'setId');
+    if (db.state.sessions.some((x) => x.id !== s.id && x.sets.some((y) => y.id === setId)))
+      return problem(409, 'Set.IdInUse', `The id '${setId}' is already used by a set of another session.`);
+    if (!visibleExercises(ctx.user).some((e) => e.id === b.exerciseId)) return validation({ exerciseId: [`The exercise '${b.exerciseId}' was not found.`] });
     const set: T.SessionSet = { id: setId, ...b, updatedAt: nowIso() };
     const i = s.sets.findIndex((x) => x.id === setId);
     if (i >= 0) s.sets[i] = set;
@@ -1002,15 +1043,22 @@ export const handlers = [
   http.get(`${API}/clients`, authed('trainer', ({ user, url }) => {
     const search = (url.searchParams.get('search') ?? '').toLowerCase();
     const status = queryEnum(url, 'status', ['active', 'archived']);
-    const sort = queryEnum(url, 'sort', ['name', '-lastSessionAt', 'adherence7d']) ?? 'name';
+    const sort = queryEnum(url, 'sort', ['name', '-name', 'lastSessionAt', '-lastSessionAt', 'adherence7d', '-adherence7d']) ?? 'name';
     const list = db.state.clients
       .filter((c) => c.trainerId === user.id && (!status || c.status === status))
       .map(clientSummary)
       .filter((c) => !search || `${c.firstName} ${c.lastName} ${c.email}`.toLowerCase().includes(search));
+    const byName = (a: T.ClientSummary, b: T.ClientSummary) => a.firstName.localeCompare(b.firstName) || a.lastName.localeCompare(b.lastName);
+    // Nulls sort last in both directions, like the API; ties fall back to id.
+    const nullsLast = <V,>(x: V | null, y: V | null, cmp: (x: V, y: V) => number) => (x === null ? (y === null ? 0 : 1) : y === null ? -1 : cmp(x, y));
+    const desc = sort.startsWith('-');
+    const dir = desc ? -1 : 1;
     list.sort((a, b) => {
-      if (sort === '-lastSessionAt') return (b.lastSessionAt ?? '').localeCompare(a.lastSessionAt ?? '');
-      if (sort === 'adherence7d') return (a.adherence7d ?? 2) - (b.adherence7d ?? 2);
-      return `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`);
+      let r: number;
+      if (sort.endsWith('lastSessionAt')) r = nullsLast(a.lastSessionAt, b.lastSessionAt, (x, y) => dir * x.localeCompare(y));
+      else if (sort.endsWith('adherence7d')) r = nullsLast(a.adherence7d, b.adherence7d, (x, y) => dir * (x - y));
+      else r = dir * byName(a, b);
+      return r || a.id.localeCompare(b.id);
     });
     return HttpResponse.json(paged(list, url));
   })),

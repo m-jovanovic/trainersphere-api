@@ -5,7 +5,7 @@ import { ChevronRight, Flame, Moon, MoreHorizontal, Play, Plus, Scale, SkipForwa
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { assignmentsApi } from '@/lib/api/endpoints';
-import { errorMessage } from '@/lib/api/http';
+import { ApiError, errorMessage } from '@/lib/api/http';
 import { keys, queries } from '@/lib/api/queries';
 import type { Assignment, ClientDashboard } from '@/lib/api/types';
 import { useUnits, useUser } from '@/lib/auth/hooks';
@@ -291,7 +291,16 @@ function SkipDialog({ assignment: a, open, onOpenChange }: { assignment: Assignm
       onOpenChange(false);
       toast.success('Skipped. Your trainer can see this.');
     },
-    onError: (err) => toast.error(errorMessage(err)),
+    onError: (err) => {
+      if (err instanceof ApiError && err.code === 'Assignment.NotScheduled') {
+        void qc.invalidateQueries({ queryKey: keys.dashboard });
+        void qc.invalidateQueries({ queryKey: keys.assignments });
+        onOpenChange(false);
+        toast.error(typeof err.problem.sessionId === 'string' ? 'You already started this workout. Finish or discard it instead.' : 'This workout was already completed or skipped.');
+        return;
+      }
+      toast.error(errorMessage(err));
+    },
   });
   return (
     <ConfirmDialog

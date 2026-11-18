@@ -34,6 +34,12 @@ public static class ResultHttpExtensions
 
         // Unexpected errors can carry internals (connection strings, SQL); never echo them to the client.
         problem.Detail = error is UnexpectedError ? "An unexpected error occurred." : error.Message;
+
+        foreach (KeyValuePair<string, object?> extension in error.Extensions ?? new Dictionary<string, object?>())
+        {
+            problem.Extensions[extension.Key] = extension.Value;
+        }
+
         problem.Extensions[CodeExtension] = error.Code;
 
         return problem;

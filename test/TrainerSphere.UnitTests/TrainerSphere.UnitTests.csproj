@@ -20,10 +20,12 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\TrainerSphere.Api\TrainerSphere.Api.csproj" />
     <ProjectReference Include="..\..\src\TrainerSphere.SharedKernel\TrainerSphere.SharedKernel.csproj" />
+    <ProjectReference Include="..\..\src\TrainerSphere.Api\TrainerSphere.Api.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <Using Include="Shouldly" />
   </ItemGroup>
 
 </Project>

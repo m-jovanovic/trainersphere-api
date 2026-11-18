@@ -1,3 +1,5 @@
+using TrainerSphere.Api.Host;
+using TrainerSphere.Api.Modules.Training.Data;
 using TrainerSphere.SharedKernel.Migrations;
 using TrainerSphere.SharedKernel.Modules;
 
@@ -15,5 +17,16 @@ internal sealed class TrainingModule : IModule
 
     public void AddServices(IServiceCollection services, IConfiguration configuration)
     {
+        services.AddSingleton(_ => ExerciseLibrary.LoadEmbedded());
+        services.AddScoped<IStartupTask, ExerciseLibrarySeeder>();
+
+        services.AddScoped<IProfileProjection, ProfileProjection>();
+        services.AddScoped<IClientRepository, ClientRepository>();
+        services.AddScoped<IExerciseRepository, ExerciseRepository>();
+        services.AddScoped<IWorkoutRepository, WorkoutRepository>();
+        services.AddScoped<IProgramRepository, ProgramRepository>();
+        services.AddScoped<IAssignmentRepository, AssignmentRepository>();
+        services.AddScoped<ISessionRepository, SessionRepository>();
+        services.AddScoped<IBodyMetricRepository, BodyMetricRepository>();
     }
 }

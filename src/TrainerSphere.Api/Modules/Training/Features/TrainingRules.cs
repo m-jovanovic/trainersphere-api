@@ -33,7 +33,7 @@ internal static class TrainingRules
     public static IRuleBuilderOptions<T, string?> KebabEnum<T, TEnum>(this IRuleBuilder<T, string?> rule)
         where TEnum : struct, Enum =>
         rule.Must(value => value is null || KebabCase.TryParse<TEnum>(value, out _))
-            .WithMessage($"'{{PropertyName}}' must be one of: {KebabCase.Allowed<TEnum>()}.");
+            .WithMessage($"Must be one of: {KebabCase.Allowed<TEnum>()}.");
 
     public static Viewer ToViewer(this ClaimsPrincipal user) =>
         user.IsTrainer() ? Viewer.Trainer(user.GetUserId()) : Viewer.Client(user.GetUserId(), user.GetTrainerId());

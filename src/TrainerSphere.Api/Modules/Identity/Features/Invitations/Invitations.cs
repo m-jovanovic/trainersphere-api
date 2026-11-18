@@ -176,7 +176,7 @@ internal sealed class ListInvitationsValidator : AbstractValidator<ListInvitatio
     {
         RuleFor(q => q.Status)
             .Must(status => status is null || KebabCase.TryParse<InvitationStatus>(status, out _))
-            .WithMessage($"'{{PropertyName}}' must be one of: {KebabCase.Allowed<InvitationStatus>()}.");
+            .WithMessage($"Must be one of: {KebabCase.Allowed<InvitationStatus>()}.");
         RuleFor(q => q.Page).GreaterThanOrEqualTo(1);
         RuleFor(q => q.PageSize).InclusiveBetween(1, 100);
     }

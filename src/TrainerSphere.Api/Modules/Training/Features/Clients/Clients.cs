@@ -75,7 +75,7 @@ internal sealed class ListClientsValidator : PagedQueryValidator<ListClientsQuer
         RuleFor(q => q.Status).KebabEnum<ListClientsQuery, ClientStatus>();
         RuleFor(q => q.Sort)
             .Must(sort => sort is null || AllowedSorts.Contains(sort, StringComparer.Ordinal))
-            .WithMessage($"'{{PropertyName}}' must be one of: {string.Join(", ", AllowedSorts)}.");
+            .WithMessage($"Must be one of: {string.Join(", ", AllowedSorts)}.");
     }
 }
 

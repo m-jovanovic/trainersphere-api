@@ -124,7 +124,7 @@ internal sealed class ListWorkoutsValidator : PagedQueryValidator<ListWorkoutsQu
         RuleFor(q => q.Search).MaximumLength(TrainingRules.SearchMaxLength);
         RuleFor(q => q.Sort)
             .Must(sort => sort is null || Orders.ContainsKey(sort))
-            .WithMessage($"'{{PropertyName}}' must be one of: {string.Join(", ", Orders.Keys)}.");
+            .WithMessage($"Must be one of: {string.Join(", ", Orders.Keys)}.");
     }
 }
 

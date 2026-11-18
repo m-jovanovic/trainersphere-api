@@ -82,7 +82,8 @@ function Editor({ program }: { program: Program | undefined }) {
       setSaved(next);
       setDraft(next);
       toast.success(program ? 'Program saved' : `${p.name} created`);
-      if (!program) void navigate({ to: '/programs/$programId', params: { programId: p.id }, replace: true });
+      // The guard may not have re-rendered with the saved state yet, so it would block this redirect.
+      if (!program) void navigate({ to: '/programs/$programId', params: { programId: p.id }, replace: true, ignoreBlocker: true });
     },
     onError: (err) => setErrors({ form: errorMessage(err) }),
   });

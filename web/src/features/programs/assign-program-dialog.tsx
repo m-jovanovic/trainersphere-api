@@ -39,9 +39,11 @@ export function AssignProgramDialog({ open, onOpenChange, programId: fixedProgra
   });
 
   const p = program.data;
-  const endDate = p ? addDaysIso(startDate, p.weeks * 7 - 1) : null;
+  // A cleared date input reports '', which the date helpers cannot format.
+  const validStart = /^\d{4}-\d{2}-\d{2}$/.test(startDate);
+  const endDate = p && validStart ? addDaysIso(startDate, p.weeks * 7 - 1) : null;
   const submit = () => {
-    const problem = !programId ? 'Choose a program.' : clientIds.length === 0 ? 'Choose at least one client.' : !/^\d{4}-\d{2}-\d{2}$/.test(startDate) ? 'Pick a start date.' : null;
+    const problem = !programId ? 'Choose a program.' : clientIds.length === 0 ? 'Choose at least one client.' : !validStart ? 'Pick a start date.' : null;
     setError(problem);
     if (!problem) assign.mutate();
   };
@@ -103,7 +105,7 @@ export function AssignProgramDialog({ open, onOpenChange, programId: fixedProgra
             </div>
           </fieldset>
         )}
-        <Field label="Start date" hint={p ? `Day 1 is ${formatDay(startDate, 'EEEE')}; each program week starts on this weekday.` : undefined}>
+        <Field label="Start date" hint={p && validStart ? `Day 1 is ${formatDay(startDate, 'EEEE')}; each program week starts on this weekday.` : undefined}>
           <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
         </Field>
         {p && endDate && (

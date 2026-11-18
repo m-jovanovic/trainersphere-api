@@ -186,7 +186,8 @@ function Builder({ workout }: { workout: Workout | undefined }) {
       reset(toValues(saved, units));
       setExpanded(new Set());
       toast.success(workout ? 'Workout saved' : `${saved.name} created`);
-      if (!workout) void navigate({ to: '/workouts/$workoutId', params: { workoutId: saved.id }, replace: true });
+      // The guard may not have re-rendered with the reset form yet, so it would block this redirect.
+      if (!workout) void navigate({ to: '/workouts/$workoutId', params: { workoutId: saved.id }, replace: true, ignoreBlocker: true });
     },
     onError: (err) => {
       if (err instanceof ApiError && Object.keys(err.fieldErrors).length) {

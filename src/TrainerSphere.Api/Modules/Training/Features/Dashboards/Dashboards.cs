@@ -234,13 +234,11 @@ internal sealed class ClientDashboardHandler(
 
         DateOnly weekStart = IsoWeek.Start(today);
         DateOnly from = weekStart < today.AddDays(-27) ? weekStart : today.AddDays(-27);
-        IReadOnlyList<Assignment> range = await assignments.ListAsync(trainerId: null, client.Id, from, today.AddDays(TrainingRules.MaxAssignmentRangeDays), cancellationToken);
+        IReadOnlyList<Assignment> range = await assignments.ListAsync(trainerId: null, client.Id, from, weekStart.AddDays(6), cancellationToken);
 
         var todayItems = range.Where(a => a.Date == today).Select(a => AssignmentResponse.From(a, client, today)).ToList();
-        AssignmentResponse? next = range
-            .Where(a => a.Date > today && a.StoredStatus == AssignmentStatus.Scheduled)
-            .Select(a => AssignmentResponse.From(a, client, today))
-            .FirstOrDefault();
+        IReadOnlyDictionary<Guid, Assignment> upcoming = await assignments.GetNextScheduledAsync([(client.Id, today)], cancellationToken);
+        AssignmentResponse? next = upcoming.TryGetValue(client.Id, out Assignment? nextAssignment) ? AssignmentResponse.From(nextAssignment, client, today) : null;
 
         ScheduledItem[] items = [.. range.Select(a => new ScheduledItem(a.Date, a.StoredStatus))];
         AdherenceStats thisWeek = Adherence.ThisWeek(items, today);

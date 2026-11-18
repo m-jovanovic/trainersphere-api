@@ -15,6 +15,12 @@ internal interface IAssignmentRepository
     /// </summary>
     Task<IReadOnlyList<Assignment>> ListAsync(Guid? trainerId, Guid? clientId, DateOnly from, DateOnly to, CancellationToken cancellationToken);
 
+    /// <summary>
+    /// Gets each client's next assignment: the first scheduled one dated after that client's <c>After</c> date, by
+    /// date then creation, however far ahead. Clients without one are absent.
+    /// </summary>
+    Task<IReadOnlyDictionary<Guid, Assignment>> GetNextScheduledAsync(IReadOnlyCollection<(Guid ClientId, DateOnly After)> clients, CancellationToken cancellationToken);
+
     Task AddAsync(Assignment assignment, CancellationToken cancellationToken);
 
     Task UpdateAsync(Assignment assignment, CancellationToken cancellationToken);
@@ -115,6 +121,27 @@ internal sealed class AssignmentRepository(IDbSession db) : IAssignmentRepositor
             cancellationToken);
 
         return [.. rows.Select(r => Assignment.Restore(r.ToState()))];
+    }
+
+    public async Task<IReadOnlyDictionary<Guid, Assignment>> GetNextScheduledAsync(IReadOnlyCollection<(Guid ClientId, DateOnly After)> clients, CancellationToken cancellationToken)
+    {
+        if (clients.Count == 0)
+        {
+            return new Dictionary<Guid, Assignment>();
+        }
+
+        IReadOnlyList<AssignmentRow> rows = await db.QueryAsync<AssignmentRow>(
+            $"""
+            SELECT DISTINCT ON (client_id) {Columns}
+            FROM training.assignments
+            JOIN unnest(@ClientIds::uuid[], @After::date[]) AS c(cid, after_date) ON c.cid = client_id
+            WHERE status = 'Scheduled' AND date > c.after_date
+            ORDER BY client_id, date, created_at, id
+            """,
+            new { ClientIds = clients.Select(c => c.ClientId).ToArray(), After = clients.Select(c => c.After).ToArray() },
+            cancellationToken);
+
+        return rows.Select(r => Assignment.Restore(r.ToState())).ToDictionary(a => a.ClientId);
     }
 
     public Task AddAsync(Assignment assignment, CancellationToken cancellationToken) =>

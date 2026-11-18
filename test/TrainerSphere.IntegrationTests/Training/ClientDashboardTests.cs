@@ -117,7 +117,7 @@ public sealed class ClientDashboardTests(ApiFactory factory) : TrainingTest(fact
         (await DashboardAsync(client)).ShouldBeNullProperty("nextAssignment");
     }
 
-    [Fact(Skip = "QA-F14: the client dashboard only looks 92 days ahead for nextAssignment; the client summary has no limit")]
+    [Fact]
     public async Task NextAssignment_MoreThan92DaysAhead_IsStillTheNextAssignment()
     {
         (TestUser trainer, TestUser client) = await CreateUtcTrainerWithClientAsync();

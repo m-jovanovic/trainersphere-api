@@ -103,22 +103,14 @@ internal static class ClientStatsReader
             new { TrainerId = trainerId, ClientIds = ids },
             cancellationToken);
 
-        IReadOnlyList<NextAssignmentRow> nextRows = await db.QueryAsync<NextAssignmentRow>(
-            """
-            SELECT client_id, id, date, workout->>'name' AS workout_name
-            FROM training.assignments
-            WHERE trainer_id = @TrainerId AND status = 'Scheduled' AND date >= @From AND client_id = ANY(@ClientIds)
-            ORDER BY client_id, date, created_at, id
-            """,
-            new { TrainerId = trainerId, From = minToday.AddDays(-1), ClientIds = ids },
-            cancellationToken);
+        // On or after the client's today, unlike the client dashboard's strictly-after; same query, different bound.
+        IReadOnlyDictionary<Guid, Assignment> nextByClient = await assignments.GetNextScheduledAsync([.. clients.Select(c => (c.Id, todays[c.Id].AddDays(-1)))], cancellationToken);
 
         IReadOnlyList<Assignment> window = await assignments.ListAsync(trainerId, clientId: null, minToday.AddDays(-27), maxToday, cancellationToken);
         var itemsByClient = window
             .GroupBy(a => a.ClientId)
             .ToDictionary(g => g.Key, g => (IReadOnlyList<ScheduledItem>)[.. g.Select(a => new ScheduledItem(a.Date, a.StoredStatus))]);
         var lastSessionByClient = lastSessions.ToDictionary(r => r.ClientId, r => (DateTime?)r.LastSessionAt);
-        var nextByClient = nextRows.GroupBy(r => r.ClientId).ToDictionary(g => g.Key, g => g.ToList());
 
         return clients.ToDictionary(
             c => c.Id,
@@ -126,11 +118,7 @@ internal static class ClientStatsReader
             {
                 DateOnly today = todays[c.Id];
                 IReadOnlyList<ScheduledItem> items = itemsByClient.GetValueOrDefault(c.Id, []);
-                NextAssignmentRef? next = nextByClient
-                    .GetValueOrDefault(c.Id, [])
-                    .Where(r => r.Date >= today)
-                    .Select(r => new NextAssignmentRef(r.Id, r.Date, r.WorkoutName))
-                    .FirstOrDefault();
+                NextAssignmentRef? next = nextByClient.TryGetValue(c.Id, out Assignment? a) ? new NextAssignmentRef(a.Id, a.Date, a.Workout.Name) : null;
 
                 return new ClientStats(
                     lastSessionByClient.GetValueOrDefault(c.Id),
@@ -151,17 +139,6 @@ internal static class ClientStatsReader
         public Guid ClientId { get; init; }
 
         public DateTime LastSessionAt { get; init; }
-    }
-
-    internal sealed record NextAssignmentRow
-    {
-        public Guid ClientId { get; init; }
-
-        public Guid Id { get; init; }
-
-        public DateOnly Date { get; init; }
-
-        public string WorkoutName { get; init; } = string.Empty;
     }
 }
 

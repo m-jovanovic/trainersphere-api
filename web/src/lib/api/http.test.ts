@@ -37,6 +37,33 @@ describe('api client', () => {
     expect(errorMessage(new ApiError(429, { status: 429 }))).toMatch(/Too many attempts/);
   });
 
+  it('rejects a body that is not valid JSON with a $ error (contract v1.5)', async () => {
+    const res = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{not json' });
+    expect(res.status).toBe(400);
+    const problem = (await res.json()) as { code: string; type: string; detail: string; errors: Record<string, string[]> };
+    expect(problem.code).toBe('Validation');
+    expect(problem.type).toContain('rfc9110#section-15.5.1');
+    expect(problem.errors.$).toEqual(['The request body is not valid JSON.']);
+  });
+
+  it('treats PUT as a full replace and enums as exact kebab-case (contract v1.5)', async () => {
+    await signIn();
+    const missing = (await api('/auth/me', { method: 'PUT', body: { firstName: 'Maya', lastName: 'Novak', timeZone: 'UTC' } }).catch((e: unknown) => e)) as ApiError;
+    expect(missing).toBeInstanceOf(ApiError);
+    expect(missing.problem.errors?.units).toEqual(['Required.']);
+
+    const badEnum = (await api('/auth/me', { method: 'PUT', body: { firstName: 'Maya', lastName: 'Novak', units: 'KG', timeZone: 'UTC' } }).catch((e: unknown) => e)) as ApiError;
+    expect(badEnum.problem.errors?.units).toEqual(['Must be one of: kg, lb.']);
+    expect(errorMessage(badEnum)).toBe('Units: Must be one of: kg, lb.');
+  });
+
+  it('rejects unknown enum values in query parameters', async () => {
+    await signIn();
+    const err = (await api('/clients', { query: { status: 'Active' } }).catch((e: unknown) => e)) as ApiError;
+    expect(err.status).toBe(400);
+    expect(err.problem.errors?.status).toEqual(['Must be one of: active, archived.']);
+  });
+
   it('wraps fetch failures as NetworkError', async () => {
     server.use(http.get('/api/down', () => HttpResponse.error()));
     await expect(api('/down', { auth: false })).rejects.toBeInstanceOf(NetworkError);

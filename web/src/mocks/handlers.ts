@@ -54,8 +54,18 @@ function problem(status: number, code: string, detail: string, errors?: Record<s
     409: 'Conflict',
     422: 'Unprocessable Entity',
   };
+  const sections: Record<number, string> = { 400: '15.5.1', 401: '15.5.2', 403: '15.5.4', 404: '15.5.5', 409: '15.5.10', 422: '15.5.21' };
   return HttpResponse.json(
-    { type: 'about:blank', title: titles[status] ?? 'Error', status, detail, code, traceId: '00-mock', ...(errors ? { errors } : {}), ...extra },
+    {
+      type: `https://tools.ietf.org/html/rfc9110#section-${sections[status] ?? '15.6.1'}`,
+      title: titles[status] ?? 'Error',
+      status,
+      detail,
+      code,
+      traceId: '00-mock',
+      ...(errors ? { errors } : {}),
+      ...extra,
+    },
     { status, headers: { 'Content-Type': 'application/problem+json' } },
   );
 }
@@ -97,13 +107,31 @@ function currentUser(request: Request): DbUser | null {
 type Ctx = { request: Request; params: Record<string, string | readonly string[] | undefined>; user: DbUser; url: URL };
 type Handler = (ctx: Ctx) => Response | Promise<Response>;
 
+/** A request the real API could not bind (bad JSON, wrong enum, missing member): 400 before the handler runs. */
+class BindingFailure extends Error {
+  readonly errors: Record<string, string[]>;
+  constructor(errors: Record<string, string[]>) {
+    super('binding failed');
+    this.errors = errors;
+  }
+}
+
+async function run(handler: () => Response | Promise<Response>): Promise<Response> {
+  try {
+    return await handler();
+  } catch (err) {
+    if (err instanceof BindingFailure) return validation(err.errors);
+    throw err;
+  }
+}
+
 function authed(role: T.Role | 'any', handler: Handler): HttpResponseResolver {
   return async ({ request, params }) => {
     if (mockConfig.delayMs) await delay(mockConfig.delayMs);
     const user = currentUser(request);
     if (!user) return problem(401, 'Auth.Unauthorized', 'Authentication is required.');
     if (role !== 'any' && user.role !== role) return problem(403, 'Auth.Forbidden', 'You do not have access to this resource.');
-    const res = await handler({ request, params: params as Ctx['params'], user, url: new URL(request.url) });
+    const res = await run(() => handler({ request, params: params as Ctx['params'], user, url: new URL(request.url) }));
     if (request.method !== 'GET') mockConfig.onMutate();
     return res;
   };
@@ -112,7 +140,7 @@ function authed(role: T.Role | 'any', handler: Handler): HttpResponseResolver {
 function open(handler: (ctx: { request: Request; params: Record<string, string | readonly string[] | undefined> }) => Response | Promise<Response>): HttpResponseResolver {
   return async ({ request, params }) => {
     if (mockConfig.delayMs) await delay(mockConfig.delayMs);
-    const res = await handler({ request, params: params as Ctx['params'] });
+    const res = await run(() => handler({ request, params: params as Ctx['params'] }));
     if (request.method !== 'GET') mockConfig.onMutate();
     return res;
   };
@@ -120,12 +148,45 @@ function open(handler: (ctx: { request: Request; params: Record<string, string |
 
 const param = (ctx: { params: Ctx['params'] }, name: string) => String(ctx.params[name] ?? '');
 
-async function body<B>(request: Request): Promise<B> {
-  try {
-    return (await request.json()) as B;
-  } catch {
-    return {} as B;
+async function body<B>(request: Request, { optional = false } = {}): Promise<B> {
+  const text = await request.text();
+  if (!text.trim()) {
+    if (optional) return {} as B;
+    throw new BindingFailure({ $: ['A non-empty request body is required.'] });
   }
+  let value: unknown;
+  try {
+    value = JSON.parse(text);
+  } catch {
+    throw new BindingFailure({ $: ['The request body is not valid JSON.'] });
+  }
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new BindingFailure({ $: ['The request body must be a JSON object.'] });
+  return value as B;
+}
+
+/** PUT is a full replace: every required member must be present; only `nullable` ones may be null. */
+function requireMembers(b: object, required: readonly string[], nullable: readonly string[] = [], prefix = '') {
+  const errors: Record<string, string[]> = {};
+  const rec = b as Record<string, unknown>;
+  for (const name of required) {
+    const v = rec[name];
+    if (v === undefined || (v === null && !nullable.includes(name))) errors[prefix + name] = ['Required.'];
+  }
+  if (Object.keys(errors).length) throw new BindingFailure(errors);
+}
+
+const mustBeOneOf = (allowed: readonly string[]) => [`Must be one of: ${allowed.join(', ')}.`];
+
+/** Enum values bind by exact kebab-case match only. */
+function checkEnum(value: unknown, allowed: readonly string[], key: string, errors: Record<string, string[]>) {
+  if (typeof value !== 'string' || !allowed.includes(value)) errors[key] = mustBeOneOf(allowed);
+}
+
+function queryEnum<V extends string>(url: URL, name: string, allowed: readonly V[]): V | null {
+  const v = url.searchParams.get(name);
+  if (v === null || v === '') return null;
+  if (!(allowed as readonly string[]).includes(v)) throw new BindingFailure({ [name]: mustBeOneOf(allowed) });
+  return v as V;
 }
 
 function paged<X>(items: X[], url: URL, maxPageSize = 100): T.Paged<X> {
@@ -136,6 +197,16 @@ function paged<X>(items: X[], url: URL, maxPageSize = 100): T.Paged<X> {
 }
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function isTimeZone(tz: unknown): boolean {
+  if (typeof tz !== 'string' || !tz) return false;
+  try {
+    new Intl.DateTimeFormat('en', { timeZone: tz });
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 function checkPassword(password: unknown, field: string, errors: Record<string, string[]>) {
   if (typeof password !== 'string' || password.length < 8) errors[field] = ['Password must be at least 8 characters long.'];
@@ -224,8 +295,10 @@ function validateWorkout(b: Partial<T.UpsertWorkoutRequest>, user: DbUser) {
   const visible = new Set(visibleExercises(user).map((e) => e.id));
   list.forEach((e, i) => {
     if (!visible.has(e.exerciseId)) errors[`exercises[${i}].exerciseId`] = ['Exercise was not found.'];
+    checkEnum(e.goal?.type, ['reps', 'time', 'distance'], `exercises[${i}].goal.type`, errors);
+    checkEnum(e.load?.type, ['none', 'bodyweight', 'weight', 'percent-1rm', 'rpe'], `exercises[${i}].load.type`, errors);
     if (!(e.sets >= 1 && e.sets <= 20)) errors[`exercises[${i}].sets`] = ['Sets must be between 1 and 20.'];
-    if (e.goal.max < e.goal.min) errors[`exercises[${i}].goal.max`] = ['Max must be greater than or equal to min.'];
+    if (e.goal && e.goal.max < e.goal.min) errors[`exercises[${i}].goal.max`] = ['Max must be greater than or equal to min.'];
     if (!(e.restSeconds >= 0 && e.restSeconds <= 1800)) errors[`exercises[${i}].restSeconds`] = ['Rest must be between 0 and 1800 seconds.'];
     if (e.tempo && !/^[0-9X]-[0-9X]-[0-9X]-[0-9X]$/.test(e.tempo)) errors[`exercises[${i}].tempo`] = ['Tempo must look like 3-1-X-0.'];
   });
@@ -332,12 +405,14 @@ export const handlers = [
 
   http.put(`${API}/auth/me`, authed('any', async ({ request, user }) => {
     const b = await body<T.UpdateMeRequest>(request);
+    requireMembers(b, ['firstName', 'lastName', 'units', 'timeZone']);
     const errors: Record<string, string[]> = {};
     checkName(b.firstName, 'firstName', errors);
     checkName(b.lastName, 'lastName', errors);
-    if (b.units !== 'kg' && b.units !== 'lb') errors.units = ['Units must be kg or lb.'];
+    checkEnum(b.units, ['kg', 'lb'], 'units', errors);
+    if (!isTimeZone(b.timeZone)) errors.timeZone = [`'${b.timeZone}' is not a known IANA time zone.`];
     if (Object.keys(errors).length) return validation(errors);
-    Object.assign(user, { firstName: b.firstName.trim(), lastName: b.lastName.trim(), units: b.units, timeZone: b.timeZone || user.timeZone });
+    Object.assign(user, { firstName: b.firstName.trim(), lastName: b.lastName.trim(), units: b.units, timeZone: b.timeZone });
     return HttpResponse.json(publicUser(user));
   })),
 
@@ -424,7 +499,7 @@ export const handlers = [
   // Invitations (trainer). The `:token` GET above only matches non-UUID paths in practice;
   // list uses the bare collection path.
   http.get(`${API}/invitations`, authed('trainer', ({ user, url }) => {
-    const status = url.searchParams.get('status');
+    const status = queryEnum(url, 'status', ['pending', 'accepted', 'cancelled', 'expired']);
     const list = db.state.invitations
       .filter((i) => i.trainerId === user.id)
       .map(toInvitation)
@@ -532,6 +607,7 @@ export const handlers = [
     if (!e) return notFound('Exercise');
     if (e.ownerId !== ctx.user.id) return problem(403, 'Exercise.NotEditable', 'Library exercises cannot be edited.');
     const b = await body<T.UpsertExerciseRequest>(ctx.request);
+    requireMembers(b, ['name', 'category', 'movementPattern', 'primaryMuscles', 'secondaryMuscles', 'equipment', 'unilateral']);
     const errors = validateExercise(b);
     if (Object.keys(errors).length) return validation(errors);
     Object.assign(e, b, { name: b.name.trim() });
@@ -549,7 +625,7 @@ export const handlers = [
   // Workouts
   http.get(`${API}/workouts`, authed('trainer', ({ user, url }) => {
     const search = (url.searchParams.get('search') ?? '').toLowerCase();
-    const sort = url.searchParams.get('sort') ?? 'name';
+    const sort = queryEnum(url, 'sort', ['name', '-updatedAt']) ?? 'name';
     const list = db.state.workouts
       .filter((w) => w.trainerId === user.id && (url.searchParams.get('includeArchived') === 'true' || !w.archived))
       .filter((w) => !search || w.name.toLowerCase().includes(search))
@@ -585,6 +661,8 @@ export const handlers = [
     const w = db.state.workouts.find((x) => x.id === param(ctx, 'id') && x.trainerId === ctx.user.id);
     if (!w) return notFound('Workout');
     const b = await body<T.UpsertWorkoutRequest>(ctx.request);
+    requireMembers(b, ['name', 'exercises']);
+    (b.exercises as unknown[]).forEach((e, i) => requireMembers(e as object, ['exerciseId', 'sets', 'goal', 'load', 'restSeconds'], [], `exercises[${i}].`));
     const errors = validateWorkout(b, ctx.user);
     if (Object.keys(errors).length) return validation(errors);
     Object.assign(w, { name: b.name.trim(), description: b.description ?? null, exercises: toDbWorkoutExercises(b.exercises), updatedAt: nowIso() });
@@ -626,6 +704,7 @@ export const handlers = [
   ...(['post', 'put'] as const).map((method) =>
     http[method](method === 'post' ? `${API}/programs` : `${API}/programs/:id`, authed('trainer', async (ctx) => {
       const b = await body<T.UpsertProgramRequest>(ctx.request);
+      if (method === 'put') requireMembers(b, ['name', 'weeks', 'slots']);
       const errors: Record<string, string[]> = {};
       checkName(b.name, 'name', errors);
       if (!(b.weeks >= 1 && b.weeks <= 52)) errors.weeks = ['Weeks must be between 1 and 52.'];
@@ -726,7 +805,7 @@ export const handlers = [
     const from = url.searchParams.get('from') ?? addDaysIso(today, -7);
     const to = url.searchParams.get('to') ?? addDaysIso(today, 28);
     const clientId = user.role === 'client' ? user.id : url.searchParams.get('clientId');
-    const status = url.searchParams.get('status');
+    const status = queryEnum(url, 'status', ['scheduled', 'completed', 'skipped', 'missed']);
     const visibleClients = new Set(db.state.clients.filter((c) => clientFor(user, c.id)).map((c) => c.id));
     const list = db.state.assignments
       .filter((a) => visibleClients.has(a.clientId) && (!clientId || a.clientId === clientId))
@@ -772,6 +851,8 @@ export const handlers = [
     if (!a) return notFound('Assignment');
     if (a.status !== 'scheduled' || a.sessionId) return problem(409, 'Assignment.NotScheduled', 'Only scheduled workouts can be changed.');
     const b = await body<T.UpdateAssignmentRequest>(ctx.request);
+    requireMembers(b, ['date', 'notes'], ['notes']);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(b.date)) return validation({ date: ['Date must be a calendar date (yyyy-MM-dd).'] });
     a.date = b.date;
     a.notes = b.notes;
     return HttpResponse.json(toAssignment(a));
@@ -830,7 +911,7 @@ export const handlers = [
 
   http.get(`${API}/sessions`, authed('any', ({ user, url }) => {
     const clientId = user.role === 'client' ? user.id : url.searchParams.get('clientId');
-    const status = url.searchParams.get('status');
+    const status = queryEnum(url, 'status', ['in-progress', 'completed']);
     const from = url.searchParams.get('from');
     const to = url.searchParams.get('to');
     const list = db.state.sessions
@@ -851,6 +932,7 @@ export const handlers = [
     const s = visibleSession(ctx.user, param(ctx, 'id'));
     if (!s) return notFound('Session');
     const b = await body<{ workoutName: string; notes: string | null }>(ctx.request);
+    requireMembers(b, ['workoutName', 'notes'], ['notes']);
     s.workoutName = b.workoutName || s.workoutName;
     s.notes = b.notes;
     return HttpResponse.json(toSession(s));
@@ -860,7 +942,20 @@ export const handlers = [
     const s = visibleSession(ctx.user, param(ctx, 'id'));
     if (!s) return notFound('Session');
     if (s.status === 'completed') return problem(409, 'Session.Completed', 'This session is already completed.');
-    const b = await body<T.PutSetRequest>(ctx.request);
+    const raw = await body<Partial<T.PutSetRequest>>(ctx.request);
+    requireMembers(raw, ['exerciseId', 'position', 'setNumber', 'completed']);
+    const b: T.PutSetRequest = {
+      exerciseId: raw.exerciseId!,
+      position: raw.position!,
+      setNumber: raw.setNumber!,
+      weightKg: raw.weightKg ?? null,
+      reps: raw.reps ?? null,
+      durationSeconds: raw.durationSeconds ?? null,
+      distanceMeters: raw.distanceMeters ?? null,
+      rpe: raw.rpe ?? null,
+      completed: raw.completed!,
+      notes: raw.notes ?? null,
+    };
     const errors: Record<string, string[]> = {};
     if (!(b.setNumber >= 1 && b.setNumber <= 50)) errors.setNumber = ['Set number must be between 1 and 50.'];
     if (b.weightKg !== null && !(b.weightKg >= 0 && b.weightKg <= 1000)) errors.weightKg = ['Weight must be between 0 and 1000 kg.'];
@@ -886,7 +981,7 @@ export const handlers = [
   http.post(`${API}/sessions/:id/complete`, authed('client', async (ctx) => {
     const s = visibleSession(ctx.user, param(ctx, 'id'));
     if (!s) return notFound('Session');
-    const b = await body<T.CompleteSessionRequest>(ctx.request);
+    const b = await body<T.CompleteSessionRequest>(ctx.request, { optional: true });
     completeSession(s, b.completedAt ?? nowIso(), b.notes);
     return HttpResponse.json(toSession(s));
   })),
@@ -904,8 +999,8 @@ export const handlers = [
   // Clients
   http.get(`${API}/clients`, authed('trainer', ({ user, url }) => {
     const search = (url.searchParams.get('search') ?? '').toLowerCase();
-    const status = url.searchParams.get('status');
-    const sort = url.searchParams.get('sort') ?? 'name';
+    const status = queryEnum(url, 'status', ['active', 'archived']);
+    const sort = queryEnum(url, 'sort', ['name', '-lastSessionAt', 'adherence7d']) ?? 'name';
     const list = db.state.clients
       .filter((c) => c.trainerId === user.id && (!status || c.status === status))
       .map(clientSummary)
@@ -927,6 +1022,7 @@ export const handlers = [
     const c = clientFor(ctx.user, param(ctx, 'id'));
     if (!c) return notFound('Client');
     const b = await body<T.UpdateClientRequest>(ctx.request);
+    requireMembers(b, ['goals', 'trainerNotes'], ['goals', 'trainerNotes']);
     c.goals = b.goals;
     c.trainerNotes = b.trainerNotes;
     return HttpResponse.json(clientDetail(c, ctx.user));
@@ -1056,6 +1152,8 @@ export const handlers = [
     if (!c) return notFound('Client');
     const date = param(ctx, 'date');
     const b = await body<T.BodyMetricValues>(ctx.request);
+    const all = ['weightKg', 'bodyFatPercent', 'waistCm', 'chestCm', 'hipsCm', 'armCm', 'thighCm', 'restingHeartRate', 'notes'];
+    requireMembers(b, all, all);
     const errors: Record<string, string[]> = {};
     if (date > todayIso()) errors.date = ['Date cannot be in the future.'];
     const measures = ['weightKg', 'bodyFatPercent', 'waistCm', 'chestCm', 'hipsCm', 'armCm', 'thighCm', 'restingHeartRate'] as const;

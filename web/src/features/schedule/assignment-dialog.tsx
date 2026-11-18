@@ -7,7 +7,8 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { assignmentsApi } from '@/lib/api/endpoints';
-import { ApiError, errorMessage } from '@/lib/api/http';
+import { ApiError } from '@/lib/api/http';
+import { applyProblem } from '@/lib/api/form-errors';
 import { queries } from '@/lib/api/queries';
 import type { Assignment } from '@/lib/api/types';
 import { useUnits } from '@/lib/auth/hooks';
@@ -34,7 +35,7 @@ export function ScheduleWorkoutDialog({ open, onOpenChange, clientId, date }: { 
   const clients = useQuery({ ...queries.clients({ status: 'active', sort: 'name' }), enabled: open && !clientId });
   const workouts = useQuery({ ...queries.workouts(''), enabled: open });
   const [formError, setFormError] = useState<string | null>(null);
-  const { register, handleSubmit, formState, reset } = useForm<CreateValues>({
+  const { register, handleSubmit, formState, reset, setError } = useForm<CreateValues>({
     resolver: zodResolver(createSchema),
     values: { clientId: clientId ?? '', workoutId: '', date: date ?? todayIso(), notes: '' },
     resetOptions: { keepDirtyValues: true },
@@ -47,7 +48,8 @@ export function ScheduleWorkoutDialog({ open, onOpenChange, clientId, date }: { 
       reset();
       onOpenChange(false);
     },
-    onError: (err) => setFormError(errorMessage(err)),
+    onError: (err) =>
+      setFormError(applyProblem(err, { isField: (k) => k in createSchema.shape, setFieldError: (k, message) => setError(k as keyof CreateValues, { type: 'server', message }) }).formError),
   });
   return (
     <Dialog
@@ -116,8 +118,13 @@ export function AssignmentDialog({ assignment: a, onClose, showClient = true }: 
   const [formError, setFormError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const editable = a.status === 'scheduled' || a.status === 'missed';
-  const { register, handleSubmit, formState } = useForm<EditValues>({ resolver: zodResolver(editSchema), defaultValues: { date: a.date, notes: a.notes ?? '' } });
-  const fail = (err: unknown) => setFormError(err instanceof ApiError && err.code === 'Assignment.NotScheduled' ? 'This workout was already started or completed, so it can no longer be changed.' : errorMessage(err));
+  const { register, handleSubmit, formState, setError } = useForm<EditValues>({ resolver: zodResolver(editSchema), defaultValues: { date: a.date, notes: a.notes ?? '' } });
+  const fail = (err: unknown) =>
+    setFormError(
+      err instanceof ApiError && err.code === 'Assignment.NotScheduled'
+        ? 'This workout was already started or completed, so it can no longer be changed.'
+        : applyProblem(err, { isField: (k) => k in editSchema.shape, setFieldError: (k, message) => setError(k as keyof EditValues, { type: 'server', message }) }).formError,
+    );
 
   const update = useMutation({
     mutationFn: (v: EditValues) => assignmentsApi.update(a.id, { date: v.date, notes: v.notes || null }),

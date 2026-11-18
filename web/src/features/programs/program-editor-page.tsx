@@ -4,7 +4,7 @@ import { ArrowLeft, CalendarRange, Copy, Plus, X } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { programsApi } from '@/lib/api/endpoints';
-import { errorMessage } from '@/lib/api/http';
+import { applyProblem } from '@/lib/api/form-errors';
 import { keys, queries } from '@/lib/api/queries';
 import type { Program } from '@/lib/api/types';
 import { Button } from '@/components/ui/button';
@@ -85,7 +85,11 @@ function Editor({ program }: { program: Program | undefined }) {
       // The guard may not have re-rendered with the saved state yet, so it would block this redirect.
       if (!program) void navigate({ to: '/programs/$programId', params: { programId: p.id }, replace: true, ignoreBlocker: true });
     },
-    onError: (err) => setErrors({ form: errorMessage(err) }),
+    onError: (err) => {
+      let name: string | undefined;
+      const { formError } = applyProblem(err, { isField: (k) => k === 'name', setFieldError: (_, message) => (name = message) });
+      setErrors({ name, form: formError ?? undefined });
+    },
   });
 
   const submit = () => {

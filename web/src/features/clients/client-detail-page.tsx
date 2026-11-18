@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { clientsApi, programsApi } from "@/lib/api/endpoints";
 import { errorMessage } from "@/lib/api/http";
+import { applyProblem } from "@/lib/api/form-errors";
 import { keys, queries } from "@/lib/api/queries";
 import type {
   Assignment,
@@ -408,7 +409,7 @@ type NotesValues = z.infer<typeof notesSchema>;
 
 function NotesCard({ client }: { client: ClientDetail }) {
   const qc = useQueryClient();
-  const { register, handleSubmit, formState, reset } = useForm<NotesValues>({
+  const { register, handleSubmit, formState, reset, setError } = useForm<NotesValues>({
     resolver: zodResolver(notesSchema),
     values: {
       goals: client.goals ?? "",
@@ -426,7 +427,13 @@ function NotesCard({ client }: { client: ClientDetail }) {
       reset({ goals: next.goals ?? "", trainerNotes: next.trainerNotes ?? "" });
       toast.success("Notes saved");
     },
-    onError: (err) => toast.error(errorMessage(err)),
+    onError: (err) => {
+      const { formError } = applyProblem(err, {
+        isField: (k) => k in notesSchema.shape,
+        setFieldError: (k, message) => setError(k as keyof NotesValues, { type: "server", message }),
+      });
+      if (formError) toast.error(formError);
+    },
   });
   return (
     <Card>

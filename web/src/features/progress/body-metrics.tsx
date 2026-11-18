@@ -7,7 +7,8 @@ import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YA
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { clientsApi } from '@/lib/api/endpoints';
-import { ApiError, errorMessage } from '@/lib/api/http';
+import { errorMessage } from '@/lib/api/http';
+import { applyProblem } from '@/lib/api/form-errors';
 import { keys, queries } from '@/lib/api/queries';
 import type { BodyMetric, BodyMetricValues, Units } from '@/lib/api/types';
 import { useUnits } from '@/lib/auth/hooks';
@@ -271,11 +272,11 @@ function BodyMetricDialog({ clientId, existing, entries, onClose }: { clientId: 
       onClose();
     },
     onError: (err) => {
-      if (err instanceof ApiError && Object.keys(err.fieldErrors).length) {
-        for (const [k, message] of Object.entries(err.fieldErrors)) if (k in formSchema.shape) setError(k as keyof FormValues, { type: 'server', message });
-        return;
-      }
-      setFormError(errorMessage(err));
+      const { formError } = applyProblem(err, {
+        isField: (k) => k in formSchema.shape,
+        setFieldError: (k, message) => setError(k as keyof FormValues, { type: 'server', message }),
+      });
+      setFormError(formError);
     },
   });
 

@@ -1,12 +1,13 @@
 import type { AuthResponse, ProblemDetails } from './types';
 import { session } from '@/lib/auth/session';
+import { toFieldPath, validationMessages } from './problem-text';
 
 export class ApiError extends Error {
   readonly status: number;
   readonly problem: ProblemDetails;
 
   constructor(status: number, problem: ProblemDetails) {
-    super(problem.detail ?? problem.title ?? `Request failed (${status})`);
+    super(problem.detail || problem.title || `Request failed (${status})`);
     this.name = 'ApiError';
     this.status = status;
     this.problem = problem;
@@ -24,7 +25,7 @@ export class ApiError extends Error {
     const out: Record<string, string> = {};
     for (const [key, messages] of Object.entries(this.problem.errors ?? {})) {
       const first = messages[0];
-      if (first) out[key.replace(/\[(\d+)\]/g, '.$1')] = first;
+      if (first && key !== '$') out[toFieldPath(key)] = first;
     }
     return out;
   }
@@ -46,7 +47,10 @@ export function errorMessage(err: unknown): string {
   if (err instanceof ApiError) {
     if (err.status === 429) return 'Too many attempts. Wait a minute and try again.';
     if (err.status >= 500) return 'Something went wrong on our side. Please try again.';
-    return err.problem.detail ?? err.message;
+    // Validation detail is the generic "The request is invalid."; the per-key messages say what is wrong.
+    const messages = validationMessages(err.problem.errors);
+    if (messages.length) return messages.join(' ');
+    return err.problem.detail || err.problem.title || err.message;
   }
   if (err instanceof NetworkError) return err.message;
   return 'Something went wrong. Please try again.';

@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { COMPOSE, TRAINER, goto, logIn } from './helpers';
 
+// Mock-seed journeys; compose.spec.ts covers the same flows on the real API seed.
 test.skip(COMPOSE, 'MSW-only: relies on the mock seed');
 
 test.describe('trainer journeys', () => {

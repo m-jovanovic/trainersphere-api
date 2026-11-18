@@ -4,8 +4,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Npgsql;
 using TrainerSphere.Api.Host;
+using TrainerSphere.Api.Modules.Notifications.Infrastructure;
 using TrainerSphere.SharedKernel.Messaging;
 using TrainerSphere.SharedKernel.Modules;
 
@@ -29,7 +31,17 @@ public class ApiFactory(PostgresServer postgres) : WebApplicationFactory<Program
     /// </summary>
     internal PublishedEvents Events { get; } = new();
 
-    public async ValueTask InitializeAsync()
+    /// <summary>
+    /// Gets every email the API sent (SMTP delivery is replaced unless <see cref="CaptureEmails"/> is false).
+    /// </summary>
+    internal CapturedEmails Emails { get; } = new();
+
+    /// <summary>
+    /// Gets a value indicating whether emails go to <see cref="Emails"/> instead of SMTP.
+    /// </summary>
+    protected virtual bool CaptureEmails => true;
+
+    public virtual async ValueTask InitializeAsync()
     {
         ConnectionString = await postgres.CreateDatabaseAsync(TestContext.Current.CancellationToken);
 
@@ -158,6 +170,12 @@ public class ApiFactory(PostgresServer postgres) : WebApplicationFactory<Program
 
             services.Remove(eventBus);
             services.AddScoped<IEventBus>(sp => new RecordingEventBus((IEventBus)ActivatorUtilities.CreateInstance(sp, implementation), Events));
+
+            if (CaptureEmails)
+            {
+                services.RemoveAll<IEmailSender>();
+                services.AddSingleton<IEmailSender>(Emails);
+            }
 
             ConfigureServices(services);
         });

@@ -21,6 +21,10 @@ dotnet test --project test/TrainerSphere.IntegrationTests -- --filter-class "*Si
 - `Factory.WaitForMessagesAsync()` waits until every module's outbox and inbox is drained and fails with the handler
   error if a message cannot be processed. Call it before asserting asynchronous effects (Training client profiles
   created from `ClientRegistered`, emails).
+- `Factory.Emails` captures every email the Notifications module sends instead of using SMTP:
+  `Factory.Emails.Single(user.Email, EmailKinds.Invitation)`, `Factory.Emails.To(email)`. Each `EmailMessage` has
+  `Kind`, `To`, `ToName`, `Subject`, `TextBody`, `HtmlBody`. Call `WaitForMessagesAsync()` first.
+- `Notifications/MailpitApiFactory` is a fixture with real SMTP delivery to a Mailpit container (`SmtpDeliveryTests`).
 - `Factory.QueryAsync/QuerySingleAsync/ExecuteAsync` run SQL against the fixture database.
 
 ## Conventions

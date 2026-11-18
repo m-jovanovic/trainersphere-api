@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\TrainerSphere.Api\TrainerSphere.Api.csproj" />
     <ProjectReference Include="..\..\src\TrainerSphere.SharedKernel\TrainerSphere.SharedKernel.csproj" />
   </ItemGroup>
 

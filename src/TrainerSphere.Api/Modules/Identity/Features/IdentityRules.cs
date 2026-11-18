@@ -17,9 +17,9 @@ internal static class IdentityRules
         rule.NotEmpty().Length(PasswordMinLength, PasswordMaxLength);
 
     public static IRuleBuilderOptions<T, string> ValidName<T>(this IRuleBuilder<T, string> rule) =>
-        rule.Must(name => !string.IsNullOrWhiteSpace(name)).WithMessage("'{PropertyName}' must not be empty.")
+        rule.Must(name => !string.IsNullOrWhiteSpace(name)).WithMessage("Must not be empty.")
             .MaximumLength(NameMaxLength);
 
     public static IRuleBuilderOptions<T, string?> ValidTimeZone<T>(this IRuleBuilder<T, string?> rule) =>
-        rule.Must(zone => zone is null || TimeZones.IsValid(zone)).WithMessage("'{PropertyValue}' is not a known IANA time zone.");
+        rule.Must(zone => zone is null || TimeZones.IsValid(zone)).WithMessage("Must be a known IANA time zone, for example Europe/Belgrade.");
 }

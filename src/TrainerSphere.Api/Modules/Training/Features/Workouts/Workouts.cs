@@ -221,10 +221,10 @@ internal abstract class WorkoutCommandValidator<T> : AbstractValidator<T>
                 goal.RuleFor(g => g.Type).NotNull().KebabEnum<GoalRequest, GoalType>();
                 goal.RuleFor(g => g.Min)
                     .Must((g, min) => !KebabCase.TryParse(g.Type, out GoalType type) || (min >= 1 && min <= Goal.UpperBound(type)))
-                    .WithMessage(g => $"'Min' must be between 1 and {UpperBoundOf(g.Type)}.");
+                    .WithMessage(g => $"Must be between 1 and {UpperBoundOf(g.Type)}.");
                 goal.RuleFor(g => g.Max)
                     .Must((g, max) => !KebabCase.TryParse(g.Type, out GoalType type) || (max >= g.Min && max <= Goal.UpperBound(type)))
-                    .WithMessage(g => $"'Max' must be between 'Min' and {UpperBoundOf(g.Type)}.");
+                    .WithMessage(g => $"Must be between 'min' and {UpperBoundOf(g.Type)}.");
             });
             line.RuleFor(l => l.Load).NotNull();
             line.RuleFor(l => l.Load!).ChildRules(load =>
@@ -236,15 +236,18 @@ internal abstract class WorkoutCommandValidator<T> : AbstractValidator<T>
             });
             line.RuleFor(l => l.RestSeconds).InclusiveBetween(0, WorkoutDefinition.MaxRestSeconds);
             line.RuleFor(l => l.Tempo).Matches(TempoPattern).When(l => !string.IsNullOrWhiteSpace(l.Tempo))
-                .WithMessage("'Tempo' must look like 3-1-X-0 (four digits or X separated by dashes).");
+                .WithMessage("Must look like 3-1-X-0 (four digits or X separated by dashes).");
             line.RuleFor(l => l.SupersetGroup)
                 .Must(group => string.IsNullOrWhiteSpace(group) || SupersetGroups.IsLetter(group.Trim()))
-                .WithMessage("'Superset Group' must be a single capital letter.");
+                .WithMessage("Must be a single capital letter.");
             line.RuleFor(l => l.Notes).MaximumLength(WorkoutDefinition.NotesMaxLength);
         });
         RuleFor(c => c.Exercises).Custom((lines, context) =>
         {
-            foreach ((int index, string message) in SupersetGroups.Check([.. lines.Select(l => Text.NullIfBlank(l.SupersetGroup))]))
+            // A malformed letter already has its own error; it does not also count as a group.
+            string?[] groups = [.. lines.Select(l => Text.NullIfBlank(l.SupersetGroup)).Select(g => SupersetGroups.IsLetter(g) ? g : null)];
+
+            foreach ((int index, string message) in SupersetGroups.Check(groups))
             {
                 context.AddFailure($"Exercises[{index}].SupersetGroup", message);
             }

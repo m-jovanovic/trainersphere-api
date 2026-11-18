@@ -119,14 +119,14 @@ internal sealed class StartSessionValidator : AbstractValidator<StartSessionComm
 {
     public StartSessionValidator(TimeProvider timeProvider)
     {
-        RuleFor(c => c.Id).Must(id => id != Guid.Empty).WithMessage("'Id' must not be empty.");
+        RuleFor(c => c.Id).Must(id => id != Guid.Empty).WithMessage("Must not be empty.");
         RuleFor(c => c.WorkoutName)
             .MaximumLength(Session.NameMaxLength)
             .Must((c, name) => c.AssignmentId is not null || !string.IsNullOrWhiteSpace(name))
             .WithMessage("Either 'assignmentId' or 'workoutName' is required.");
         RuleFor(c => c.StartedAt)
             .Must(at => at is null || at.Value.AsUtc() <= timeProvider.UtcNow() + Session.AllowedClockSkew)
-            .WithMessage("'Started At' cannot be more than 5 minutes in the future.");
+            .WithMessage("Must not be more than 5 minutes in the future.");
     }
 }
 
@@ -208,7 +208,7 @@ internal sealed class ListSessionsValidator : PagedQueryValidator<ListSessionsQu
     public ListSessionsValidator()
     {
         RuleFor(q => q.Status).KebabEnum<ListSessionsQuery, SessionStatus>();
-        RuleFor(q => q.To).Must((q, to) => q.From is null || to is null || to >= q.From).WithMessage("'to' must not be before 'from'.");
+        RuleFor(q => q.To).Must((q, to) => q.From is null || to is null || to >= q.From).WithMessage("Must not be before 'from'.");
     }
 }
 
@@ -316,7 +316,7 @@ internal sealed class UpsertSetValidator : AbstractValidator<UpsertSetCommand>
         RuleFor(c => c.Reps).InclusiveBetween(0, SessionSet.MaxReps);
         RuleFor(c => c.DurationSeconds).InclusiveBetween(0, SessionSet.MaxDurationSeconds);
         RuleFor(c => c.DistanceMeters).InRange(0, SessionSet.MaxDistanceMeters);
-        RuleFor(c => c.Rpe).Must(rpe => rpe is null || Decimals.IsRpe(rpe.Value)).WithMessage("'Rpe' must be between 1 and 10 in steps of 0.5.");
+        RuleFor(c => c.Rpe).Must(rpe => rpe is null || Decimals.IsRpe(rpe.Value)).WithMessage("Must be between 1 and 10 in steps of 0.5.");
         RuleFor(c => c.Notes).MaximumLength(SessionSet.NotesMaxLength);
     }
 }
@@ -383,7 +383,7 @@ internal sealed class CompleteSessionValidator : AbstractValidator<CompleteSessi
     {
         RuleFor(c => c.CompletedAt)
             .Must(at => at is null || at.Value.AsUtc() <= timeProvider.UtcNow() + Session.AllowedClockSkew)
-            .WithMessage("'Completed At' cannot be more than 5 minutes in the future.");
+            .WithMessage("Must not be more than 5 minutes in the future.");
         RuleFor(c => c.Notes).MaximumLength(Session.NotesMaxLength);
     }
 }

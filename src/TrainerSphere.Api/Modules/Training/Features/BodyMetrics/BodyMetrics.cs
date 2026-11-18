@@ -24,7 +24,7 @@ internal sealed record ListBodyMetricsQuery(Viewer Viewer, Guid ClientId, DateOn
 internal sealed class ListBodyMetricsValidator : AbstractValidator<ListBodyMetricsQuery>
 {
     public ListBodyMetricsValidator() =>
-        RuleFor(q => q.To).Must((q, to) => q.From is null || to is null || to >= q.From).WithMessage("'to' must not be before 'from'.");
+        RuleFor(q => q.To).Must((q, to) => q.From is null || to is null || to >= q.From).WithMessage("Must not be before 'from'.");
 }
 
 internal sealed class ListBodyMetricsHandler(IClientRepository clients, IBodyMetricRepository metrics)

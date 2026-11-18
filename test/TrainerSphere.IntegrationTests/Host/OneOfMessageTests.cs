@@ -7,7 +7,8 @@ namespace TrainerSphere.IntegrationTests.Host;
 
 /// <summary>
 /// Every "one of" validation message uses the contract form "Must be one of: a, b." with no property-name prefix,
-/// whether the value arrives in a body, a query enum filter or a sort parameter.
+/// whether the value arrives in a body, a query enum filter or a sort parameter. No other message names its field
+/// either: the field is the key it is listed under.
 /// </summary>
 public sealed class OneOfMessageTests(ApiFactory factory) : IntegrationTest(factory), IClassFixture<ApiFactory>
 {
@@ -50,6 +51,51 @@ public sealed class OneOfMessageTests(ApiFactory factory) : IntegrationTest(fact
         string message = Messages(problem, field).ShouldHaveSingleItem();
         message.ShouldStartWith("Must be one of: ");
         message.ShouldEndWith(".");
+    }
+
+    [Fact]
+    public async Task BuiltInRules_DoNotNameTheField()
+    {
+        TestUser trainer = await CreateTrainerAsync();
+
+        HttpResponseMessage response = await trainer.Client.GetAsync("/api/workouts?page=0&pageSize=500", Ct);
+
+        JsonElement problem = await response.ShouldBeCompleteProblemAsync(HttpStatusCode.BadRequest, "Validation");
+        Messages(problem, "page").ShouldBe(["Must be at least 1."]);
+        Messages(problem, "pageSize").ShouldBe(["Must be between 1 and 100."]);
+    }
+
+    [Fact]
+    public async Task CustomRules_DoNotNameTheField()
+    {
+        TestUser trainer = await CreateTrainerAsync();
+
+        HttpResponseMessage response = await trainer.Client.PostAsJsonAsync(
+            "/api/workouts",
+            new
+            {
+                name = " ",
+                exercises = new[]
+                {
+                    new
+                    {
+                        exerciseId = Guid.NewGuid(),
+                        sets = 3,
+                        goal = new { type = "reps", min = 0, max = 12 },
+                        load = new { type = "weight", value = 20m },
+                        restSeconds = 90,
+                        tempo = "slow",
+                        supersetGroup = "ab",
+                    },
+                },
+            },
+            Ct);
+
+        JsonElement problem = await response.ShouldBeCompleteProblemAsync(HttpStatusCode.BadRequest, "Validation");
+        Messages(problem, "name").ShouldBe(["Must not be empty."]);
+        Messages(problem, "exercises[0].goal.min").ShouldBe(["Must be between 1 and 100."]);
+        Messages(problem, "exercises[0].tempo").ShouldBe(["Must look like 3-1-X-0 (four digits or X separated by dashes)."]);
+        Messages(problem, "exercises[0].supersetGroup").ShouldBe(["Must be a single capital letter."]);
     }
 
     private static string[] Messages(JsonElement problem, string field) =>

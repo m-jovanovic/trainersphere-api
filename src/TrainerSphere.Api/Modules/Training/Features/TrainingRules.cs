@@ -23,12 +23,12 @@ internal static class TrainingRules
     public const int SearchMaxLength = 100;
 
     public static IRuleBuilderOptions<T, string> ValidName<T>(this IRuleBuilder<T, string> rule, int maxLength) =>
-        rule.Must(name => !string.IsNullOrWhiteSpace(name)).WithMessage("'{PropertyName}' must not be empty.")
+        rule.Must(name => !string.IsNullOrWhiteSpace(name)).WithMessage("Must not be empty.")
             .MaximumLength(maxLength);
 
     public static IRuleBuilderOptions<T, decimal?> InRange<T>(this IRuleBuilder<T, decimal?> rule, decimal min, decimal max, int decimals = 2) =>
         rule.Must(value => value is null || (value >= min && value <= max && Decimals.HasAtMost(value.Value, decimals)))
-            .WithMessage($"'{{PropertyName}}' must be between {min} and {max} with at most {decimals} decimals.");
+            .WithMessage($"Must be between {min} and {max} with at most {decimals} decimals.");
 
     public static IRuleBuilderOptions<T, string?> KebabEnum<T, TEnum>(this IRuleBuilder<T, string?> rule)
         where TEnum : struct, Enum =>

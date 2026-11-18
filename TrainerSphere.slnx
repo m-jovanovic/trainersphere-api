@@ -10,6 +10,7 @@
     <Project Path="src/TrainerSphere.SharedKernel/TrainerSphere.SharedKernel.csproj" />
   </Folder>
   <Folder Name="/test/">
+    <Project Path="test/TrainerSphere.IntegrationTests/TrainerSphere.IntegrationTests.csproj" />
     <Project Path="test/TrainerSphere.UnitTests/TrainerSphere.UnitTests.csproj" />
   </Folder>
 </Solution>

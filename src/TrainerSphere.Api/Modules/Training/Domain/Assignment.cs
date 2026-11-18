@@ -123,7 +123,7 @@ internal sealed class Assignment
     {
         if (!IsScheduled)
         {
-            return AssignmentErrors.NotScheduled(StoredStatus);
+            return AssignmentErrors.NotScheduled(StoredStatus, SessionId);
         }
 
         Date = date;
@@ -138,7 +138,7 @@ internal sealed class Assignment
     public Result<Assignment> EnsureDeletable() =>
         (IsScheduled, SessionId) switch
         {
-            (false, _) => AssignmentErrors.NotScheduled(StoredStatus),
+            (false, _) => AssignmentErrors.NotScheduled(StoredStatus, SessionId),
             (true, { } sessionId) => AssignmentErrors.HasSession(sessionId),
             (true, null) => this,
         };
@@ -161,7 +161,7 @@ internal sealed class Assignment
     {
         if (!IsScheduled)
         {
-            return AssignmentErrors.NotScheduled(StoredStatus);
+            return AssignmentErrors.NotScheduled(StoredStatus, SessionId);
         }
 
         if (SessionId is { } existing)

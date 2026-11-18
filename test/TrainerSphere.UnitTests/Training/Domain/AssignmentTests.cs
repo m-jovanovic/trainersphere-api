@@ -35,6 +35,29 @@ public sealed class AssignmentTests
     }
 
     [Fact]
+    public void A_completed_assignment_reports_its_session_in_every_conflict()
+    {
+        Assignment assignment = TrainingTestData.ScheduledAssignment();
+        var sessionId = Guid.NewGuid();
+        assignment.StartSession(sessionId, TrainingTestData.Now);
+        assignment.Complete(TrainingTestData.Now, TrainingTestData.Now);
+
+        Result<Assignment>[] results =
+        [
+            assignment.EnsureDeletable(),
+            assignment.Skip(null, TrainingTestData.Now),
+            assignment.Reschedule(TrainingTestData.Today.AddDays(1), null, TrainingTestData.Now),
+        ];
+
+        foreach (Result<Assignment> result in results)
+        {
+            ConflictError error = result.Value.ShouldBeOfType<ConflictError>();
+            error.Code.ShouldBe("Assignment.NotScheduled");
+            error.Extensions.ShouldNotBeNull()["sessionId"].ShouldBe(sessionId);
+        }
+    }
+
+    [Fact]
     public void An_assignment_with_a_session_cannot_be_deleted_and_reports_the_session()
     {
         Assignment assignment = TrainingTestData.ScheduledAssignment();

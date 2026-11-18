@@ -232,6 +232,30 @@ public sealed class AssignmentsTests(ApiFactory factory) : TrainingTest(factory)
     }
 
     [Fact]
+    public async Task CompletedAssignment_DeleteSkipAndUpdate_Return409WithTheSessionId()
+    {
+        (TestUser trainer, TestUser client) = await CreateUtcTrainerWithClientAsync();
+        (Guid sessionId, JsonElement _) = await CreateCompletedSessionAsync(trainer, client);
+        AssignmentItem assignment = (await (await trainer.Client.GetAsync($"{TrainingRoutes.Assignments}?clientId={client.Id}", Ct))
+            .ShouldHaveJsonAsync<AssignmentItem[]>()).Single();
+        assignment.Status.ShouldBe("completed");
+
+        HttpResponseMessage[] responses =
+        [
+            await trainer.Client.DeleteAsync(TrainingRoutes.Assignment(assignment.Id), Ct),
+            await trainer.Client.PostAsJsonAsync(TrainingRoutes.AssignmentSkip(assignment.Id), new { }, HttpAssertions.Json, Ct),
+            await client.Client.PostAsJsonAsync(TrainingRoutes.AssignmentSkip(assignment.Id), new { }, HttpAssertions.Json, Ct),
+            await trainer.Client.PutAsJsonAsync(TrainingRoutes.Assignment(assignment.Id), new AssignmentUpdate(TrainingDates.Tomorrow, null), HttpAssertions.Json, Ct),
+        ];
+
+        foreach (HttpResponseMessage response in responses)
+        {
+            JsonElement problem = await response.ShouldBeCompleteProblemAsync(HttpStatusCode.Conflict, "Assignment.NotScheduled");
+            problem.GetProperty("sessionId").GetGuid().ShouldBe(sessionId);
+        }
+    }
+
+    [Fact]
     public async Task SkipAssignment_MarksItSkipped_AndSkippingAgainReturns409()
     {
         (TestUser trainer, TestUser client) = await CreateUtcTrainerWithClientAsync();
@@ -243,8 +267,9 @@ public sealed class AssignmentsTests(ApiFactory factory) : TrainingTest(factory)
             .ShouldHaveJsonAsync<AssignmentItem>();
         skipped.Status.ShouldBe("skipped");
 
-        await (await trainer.Client.PostAsJsonAsync(TrainingRoutes.AssignmentSkip(assignment.Id), new { }, HttpAssertions.Json, Ct))
+        JsonElement problem = await (await trainer.Client.PostAsJsonAsync(TrainingRoutes.AssignmentSkip(assignment.Id), new { }, HttpAssertions.Json, Ct))
             .ShouldBeCompleteProblemAsync(HttpStatusCode.Conflict, "Assignment.NotScheduled");
+        problem.TryGetProperty("sessionId", out _).ShouldBeFalse();
     }
 
     [Fact]

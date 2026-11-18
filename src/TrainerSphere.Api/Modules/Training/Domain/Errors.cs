@@ -64,14 +64,19 @@ internal static class AssignmentErrors
 {
     public static NotFoundError NotFound(Guid id) => new("Assignment.NotFound", $"The assignment '{id}' was not found.");
 
-    public static ConflictError NotScheduled(AssignmentStatus status) =>
-        new("Assignment.NotScheduled", $"The assignment is {status.ToString().ToLowerInvariant()}, not scheduled.");
+    public static ConflictError NotScheduled(AssignmentStatus status, Guid? sessionId) =>
+        new("Assignment.NotScheduled", $"The assignment is {status.ToString().ToLowerInvariant()}, not scheduled.")
+        {
+            Extensions = sessionId is { } id ? SessionExtension(id) : null,
+        };
 
     public static ConflictError HasSession(Guid sessionId) =>
         new("Assignment.NotScheduled", "A session was already started from this assignment.")
         {
-            Extensions = new Dictionary<string, object?> { ["sessionId"] = sessionId },
+            Extensions = SessionExtension(sessionId),
         };
+
+    private static Dictionary<string, object?> SessionExtension(Guid sessionId) => new() { ["sessionId"] = sessionId };
 }
 
 internal static class SessionErrors

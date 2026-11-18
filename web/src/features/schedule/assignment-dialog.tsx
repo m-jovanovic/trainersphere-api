@@ -7,7 +7,8 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { assignmentsApi } from '@/lib/api/endpoints';
-import { ApiError, errorMessage } from '@/lib/api/http';
+import { ApiError } from '@/lib/api/http';
+import { applyProblem } from '@/lib/api/form-errors';
 import { queries } from '@/lib/api/queries';
 import type { Assignment } from '@/lib/api/types';
 import { useUnits } from '@/lib/auth/hooks';
@@ -34,7 +35,7 @@ export function ScheduleWorkoutDialog({ open, onOpenChange, clientId, date }: { 
   const clients = useQuery({ ...queries.clients({ status: 'active', sort: 'name' }), enabled: open && !clientId });
   const workouts = useQuery({ ...queries.workouts(''), enabled: open });
   const [formError, setFormError] = useState<string | null>(null);
-  const { register, handleSubmit, formState, reset } = useForm<CreateValues>({
+  const { register, handleSubmit, formState, reset, setError } = useForm<CreateValues>({
     resolver: zodResolver(createSchema),
     values: { clientId: clientId ?? '', workoutId: '', date: date ?? todayIso(), notes: '' },
     resetOptions: { keepDirtyValues: true },
@@ -47,7 +48,8 @@ export function ScheduleWorkoutDialog({ open, onOpenChange, clientId, date }: { 
       reset();
       onOpenChange(false);
     },
-    onError: (err) => setFormError(errorMessage(err)),
+    onError: (err) =>
+      setFormError(applyProblem(err, { isField: (k) => k in createSchema.shape, setFieldError: (k, message) => setError(k as keyof CreateValues, { type: 'server', message }) }).formError),
   });
   return (
     <Dialog
@@ -114,10 +116,25 @@ export function AssignmentDialog({ assignment: a, onClose, showClient = true }: 
   const units = useUnits();
   const invalidate = useInvalidateSchedule();
   const [formError, setFormError] = useState<string | null>(null);
+  const [startedSessionId, setStartedSessionId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const editable = a.status === 'scheduled' || a.status === 'missed';
-  const { register, handleSubmit, formState } = useForm<EditValues>({ resolver: zodResolver(editSchema), defaultValues: { date: a.date, notes: a.notes ?? '' } });
-  const fail = (err: unknown) => setFormError(err instanceof ApiError && err.code === 'Assignment.NotScheduled' ? 'This workout was already started or completed, so it can no longer be changed.' : errorMessage(err));
+  const { register, handleSubmit, formState, setError } = useForm<EditValues>({ resolver: zodResolver(editSchema), defaultValues: { date: a.date, notes: a.notes ?? '' } });
+  const fail = (err: unknown) => {
+    if (err instanceof ApiError && err.code === 'Assignment.NotScheduled') {
+      const sessionId = typeof err.problem.sessionId === 'string' ? err.problem.sessionId : null;
+      setStartedSessionId(sessionId);
+      setFormError(
+        sessionId
+          ? 'The client already started this workout, so it can no longer be removed or skipped.'
+          : 'This workout was already completed or skipped, so it can no longer be changed.',
+      );
+      invalidate();
+      return;
+    }
+    setStartedSessionId(null);
+    setFormError(applyProblem(err, { isField: (k) => k in editSchema.shape, setFieldError: (k, message) => setError(k as keyof EditValues, { type: 'server', message }) }).formError);
+  };
 
   const update = useMutation({
     mutationFn: (v: EditValues) => assignmentsApi.update(a.id, { date: v.date, notes: v.notes || null }),
@@ -160,7 +177,7 @@ export function AssignmentDialog({ assignment: a, onClose, showClient = true }: 
         footer={
           editable ? (
             <>
-              <Button variant="ghost" className="text-danger sm:mr-auto" onClick={() => setConfirmDelete(true)}>
+              <Button variant="ghost" className="text-danger sm:mr-auto" onClick={() => setConfirmDelete(true)} disabled={a.sessionId !== null} title={a.sessionId ? 'Started workouts stay in the history' : undefined}>
                 <Trash2 aria-hidden />
                 Delete
               </Button>
@@ -186,6 +203,11 @@ export function AssignmentDialog({ assignment: a, onClose, showClient = true }: 
             <AssignmentStatusBadge status={a.status} inProgress={a.sessionId !== null} />
           </div>
           <FormError message={formError} />
+          {startedSessionId && (
+            <Link to="/sessions/$sessionId" params={{ sessionId: startedSessionId }} className="-mt-2 text-sm font-medium text-primary underline-offset-4 hover:underline">
+              View the session
+            </Link>
+          )}
           {editable && (
             <form id="assignment-form" noValidate className="grid gap-4" onSubmit={(e) => void handleSubmit((v) => update.mutate(v))(e)}>
               <Field label="Date" error={formState.errors.date?.message}>

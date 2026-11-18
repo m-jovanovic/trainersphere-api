@@ -526,7 +526,7 @@ export interface ClientDetail extends ClientSummary {
   inProgressSessionId: Uuid | null;
 }
 
-export type ClientSort = 'name' | '-lastSessionAt' | 'adherence7d';
+export type ClientSort = 'name' | '-name' | 'lastSessionAt' | '-lastSessionAt' | 'adherence7d' | '-adherence7d';
 
 export interface ClientQuery extends PageQuery {
   search?: string;

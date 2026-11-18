@@ -20,7 +20,8 @@ import { Controller, useFieldArray, useForm, useWatch, type Control, type FieldE
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { workoutsApi } from '@/lib/api/endpoints';
-import { ApiError, errorMessage } from '@/lib/api/http';
+import { applyProblem } from '@/lib/api/form-errors';
+import { ApiError } from '@/lib/api/http';
 import { keys, queries } from '@/lib/api/queries';
 import type { Exercise, ExerciseRef, GoalType, LoadType, Units, UpsertWorkoutRequest, Workout } from '@/lib/api/types';
 import { useUnits } from '@/lib/auth/hooks';
@@ -148,6 +149,8 @@ function toRequest(v: Values, units: Units): UpsertWorkoutRequest {
 }
 
 /** API error paths (`exercises.0.goal.min`) to form paths (`exercises.0.goalMin`). */
+const FORM_ITEM_FIELDS = new Set(['exerciseId', 'sets', 'goalType', 'goalMin', 'goalMax', 'loadType', 'loadValue', 'restSeconds', 'tempo', 'supersetGroup', 'notes']);
+
 function toFormPath(path: string): string {
   return path
     .replace(/\.goal\.(min|max)$/, (_, m: string) => `.goal${m === 'min' ? 'Min' : 'Max'}`)
@@ -190,20 +193,33 @@ function Builder({ workout }: { workout: Workout | undefined }) {
       if (!workout) void navigate({ to: '/workouts/$workoutId', params: { workoutId: saved.id }, replace: true, ignoreBlocker: true });
     },
     onError: (err) => {
-      if (err instanceof ApiError && Object.keys(err.fieldErrors).length) {
-        const keysWithErrors = new Set<string>();
-        for (const [path, message] of Object.entries(err.fieldErrors)) {
-          const formPath = toFormPath(path);
-          setError(formPath as 'name', { type: 'server', message });
-          const m = /^exercises\.(\d+)/.exec(formPath);
-          const key = m ? form.getValues(`exercises.${Number(m[1])}.key`) : undefined;
-          if (key) keysWithErrors.add(key);
-        }
-        setExpanded((s) => new Set([...s, ...keysWithErrors]));
-        setFormError('Some fields need attention.');
-        return;
+      const count = form.getValues('exercises').length;
+      const { formError, fields } = applyProblem(err, {
+        mapPath: toFormPath,
+        isField: (path) => {
+          const m = /^exercises\.(\d+)\.(\w+)$/.exec(path);
+          if (m) return Number(m[1]) < count && FORM_ITEM_FIELDS.has(m[2] ?? '');
+          return path === 'name' || path === 'description' || path === 'exercises';
+        },
+        // The API's per-item exercise messages name raw ids; say what the trainer can do instead.
+        setFieldError: (path, message) =>
+          setError(path as 'name', {
+            type: 'server',
+            message: !path.endsWith('.exerciseId')
+              ? message
+              : err instanceof ApiError && err.code === 'Exercise.Archived'
+                ? 'This exercise was archived. Remove it or pick another one.'
+                : 'This exercise is no longer available. Remove it or pick another one.',
+          }),
+      });
+      const keysWithErrors = new Set<string>();
+      for (const path of fields) {
+        const m = /^exercises\.(\d+)/.exec(path);
+        const key = m ? form.getValues(`exercises.${Number(m[1])}.key`) : undefined;
+        if (key) keysWithErrors.add(key);
       }
-      setFormError(errorMessage(err));
+      if (keysWithErrors.size) setExpanded((s) => new Set([...s, ...keysWithErrors]));
+      setFormError(formError ?? (fields.length ? 'Some fields need attention.' : null));
     },
   });
 
@@ -396,7 +412,7 @@ function SortableItem({ id, index, count, control, register, errors, units, expa
               {group && <span className="rounded bg-primary-soft px-1.5 text-xs font-semibold text-primary-soft-fg">{group}</span>}
               <span className="line-clamp-2 min-w-0 leading-snug font-medium">{name}</span>
             </span>
-            <span className={cn('block truncate text-sm', hasErrors ? 'text-danger' : 'text-muted')}>{hasErrors ? 'Fix the highlighted fields' : summary}</span>
+            <span className={cn('block truncate text-sm', hasErrors ? 'text-danger' : 'text-muted')}>{errors?.exerciseId?.message ?? (hasErrors ? 'Fix the highlighted fields' : summary)}</span>
           </span>
           <ChevronDown className={cn('size-4 shrink-0 text-muted transition-transform', expanded && 'rotate-180')} aria-hidden />
         </button>

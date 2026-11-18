@@ -1,22 +1,23 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { format } from 'date-fns';
-import { ChevronRight, Flame, Moon, MoreHorizontal, Play, Plus, Scale, SkipForward, Trophy } from 'lucide-react';
+import { ChevronRight, Flame, Moon, MoreHorizontal, Play, Plus, Scale, SkipForward } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { assignmentsApi } from '@/lib/api/endpoints';
-import { errorMessage } from '@/lib/api/http';
+import { ApiError, errorMessage } from '@/lib/api/http';
 import { keys, queries } from '@/lib/api/queries';
 import type { Assignment, ClientDashboard } from '@/lib/api/types';
 import { useUnits, useUser } from '@/lib/auth/hooks';
 import { formatAgo, formatDateTime, relativeDay } from '@/lib/dates';
-import { formatGoal, formatLoad, formatPercent, formatPrDelta, formatPrValue, formatVolume, formatWeight, prLabels } from '@/lib/domain';
+import { formatGoal, formatLoad, formatPercent, formatVolume, formatWeight } from '@/lib/domain';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog, Dialog } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
 import { Input, Textarea } from '@/components/ui/input';
 import { Menu, MenuItem } from '@/components/ui/menu';
 import { Badge, Card, CardBody, CardHeader, Skeleton } from '@/components/ui/misc';
+import { PrList, SessionPrBadge } from '@/components/pr-list';
 import { AdherenceMeter, AssignmentStatusBadge } from '@/components/status';
 import { ExerciseArt } from '@/components/exercise-art';
 import { QueryError } from '@/components/layout/page-states';
@@ -136,25 +137,7 @@ function TodayContent({ data, onFreeWorkout }: { data: ClientDashboard; onFreeWo
             {data.recentPersonalRecords.length === 0 ? (
               <p className="text-sm text-muted">No new records in the last two weeks. They come from beating your own best sets.</p>
             ) : (
-              <ul className="flex flex-col gap-3">
-                {data.recentPersonalRecords.slice(0, 5).map((pr) => (
-                  <li key={pr.id} className="flex items-center gap-3">
-                    <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-pr-soft text-pr">
-                      <Trophy className="size-4" aria-hidden />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-medium">{pr.exercise.name}</span>
-                      <span className="block truncate text-xs text-muted">
-                        {prLabels[pr.type]} · {formatAgo(pr.achievedAt)}
-                      </span>
-                    </span>
-                    <span className="text-right">
-                      <span className="tabular block text-sm font-semibold">{formatPrValue(pr, units)}</span>
-                      <span className="tabular block text-xs text-pr">{formatPrDelta(pr, units)}</span>
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <PrList records={data.recentPersonalRecords} units={units} limit={5} />
             )}
           </CardBody>
         </Card>
@@ -186,12 +169,7 @@ function TodayContent({ data, onFreeWorkout }: { data: ClientDashboard; onFreeWo
                         {formatDateTime(s.startedAt, 'EEE d MMM')} · {formatVolume(s.totalVolumeKg, units)}
                       </span>
                     </span>
-                    {s.personalRecordCount > 0 && (
-                      <Badge tone="pr" aria-label={`${s.personalRecordCount} personal records`}>
-                        <Trophy aria-hidden />
-                        {s.personalRecordCount}
-                      </Badge>
-                    )}
+                    <SessionPrBadge count={s.personalRecordCount} />
                     <ChevronRight className="size-4 text-muted" aria-hidden />
                   </Link>
                 </li>
@@ -313,7 +291,16 @@ function SkipDialog({ assignment: a, open, onOpenChange }: { assignment: Assignm
       onOpenChange(false);
       toast.success('Skipped. Your trainer can see this.');
     },
-    onError: (err) => toast.error(errorMessage(err)),
+    onError: (err) => {
+      if (err instanceof ApiError && err.code === 'Assignment.NotScheduled') {
+        void qc.invalidateQueries({ queryKey: keys.dashboard });
+        void qc.invalidateQueries({ queryKey: keys.assignments });
+        onOpenChange(false);
+        toast.error(typeof err.problem.sessionId === 'string' ? 'You already started this workout. Finish or discard it instead.' : 'This workout was already completed or skipped.');
+        return;
+      }
+      toast.error(errorMessage(err));
+    },
   });
   return (
     <ConfirmDialog

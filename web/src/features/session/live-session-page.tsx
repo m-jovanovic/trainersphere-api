@@ -23,6 +23,7 @@ import { NotFound, PageSpinner } from '@/components/layout/page-states';
 import { SyncStatus } from '@/components/layout/sync-status';
 import { ExercisePicker } from '@/features/exercises/exercise-picker';
 import { afterSetCompleted, completedCount, firstIncompleteIndex, lastTimeHint, localTotals, plannedRows, restText, sessionProgress, targetText } from './logging';
+import { originalId, useResolvedId } from './id-aliases';
 import { runSessionWrite, sessionKeys, type CompleteVars } from './offline';
 import { RestTimerBar } from './rest-timer';
 import { useRestTimer } from './use-rest-timer';
@@ -35,16 +36,23 @@ const ignore = () => undefined;
 
 export function LiveSessionPage() {
   const { sessionId } = route.useParams();
+  const navigate = useNavigate();
+  const resolved = useResolvedId(sessionId);
   // Local edits are the source of truth while logging; a background refetch would drop queued sets.
-  const q = useQuery({ ...queries.session(sessionId), staleTime: Infinity, refetchOnWindowFocus: false, refetchOnReconnect: false });
+  const q = useQuery({ ...queries.session(resolved), staleTime: Infinity, refetchOnWindowFocus: false, refetchOnReconnect: false });
   const startError = useMutationState({
-    filters: { mutationKey: sessionKeys.start, predicate: (m) => (m.state.variables as { id?: string } | undefined)?.id === sessionId },
+    filters: { mutationKey: sessionKeys.start, predicate: (m) => (m.state.variables as { id?: string } | undefined)?.id === originalId(sessionId) },
     select: (m) => m.state.error,
   }).at(-1);
 
-  if (startError instanceof ApiError && startError.code === 'Session.AlreadyStartedForAssignment') {
+  useEffect(() => {
+    if (resolved !== sessionId) void navigate({ to: '/log/$sessionId', params: { sessionId: resolved }, replace: true });
+  }, [resolved, sessionId, navigate]);
+
+  if (startError instanceof ApiError) {
     const other = typeof startError.problem.sessionId === 'string' ? startError.problem.sessionId : null;
-    return <AlreadyStarted otherId={other} />;
+    if (startError.code === 'Session.AlreadyStartedForAssignment' || (startError.code === 'Assignment.NotScheduled' && other)) return <AlreadyStarted otherId={other} />;
+    return <StartRejected error={startError} />;
   }
   if (!q.data) {
     if (q.error) {
@@ -106,6 +114,30 @@ function AlreadyStarted({ otherId }: { otherId: string | null }) {
               <Link to="/">Back to today</Link>
             </Button>
           </div>
+        }
+      />
+    </FullScreen>
+  );
+}
+
+function StartRejected({ error }: { error: ApiError }) {
+  const description =
+    error.code === 'Assignment.NotScheduled'
+      ? 'It was completed or skipped in the meantime, so it can no longer be logged.'
+      : error.code === 'Client.Archived'
+        ? 'Your account is archived by your trainer, so new workouts cannot be logged.'
+        : errorMessage(error);
+  return (
+    <FullScreen>
+      <EmptyState
+        className="min-h-[60dvh]"
+        icon={<Dumbbell />}
+        title="This workout could not be started"
+        description={description}
+        action={
+          <Button asChild variant="secondary">
+            <Link to="/">Back to today</Link>
+          </Button>
         }
       />
     </FullScreen>

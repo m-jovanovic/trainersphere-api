@@ -4,6 +4,7 @@ import { queries } from '@/lib/api/queries';
 import type { Assignment } from '@/lib/api/types';
 import { useUser } from '@/lib/auth/hooks';
 import { uuid } from '@/lib/utils';
+import { resolveId } from './id-aliases';
 import { optimisticAdHocSession, optimisticSession, runSessionWrite, sessionKeys, type StartVars } from './offline';
 
 const ignore = () => undefined;
@@ -50,8 +51,9 @@ export function useLocalStarts(): { byAssignment: Map<string, string>; adHoc: st
   const adHoc: string[] = [];
   for (const v of starts) {
     if (!v) continue;
-    if (v.assignmentId) byAssignment.set(v.assignmentId, v.id);
-    else adHoc.push(v.id);
+    const id = resolveId(v.id);
+    if (v.assignmentId) byAssignment.set(v.assignmentId, id);
+    else adHoc.push(id);
   }
   return { byAssignment, adHoc };
 }

@@ -121,6 +121,27 @@ describe('program editor', () => {
     ]);
   });
 
+  it('marks a slot whose workout was archived before saving', async () => {
+    const block = program('Conditioning Block');
+    await signIn();
+    const { user } = renderApp(`/programs/${block.id}`);
+    await findHeading('Edit program');
+    await addWorkout(user, 2, 6, 'Lower B');
+    db.state.workouts.find((w) => w.name === 'Lower B')!.archived = true;
+    await user.click(screen.getByRole('button', { name: 'Save program' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('A workout in this program is no longer available (archived or deleted). Remove the marked one and save again.');
+    const day = within(screen.getByRole('group', { name: 'Week 2, day 6' }));
+    expect(day.getByText(/no longer available/)).toBeInTheDocument();
+    expect(within(screen.getByRole('group', { name: 'Week 1, day 2' })).queryByText(/no longer available/)).not.toBeInTheDocument();
+    expect(slotsOf('Conditioning Block').some(([, , w]) => w === workoutId('Lower B'))).toBe(false);
+
+    await user.click(day.getByRole('button', { name: 'Remove Lower B from week 2, day 6' }));
+    await user.click(screen.getByRole('button', { name: 'Save program' }));
+    expect((await screen.findAllByText('Program saved')).length).toBeGreaterThan(0);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
   it('assigns a program from the client page', async () => {
     const alex = clientId('alex@trainersphere.dev');
     await signIn();

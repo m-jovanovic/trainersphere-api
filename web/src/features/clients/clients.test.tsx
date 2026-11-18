@@ -56,6 +56,23 @@ describe('clients', () => {
     expect(screen.queryByRole('link', { name: /Alex Rivera/ })).not.toBeInTheDocument();
   });
 
+  it('sorts through the URL with every sort the API accepts', async () => {
+    await signIn();
+    const { user, router } = renderApp('/clients');
+    await findHeading('Clients');
+    const firstRow = () => within(screen.getByRole('list', { name: 'Clients' })).getAllByRole('link')[0];
+    await waitFor(() => expect(firstRow()).toHaveTextContent('Alex Rivera'));
+    const select = screen.getByRole('combobox', { name: 'Sort clients' });
+    expect(within(select).getAllByRole('option').map((o) => (o as HTMLOptionElement).value)).toEqual(['name', '-name', '-lastSessionAt', 'lastSessionAt', 'adherence7d', '-adherence7d']);
+
+    await user.selectOptions(select, '-name');
+    await waitFor(() => expect(router.state.location.search).toEqual({ sort: '-name' }));
+    await waitFor(() => expect(firstRow()).toHaveTextContent('Sam Lee'));
+    await user.selectOptions(select, '-adherence7d');
+    await waitFor(() => expect(router.state.location.search).toEqual({ sort: '-adherence7d' }));
+    await waitFor(() => expect(firstRow()).toHaveTextContent('Alex Rivera'));
+  });
+
   it('shows the empty state when nothing matches the search', async () => {
     await signIn();
     renderApp('/clients?q=zzz');

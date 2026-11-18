@@ -54,8 +54,18 @@ function problem(status: number, code: string, detail: string, errors?: Record<s
     409: 'Conflict',
     422: 'Unprocessable Entity',
   };
+  const sections: Record<number, string> = { 400: '15.5.1', 401: '15.5.2', 403: '15.5.4', 404: '15.5.5', 409: '15.5.10', 422: '15.5.21' };
   return HttpResponse.json(
-    { type: 'about:blank', title: titles[status] ?? 'Error', status, detail, code, traceId: '00-mock', ...(errors ? { errors } : {}), ...extra },
+    {
+      type: `https://tools.ietf.org/html/rfc9110#section-${sections[status] ?? '15.6.1'}`,
+      title: titles[status] ?? 'Error',
+      status,
+      detail,
+      code,
+      traceId: '00-mock',
+      ...(errors ? { errors } : {}),
+      ...extra,
+    },
     { status, headers: { 'Content-Type': 'application/problem+json' } },
   );
 }
@@ -97,13 +107,31 @@ function currentUser(request: Request): DbUser | null {
 type Ctx = { request: Request; params: Record<string, string | readonly string[] | undefined>; user: DbUser; url: URL };
 type Handler = (ctx: Ctx) => Response | Promise<Response>;
 
+/** A request the real API could not bind (bad JSON, wrong enum, missing member): 400 before the handler runs. */
+class BindingFailure extends Error {
+  readonly errors: Record<string, string[]>;
+  constructor(errors: Record<string, string[]>) {
+    super('binding failed');
+    this.errors = errors;
+  }
+}
+
+async function run(handler: () => Response | Promise<Response>): Promise<Response> {
+  try {
+    return await handler();
+  } catch (err) {
+    if (err instanceof BindingFailure) return validation(err.errors);
+    throw err;
+  }
+}
+
 function authed(role: T.Role | 'any', handler: Handler): HttpResponseResolver {
   return async ({ request, params }) => {
     if (mockConfig.delayMs) await delay(mockConfig.delayMs);
     const user = currentUser(request);
     if (!user) return problem(401, 'Auth.Unauthorized', 'Authentication is required.');
     if (role !== 'any' && user.role !== role) return problem(403, 'Auth.Forbidden', 'You do not have access to this resource.');
-    const res = await handler({ request, params: params as Ctx['params'], user, url: new URL(request.url) });
+    const res = await run(() => handler({ request, params: params as Ctx['params'], user, url: new URL(request.url) }));
     if (request.method !== 'GET') mockConfig.onMutate();
     return res;
   };
@@ -112,7 +140,7 @@ function authed(role: T.Role | 'any', handler: Handler): HttpResponseResolver {
 function open(handler: (ctx: { request: Request; params: Record<string, string | readonly string[] | undefined> }) => Response | Promise<Response>): HttpResponseResolver {
   return async ({ request, params }) => {
     if (mockConfig.delayMs) await delay(mockConfig.delayMs);
-    const res = await handler({ request, params: params as Ctx['params'] });
+    const res = await run(() => handler({ request, params: params as Ctx['params'] }));
     if (request.method !== 'GET') mockConfig.onMutate();
     return res;
   };
@@ -120,12 +148,46 @@ function open(handler: (ctx: { request: Request; params: Record<string, string |
 
 const param = (ctx: { params: Ctx['params'] }, name: string) => String(ctx.params[name] ?? '');
 
-async function body<B>(request: Request): Promise<B> {
-  try {
-    return (await request.json()) as B;
-  } catch {
-    return {} as B;
+async function body<B>(request: Request, { optional = false } = {}): Promise<B> {
+  const text = await request.text();
+  if (!text.trim()) {
+    if (optional) return {} as B;
+    throw new BindingFailure({ $: ['A request body is required.'] });
   }
+  let value: unknown;
+  try {
+    value = JSON.parse(text);
+  } catch {
+    throw new BindingFailure({ $: ['The request body is not valid JSON.'] });
+  }
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new BindingFailure({ $: ['The request body must be a JSON object.'] });
+  return value as B;
+}
+
+/** PUT is a full replace: every required member must be present; only `nullable` ones may be null. */
+function requireMembers(b: object, required: readonly string[], nullable: readonly string[] = [], prefix = '') {
+  const errors: Record<string, string[]> = {};
+  const rec = b as Record<string, unknown>;
+  for (const name of required) {
+    const v = rec[name];
+    if (v === undefined || (v === null && !nullable.includes(name))) errors[prefix + name] = ['This field is required.'];
+  }
+  if (Object.keys(errors).length) throw new BindingFailure(errors);
+}
+
+const mustBeOneOf = (allowed: readonly string[]) => [`Must be one of: ${allowed.join(', ')}.`];
+const GOAL_MAX = { reps: 100, time: 7200, distance: 100_000 } as const;
+
+/** Enum values bind by exact kebab-case match only. */
+function checkEnum(value: unknown, allowed: readonly string[], key: string, errors: Record<string, string[]>) {
+  if (typeof value !== 'string' || !allowed.includes(value)) errors[key] = mustBeOneOf(allowed);
+}
+
+function queryEnum<V extends string>(url: URL, name: string, allowed: readonly V[]): V | null {
+  const v = url.searchParams.get(name);
+  if (v === null || v === '') return null;
+  if (!(allowed as readonly string[]).includes(v)) throw new BindingFailure({ [name]: mustBeOneOf(allowed) });
+  return v as V;
 }
 
 function paged<X>(items: X[], url: URL, maxPageSize = 100): T.Paged<X> {
@@ -137,13 +199,23 @@ function paged<X>(items: X[], url: URL, maxPageSize = 100): T.Paged<X> {
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function isTimeZone(tz: unknown): boolean {
+  if (typeof tz !== 'string' || !tz) return false;
+  try {
+    new Intl.DateTimeFormat('en', { timeZone: tz });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function checkPassword(password: unknown, field: string, errors: Record<string, string[]>) {
-  if (typeof password !== 'string' || password.length < 8) errors[field] = ['Password must be at least 8 characters long.'];
-  else if (password.length > 128) errors[field] = ['Password must be at most 128 characters long.'];
+  if (typeof password !== 'string' || password.length === 0) errors[field] = ['Must not be empty.'];
+  else if (password.length < 8 || password.length > 128) errors[field] = ['Must be between 8 and 128 characters.'];
 }
 
 function checkName(value: unknown, field: string, errors: Record<string, string[]>) {
-  if (typeof value !== 'string' || value.trim().length === 0) errors[field] = ['Required.'];
+  if (typeof value !== 'string' || value.trim().length === 0) errors[field] = ['Must not be empty.'];
   else if (value.length > 100) errors[field] = ['Must be at most 100 characters.'];
 }
 
@@ -199,37 +271,51 @@ function visibleExercises(user: DbUser) {
 function validateExercise(b: Partial<T.UpsertExerciseRequest>) {
   const errors: Record<string, string[]> = {};
   checkName(b.name, 'name', errors);
-  if (!b.category) errors.category = ['Required.'];
-  if (!b.movementPattern) errors.movementPattern = ['Required.'];
-  if (!b.primaryMuscles?.length) errors.primaryMuscles = ['Pick at least one primary muscle.'];
+  if (!b.category) errors.category = ['Must not be empty.'];
+  if (!b.movementPattern) errors.movementPattern = ['Must not be empty.'];
+  if (!b.primaryMuscles?.length) errors.primaryMuscles = ['At least one primary muscle is required.'];
   if (b.cue && b.cue.length > 1000) errors.cue = ['Must be at most 1000 characters.'];
   const t = seedTaxonomy;
-  if (b.category && !t.categories.includes(b.category)) errors.category = [`'${b.category}' is not a known category.`];
-  if (b.movementPattern && !t.movementPatterns.includes(b.movementPattern)) errors.movementPattern = [`'${b.movementPattern}' is not a known movement pattern.`];
+  if (b.category && !t.categories.includes(b.category)) errors.category = mustBeOneOf(t.categories);
+  if (b.movementPattern && !t.movementPatterns.includes(b.movementPattern)) errors.movementPattern = mustBeOneOf(t.movementPatterns);
   for (const field of ['primaryMuscles', 'secondaryMuscles'] as const) {
     const bad = (b[field] ?? []).find((m) => !t.muscles.includes(m));
-    if (bad) errors[field] = [`'${bad}' is not a known muscle.`];
+    if (bad) errors[field] = mustBeOneOf(t.muscles);
   }
   const badEquipment = (b.equipment ?? []).find((x) => !t.equipment.includes(x));
-  if (badEquipment) errors.equipment = [`'${badEquipment}' is not known equipment.`];
+  if (badEquipment) errors.equipment = mustBeOneOf(t.equipment);
   return errors;
 }
 
-function validateWorkout(b: Partial<T.UpsertWorkoutRequest>, user: DbUser) {
+function validateWorkout(b: Partial<T.UpsertWorkoutRequest>) {
   const errors: Record<string, string[]> = {};
   checkName(b.name, 'name', errors);
   const list = b.exercises ?? [];
-  if (list.length < 1) errors.exercises = ['Add at least one exercise.'];
-  if (list.length > 30) errors.exercises = ['At most 30 exercises.'];
-  const visible = new Set(visibleExercises(user).map((e) => e.id));
+  if (list.length < 1 || list.length > 30) errors.exercises = ['A workout needs 1 to 30 exercises.'];
   list.forEach((e, i) => {
-    if (!visible.has(e.exerciseId)) errors[`exercises[${i}].exerciseId`] = ['Exercise was not found.'];
-    if (!(e.sets >= 1 && e.sets <= 20)) errors[`exercises[${i}].sets`] = ['Sets must be between 1 and 20.'];
-    if (e.goal.max < e.goal.min) errors[`exercises[${i}].goal.max`] = ['Max must be greater than or equal to min.'];
-    if (!(e.restSeconds >= 0 && e.restSeconds <= 1800)) errors[`exercises[${i}].restSeconds`] = ['Rest must be between 0 and 1800 seconds.'];
-    if (e.tempo && !/^[0-9X]-[0-9X]-[0-9X]-[0-9X]$/.test(e.tempo)) errors[`exercises[${i}].tempo`] = ['Tempo must look like 3-1-X-0.'];
+    checkEnum(e.goal?.type, ['reps', 'time', 'distance'], `exercises[${i}].goal.type`, errors);
+    checkEnum(e.load?.type, ['none', 'bodyweight', 'weight', 'percent-1rm', 'rpe'], `exercises[${i}].load.type`, errors);
+    if (!(e.sets >= 1 && e.sets <= 20)) errors[`exercises[${i}].sets`] = ['Must be between 1 and 20.'];
+    if (e.goal && e.goal.max < e.goal.min) errors[`exercises[${i}].goal.max`] = [`Must be between 'min' and ${GOAL_MAX[e.goal.type]}.`];
+    if (!(e.restSeconds >= 0 && e.restSeconds <= 1800)) errors[`exercises[${i}].restSeconds`] = ['Must be between 0 and 1800.'];
+    if (e.tempo && !/^[0-9X]-[0-9X]-[0-9X]-[0-9X]$/.test(e.tempo)) errors[`exercises[${i}].tempo`] = ['Must look like 3-1-X-0 (four digits or X separated by dashes).'];
   });
   return errors;
+}
+
+/** Unknown or foreign exercises are 404, archived ones 422 unless the workout already used them; both per item. */
+function checkWorkoutExercises(list: T.UpsertWorkoutRequest['exercises'], user: DbUser, alreadyUsed: ReadonlySet<string> = new Set()) {
+  const visible = new Map(visibleExercises(user).map((e) => [e.id, e]));
+  const notFound: Record<string, string[]> = {};
+  const archived: Record<string, string[]> = {};
+  list.forEach((line, i) => {
+    const e = visible.get(line.exerciseId);
+    if (!e) notFound[`exercises[${i}].exerciseId`] = [`The exercise '${line.exerciseId}' was not found.`];
+    else if (e.archived && !alreadyUsed.has(e.id)) archived[`exercises[${i}].exerciseId`] = [`The exercise '${e.id}' is archived.`];
+  });
+  if (Object.keys(notFound).length) return problem(404, 'Exercise.NotFound', 'One or more referenced exercises were not found.', notFound);
+  if (Object.keys(archived).length) return problem(422, 'Exercise.Archived', 'One or more referenced exercises are archived.', archived);
+  return null;
 }
 
 function toDbWorkoutExercises(list: T.UpsertWorkoutRequest['exercises']): DbWorkoutExercise[] {
@@ -250,6 +336,13 @@ function visibleAssignment(user: DbUser, id: string): DbAssignment | null {
   const a = db.state.assignments.find((x) => x.id === id);
   if (!a) return null;
   return clientFor(user, a.clientId) ? a : null;
+}
+
+/** 409 `Assignment.NotScheduled`; a started (still scheduled) assignment carries the session's id. */
+function notScheduled(a: DbAssignment, { withSession = true } = {}) {
+  if (a.status === 'scheduled' && a.sessionId && withSession)
+    return problem(409, 'Assignment.NotScheduled', 'A session was already started from this assignment.', undefined, { sessionId: a.sessionId });
+  return problem(409, 'Assignment.NotScheduled', `The assignment is ${a.status}, not scheduled.`);
 }
 
 function visibleSession(user: DbUser, id: string): DbSession | null {
@@ -287,7 +380,7 @@ export const handlers = [
     const b = await body<T.SignUpRequest>(request);
     const errors: Record<string, string[]> = {};
     const email = (b.email ?? '').trim().toLowerCase();
-    if (!EMAIL.test(email)) errors.email = ['Email is not a valid email address.'];
+    if (!EMAIL.test(email)) errors.email = ['Must be a valid email address.'];
     checkPassword(b.password, 'password', errors);
     checkName(b.firstName, 'firstName', errors);
     checkName(b.lastName, 'lastName', errors);
@@ -332,19 +425,21 @@ export const handlers = [
 
   http.put(`${API}/auth/me`, authed('any', async ({ request, user }) => {
     const b = await body<T.UpdateMeRequest>(request);
+    requireMembers(b, ['firstName', 'lastName', 'units', 'timeZone']);
     const errors: Record<string, string[]> = {};
     checkName(b.firstName, 'firstName', errors);
     checkName(b.lastName, 'lastName', errors);
-    if (b.units !== 'kg' && b.units !== 'lb') errors.units = ['Units must be kg or lb.'];
+    checkEnum(b.units, ['kg', 'lb'], 'units', errors);
+    if (!isTimeZone(b.timeZone)) errors.timeZone = ['Must be a known IANA time zone, for example Europe/Belgrade.'];
     if (Object.keys(errors).length) return validation(errors);
-    Object.assign(user, { firstName: b.firstName.trim(), lastName: b.lastName.trim(), units: b.units, timeZone: b.timeZone || user.timeZone });
+    Object.assign(user, { firstName: b.firstName.trim(), lastName: b.lastName.trim(), units: b.units, timeZone: b.timeZone });
     return HttpResponse.json(publicUser(user));
   })),
 
   http.post(`${API}/auth/change-password`, authed('any', async ({ request, user }) => {
     const b = await body<T.ChangePasswordRequest>(request);
     const errors: Record<string, string[]> = {};
-    if (b.currentPassword !== user.password) errors.currentPassword = ['Current password is incorrect.'];
+    if (b.currentPassword !== user.password) errors.currentPassword = ['The current password is incorrect.'];
     checkPassword(b.newPassword, 'newPassword', errors);
     if (Object.keys(errors).length) return validation(errors);
     user.password = b.newPassword;
@@ -364,7 +459,7 @@ export const handlers = [
     checkPassword(b.newPassword, 'newPassword', errors);
     const userId = db.state.resetTokens[b.token];
     const user = db.state.users.find((u) => u.id === userId);
-    if (!user) errors.token = ['This reset link is invalid, already used or expired.'];
+    if (!user) errors.token = ['The reset link is invalid or has expired.'];
     if (Object.keys(errors).length || !user) return validation(errors);
     user.password = b.newPassword;
     delete db.state.resetTokens[b.token];
@@ -424,7 +519,7 @@ export const handlers = [
   // Invitations (trainer). The `:token` GET above only matches non-UUID paths in practice;
   // list uses the bare collection path.
   http.get(`${API}/invitations`, authed('trainer', ({ user, url }) => {
-    const status = url.searchParams.get('status');
+    const status = queryEnum(url, 'status', ['pending', 'accepted', 'cancelled', 'expired']);
     const list = db.state.invitations
       .filter((i) => i.trainerId === user.id)
       .map(toInvitation)
@@ -437,10 +532,10 @@ export const handlers = [
     const b = await body<T.InviteClientRequest>(request);
     const errors: Record<string, string[]> = {};
     const email = (b.email ?? '').trim().toLowerCase();
-    if (!EMAIL.test(email)) errors.email = ['Email is not a valid email address.'];
+    if (!EMAIL.test(email)) errors.email = ['Must be a valid email address.'];
     checkName(b.firstName, 'firstName', errors);
     checkName(b.lastName, 'lastName', errors);
-    if (b.message && b.message.length > 500) errors.message = ['Message must be at most 500 characters.'];
+    if (b.message && b.message.length > 500) errors.message = ['Must be at most 500 characters.'];
     if (Object.keys(errors).length) return validation(errors);
     if (db.state.users.some((u) => u.email === email)) return problem(409, 'User.EmailInUse', `'${email}' already has an account.`);
     if (db.state.invitations.some((i) => i.trainerId === user.id && i.email === email && toInvitation(i).status === 'pending'))
@@ -532,6 +627,7 @@ export const handlers = [
     if (!e) return notFound('Exercise');
     if (e.ownerId !== ctx.user.id) return problem(403, 'Exercise.NotEditable', 'Library exercises cannot be edited.');
     const b = await body<T.UpsertExerciseRequest>(ctx.request);
+    requireMembers(b, ['name', 'category', 'movementPattern', 'primaryMuscles', 'secondaryMuscles', 'equipment', 'unilateral']);
     const errors = validateExercise(b);
     if (Object.keys(errors).length) return validation(errors);
     Object.assign(e, b, { name: b.name.trim() });
@@ -549,7 +645,7 @@ export const handlers = [
   // Workouts
   http.get(`${API}/workouts`, authed('trainer', ({ user, url }) => {
     const search = (url.searchParams.get('search') ?? '').toLowerCase();
-    const sort = url.searchParams.get('sort') ?? 'name';
+    const sort = queryEnum(url, 'sort', ['name', '-updatedAt']) ?? 'name';
     const list = db.state.workouts
       .filter((w) => w.trainerId === user.id && (url.searchParams.get('includeArchived') === 'true' || !w.archived))
       .filter((w) => !search || w.name.toLowerCase().includes(search))
@@ -565,8 +661,10 @@ export const handlers = [
 
   http.post(`${API}/workouts`, authed('trainer', async ({ request, user }) => {
     const b = await body<T.UpsertWorkoutRequest>(request);
-    const errors = validateWorkout(b, user);
+    const errors = validateWorkout(b);
     if (Object.keys(errors).length) return validation(errors);
+    const refs = checkWorkoutExercises(b.exercises, user);
+    if (refs) return refs;
     const w = {
       id: newId(),
       trainerId: user.id,
@@ -585,8 +683,12 @@ export const handlers = [
     const w = db.state.workouts.find((x) => x.id === param(ctx, 'id') && x.trainerId === ctx.user.id);
     if (!w) return notFound('Workout');
     const b = await body<T.UpsertWorkoutRequest>(ctx.request);
-    const errors = validateWorkout(b, ctx.user);
+    requireMembers(b, ['name', 'exercises']);
+    (b.exercises as unknown[]).forEach((e, i) => requireMembers(e as object, ['exerciseId', 'sets', 'goal', 'load', 'restSeconds'], [], `exercises[${i}].`));
+    const errors = validateWorkout(b);
     if (Object.keys(errors).length) return validation(errors);
+    const refs = checkWorkoutExercises(b.exercises, ctx.user, new Set(w.exercises.map((e) => e.exerciseId)));
+    if (refs) return refs;
     Object.assign(w, { name: b.name.trim(), description: b.description ?? null, exercises: toDbWorkoutExercises(b.exercises), updatedAt: nowIso() });
     return HttpResponse.json(toWorkout(w));
   })),
@@ -626,23 +728,37 @@ export const handlers = [
   ...(['post', 'put'] as const).map((method) =>
     http[method](method === 'post' ? `${API}/programs` : `${API}/programs/:id`, authed('trainer', async (ctx) => {
       const b = await body<T.UpsertProgramRequest>(ctx.request);
+      if (method === 'put') requireMembers(b, ['name', 'weeks', 'slots']);
       const errors: Record<string, string[]> = {};
       checkName(b.name, 'name', errors);
-      if (!(b.weeks >= 1 && b.weeks <= 52)) errors.weeks = ['Weeks must be between 1 and 52.'];
+      if (!(b.weeks >= 1 && b.weeks <= 52)) errors.weeks = ['Must be between 1 and 52.'];
       if (Object.keys(errors).length) return validation(errors);
-      if (b.slots.some((s) => s.week < 1 || s.week > b.weeks || s.day < 1 || s.day > 7))
-        return problem(422, 'Program.SlotOutOfRange', 'A slot falls outside the program weeks.');
-      const owned = new Set(db.state.workouts.filter((w) => w.trainerId === ctx.user.id).map((w) => w.id));
-      const missing = b.slots.findIndex((s) => !owned.has(s.workoutId));
-      if (missing >= 0) return validation({ [`slots[${missing}].workoutId`]: ['Workout was not found.'] });
+      const current = method === 'put' ? db.state.programs.find((x) => x.id === param(ctx, 'id') && x.trainerId === ctx.user.id) : undefined;
+      if (method === 'put' && !current) return notFound('Program');
+      const used = new Set(current?.slots.map((s) => s.workoutId));
+      const owned = new Map(db.state.workouts.filter((w) => w.trainerId === ctx.user.id).map((w) => [w.id, w]));
+      b.slots.forEach((s, i) => {
+        const w = owned.get(s.workoutId);
+        if (!w) errors[`slots[${i}].workoutId`] = [`The workout '${s.workoutId}' was not found.`];
+        else if (w.archived && !used.has(w.id)) errors[`slots[${i}].workoutId`] = [`The workout '${w.id}' is archived.`];
+      });
+      if (Object.keys(errors).length) return validation(errors);
+      const outside = b.slots.find((s) => s.week < 1 || s.week > b.weeks || s.day < 1 || s.day > 7);
+      if (outside)
+        return problem(422, 'Program.SlotOutOfRange', `The slot week ${outside.week}, day ${outside.day} is outside the program grid of ${b.weeks} week(s) x 7 days.`);
+      const perDay = new Map<string, number>();
+      for (const s of b.slots) {
+        const k = `${s.week}-${s.day}`;
+        perDay.set(k, (perDay.get(k) ?? 0) + 1);
+        if ((perDay.get(k) ?? 0) > 3) return problem(422, 'Program.TooManySlots', `Week ${s.week}, day ${s.day} has more than 3 workouts.`);
+      }
       const slots = b.slots.map((s) => ({ ...s, id: newId() }));
       if (method === 'post') {
         const p = { id: newId(), trainerId: ctx.user.id, name: b.name.trim(), description: b.description ?? null, weeks: b.weeks, archived: false, createdAt: nowIso(), updatedAt: nowIso(), slots };
         db.state.programs.push(p);
         return HttpResponse.json(toProgram(p), { status: 201 });
       }
-      const p = db.state.programs.find((x) => x.id === param(ctx, 'id') && x.trainerId === ctx.user.id);
-      if (!p) return notFound('Program');
+      const p = current!;
       Object.assign(p, { name: b.name.trim(), description: b.description ?? null, weeks: b.weeks, slots, updatedAt: nowIso() });
       return HttpResponse.json(toProgram(p));
     })),
@@ -660,8 +776,8 @@ export const handlers = [
     if (!p) return notFound('Program');
     const b = await body<T.AssignProgramRequest>(ctx.request);
     const errors: Record<string, string[]> = {};
-    if (!b.clientIds?.length) errors.clientIds = ['Pick at least one client.'];
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(b.startDate ?? '')) errors.startDate = ['Start date is required.'];
+    if (!b.clientIds?.length || b.clientIds.length > 50) errors.clientIds = ['Choose 1 to 50 clients.'];
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(b.startDate ?? '')) errors.startDate = ['This field is required.'];
     if (Object.keys(errors).length) return validation(errors);
     const out: T.ProgramAssignment[] = [];
     for (const clientId of b.clientIds) {
@@ -726,7 +842,7 @@ export const handlers = [
     const from = url.searchParams.get('from') ?? addDaysIso(today, -7);
     const to = url.searchParams.get('to') ?? addDaysIso(today, 28);
     const clientId = user.role === 'client' ? user.id : url.searchParams.get('clientId');
-    const status = url.searchParams.get('status');
+    const status = queryEnum(url, 'status', ['scheduled', 'completed', 'skipped', 'missed']);
     const visibleClients = new Set(db.state.clients.filter((c) => clientFor(user, c.id)).map((c) => c.id));
     const list = db.state.assignments
       .filter((a) => visibleClients.has(a.clientId) && (!clientId || a.clientId === clientId))
@@ -749,7 +865,7 @@ export const handlers = [
     if (c.status === 'archived') return problem(422, 'Client.Archived', 'Archived clients cannot get new assignments.');
     const w = db.state.workouts.find((x) => x.id === b.workoutId && x.trainerId === user.id);
     if (!w) return notFound('Workout');
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(b.date)) return validation({ date: ['Date is required.'] });
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(b.date)) return validation({ date: ['This field is required.'] });
     const a: DbAssignment = {
       id: newId(),
       clientId: c.id,
@@ -770,8 +886,10 @@ export const handlers = [
   http.put(`${API}/assignments/:id`, authed('trainer', async (ctx) => {
     const a = visibleAssignment(ctx.user, param(ctx, 'id'));
     if (!a) return notFound('Assignment');
-    if (a.status !== 'scheduled' || a.sessionId) return problem(409, 'Assignment.NotScheduled', 'Only scheduled workouts can be changed.');
+    if (a.status !== 'scheduled') return notScheduled(a);
     const b = await body<T.UpdateAssignmentRequest>(ctx.request);
+    requireMembers(b, ['date', 'notes'], ['notes']);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(b.date)) return validation({ date: ['This field is required.'] });
     a.date = b.date;
     a.notes = b.notes;
     return HttpResponse.json(toAssignment(a));
@@ -780,7 +898,7 @@ export const handlers = [
   http.delete(`${API}/assignments/:id`, authed('trainer', (ctx) => {
     const a = visibleAssignment(ctx.user, param(ctx, 'id'));
     if (!a) return notFound('Assignment');
-    if (a.status !== 'scheduled' || a.sessionId) return problem(409, 'Assignment.NotScheduled', 'Only scheduled workouts can be removed.');
+    if (a.status !== 'scheduled' || a.sessionId) return notScheduled(a);
     db.state.assignments = db.state.assignments.filter((x) => x.id !== a.id);
     return noContent();
   })),
@@ -788,7 +906,7 @@ export const handlers = [
   http.post(`${API}/assignments/:id/skip`, authed('any', (ctx) => {
     const a = visibleAssignment(ctx.user, param(ctx, 'id'));
     if (!a) return notFound('Assignment');
-    if (a.status !== 'scheduled' || a.sessionId) return problem(409, 'Assignment.NotScheduled', 'Only scheduled workouts can be skipped.');
+    if (a.status !== 'scheduled' || a.sessionId) return notScheduled(a);
     a.status = 'skipped';
     return HttpResponse.json(toAssignment(a));
   })),
@@ -797,18 +915,19 @@ export const handlers = [
   http.post(`${API}/sessions`, authed('client', async ({ request, user }) => {
     const b = await body<T.StartSessionRequest>(request);
     if (b.id) {
-      const existing = db.state.sessions.find((s) => s.id === b.id && s.clientId === user.id);
+      const existing = db.state.sessions.find((s) => s.id === b.id);
+      if (existing && existing.clientId !== user.id) return problem(409, 'Session.IdInUse', `The id '${b.id}' is already used by another session.`);
       if (existing) return HttpResponse.json(toSession(existing));
     }
     let assignment: DbAssignment | null = null;
     if (b.assignmentId) {
       assignment = visibleAssignment(user, b.assignmentId);
       if (!assignment) return notFound('Assignment');
+      if (assignment.status !== 'scheduled') return notScheduled(assignment, { withSession: false });
       if (assignment.sessionId)
-        return problem(409, 'Session.AlreadyStartedForAssignment', 'A session was already started for this workout.', undefined, { sessionId: assignment.sessionId });
-      if (assignment.status !== 'scheduled') return problem(409, 'Assignment.NotScheduled', 'This workout is not scheduled anymore.');
+        return problem(409, 'Session.AlreadyStartedForAssignment', 'A session was already started for this assignment.', undefined, { sessionId: assignment.sessionId });
     } else if (!b.workoutName?.trim()) {
-      return validation({ workoutName: ['Name the workout or start it from an assignment.'] });
+      return validation({ workoutName: ["Either 'assignmentId' or 'workoutName' is required."] });
     }
     const s: DbSession = {
       id: b.id ?? newId(),
@@ -830,7 +949,7 @@ export const handlers = [
 
   http.get(`${API}/sessions`, authed('any', ({ user, url }) => {
     const clientId = user.role === 'client' ? user.id : url.searchParams.get('clientId');
-    const status = url.searchParams.get('status');
+    const status = queryEnum(url, 'status', ['in-progress', 'completed']);
     const from = url.searchParams.get('from');
     const to = url.searchParams.get('to');
     const list = db.state.sessions
@@ -851,7 +970,10 @@ export const handlers = [
     const s = visibleSession(ctx.user, param(ctx, 'id'));
     if (!s) return notFound('Session');
     const b = await body<{ workoutName: string; notes: string | null }>(ctx.request);
-    s.workoutName = b.workoutName || s.workoutName;
+    requireMembers(b, ['workoutName', 'notes'], ['notes']);
+    if (typeof b.workoutName !== 'string' || !b.workoutName.trim()) return validation({ workoutName: ['Must not be empty.'] });
+    if (b.notes !== null && typeof b.notes !== 'string') return validation({ notes: ['Must be a string or null.'] });
+    s.workoutName = b.workoutName.trim();
     s.notes = b.notes;
     return HttpResponse.json(toSession(s));
   })),
@@ -860,14 +982,30 @@ export const handlers = [
     const s = visibleSession(ctx.user, param(ctx, 'id'));
     if (!s) return notFound('Session');
     if (s.status === 'completed') return problem(409, 'Session.Completed', 'This session is already completed.');
-    const b = await body<T.PutSetRequest>(ctx.request);
+    const raw = await body<Partial<T.PutSetRequest>>(ctx.request);
+    requireMembers(raw, ['exerciseId', 'position', 'setNumber', 'completed']);
+    const b: T.PutSetRequest = {
+      exerciseId: raw.exerciseId!,
+      position: raw.position!,
+      setNumber: raw.setNumber!,
+      weightKg: raw.weightKg ?? null,
+      reps: raw.reps ?? null,
+      durationSeconds: raw.durationSeconds ?? null,
+      distanceMeters: raw.distanceMeters ?? null,
+      rpe: raw.rpe ?? null,
+      completed: raw.completed!,
+      notes: raw.notes ?? null,
+    };
     const errors: Record<string, string[]> = {};
-    if (!(b.setNumber >= 1 && b.setNumber <= 50)) errors.setNumber = ['Set number must be between 1 and 50.'];
-    if (b.weightKg !== null && !(b.weightKg >= 0 && b.weightKg <= 1000)) errors.weightKg = ['Weight must be between 0 and 1000 kg.'];
-    if (b.reps !== null && !(b.reps >= 0 && b.reps <= 1000)) errors.reps = ['Reps must be between 0 and 1000.'];
-    if (b.rpe !== null && !(b.rpe >= 1 && b.rpe <= 10)) errors.rpe = ['RPE must be between 1 and 10.'];
+    if (!(b.setNumber >= 1 && b.setNumber <= 50)) errors.setNumber = ['Must be between 1 and 50.'];
+    if (b.weightKg !== null && !(b.weightKg >= 0 && b.weightKg <= 1000)) errors.weightKg = ['Must be between 0 and 1000 with at most 2 decimals.'];
+    if (b.reps !== null && !(b.reps >= 0 && b.reps <= 1000)) errors.reps = ['Must be between 0 and 1000.'];
+    if (b.rpe !== null && !(b.rpe >= 1 && b.rpe <= 10)) errors.rpe = ['Must be between 1 and 10 in steps of 0.5.'];
     if (Object.keys(errors).length) return validation(errors);
     const setId = param(ctx, 'setId');
+    if (db.state.sessions.some((x) => x.id !== s.id && x.sets.some((y) => y.id === setId)))
+      return problem(409, 'Set.IdInUse', `The id '${setId}' is already used by a set of another session.`);
+    if (!visibleExercises(ctx.user).some((e) => e.id === b.exerciseId)) return validation({ exerciseId: [`The exercise '${b.exerciseId}' was not found.`] });
     const set: T.SessionSet = { id: setId, ...b, updatedAt: nowIso() };
     const i = s.sets.findIndex((x) => x.id === setId);
     if (i >= 0) s.sets[i] = set;
@@ -886,7 +1024,7 @@ export const handlers = [
   http.post(`${API}/sessions/:id/complete`, authed('client', async (ctx) => {
     const s = visibleSession(ctx.user, param(ctx, 'id'));
     if (!s) return notFound('Session');
-    const b = await body<T.CompleteSessionRequest>(ctx.request);
+    const b = await body<T.CompleteSessionRequest>(ctx.request, { optional: true });
     completeSession(s, b.completedAt ?? nowIso(), b.notes);
     return HttpResponse.json(toSession(s));
   })),
@@ -904,16 +1042,23 @@ export const handlers = [
   // Clients
   http.get(`${API}/clients`, authed('trainer', ({ user, url }) => {
     const search = (url.searchParams.get('search') ?? '').toLowerCase();
-    const status = url.searchParams.get('status');
-    const sort = url.searchParams.get('sort') ?? 'name';
+    const status = queryEnum(url, 'status', ['active', 'archived']);
+    const sort = queryEnum(url, 'sort', ['name', '-name', 'lastSessionAt', '-lastSessionAt', 'adherence7d', '-adherence7d']) ?? 'name';
     const list = db.state.clients
       .filter((c) => c.trainerId === user.id && (!status || c.status === status))
       .map(clientSummary)
       .filter((c) => !search || `${c.firstName} ${c.lastName} ${c.email}`.toLowerCase().includes(search));
+    const byName = (a: T.ClientSummary, b: T.ClientSummary) => a.firstName.localeCompare(b.firstName) || a.lastName.localeCompare(b.lastName);
+    // Nulls sort last in both directions, like the API; ties fall back to id.
+    const nullsLast = <V,>(x: V | null, y: V | null, cmp: (x: V, y: V) => number) => (x === null ? (y === null ? 0 : 1) : y === null ? -1 : cmp(x, y));
+    const desc = sort.startsWith('-');
+    const dir = desc ? -1 : 1;
     list.sort((a, b) => {
-      if (sort === '-lastSessionAt') return (b.lastSessionAt ?? '').localeCompare(a.lastSessionAt ?? '');
-      if (sort === 'adherence7d') return (a.adherence7d ?? 2) - (b.adherence7d ?? 2);
-      return `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`);
+      let r: number;
+      if (sort.endsWith('lastSessionAt')) r = nullsLast(a.lastSessionAt, b.lastSessionAt, (x, y) => dir * x.localeCompare(y));
+      else if (sort.endsWith('adherence7d')) r = nullsLast(a.adherence7d, b.adherence7d, (x, y) => dir * (x - y));
+      else r = dir * byName(a, b);
+      return r || a.id.localeCompare(b.id);
     });
     return HttpResponse.json(paged(list, url));
   })),
@@ -927,6 +1072,7 @@ export const handlers = [
     const c = clientFor(ctx.user, param(ctx, 'id'));
     if (!c) return notFound('Client');
     const b = await body<T.UpdateClientRequest>(ctx.request);
+    requireMembers(b, ['goals', 'trainerNotes'], ['goals', 'trainerNotes']);
     c.goals = b.goals;
     c.trainerNotes = b.trainerNotes;
     return HttpResponse.json(clientDetail(c, ctx.user));
@@ -1056,16 +1202,18 @@ export const handlers = [
     if (!c) return notFound('Client');
     const date = param(ctx, 'date');
     const b = await body<T.BodyMetricValues>(ctx.request);
+    const all = ['weightKg', 'bodyFatPercent', 'waistCm', 'chestCm', 'hipsCm', 'armCm', 'thighCm', 'restingHeartRate', 'notes'];
+    requireMembers(b, all, all);
     const errors: Record<string, string[]> = {};
-    if (date > todayIso()) errors.date = ['Date cannot be in the future.'];
+    if (date > todayIso()) errors.date = ['Measurements cannot be recorded for a future date.'];
     const measures = ['weightKg', 'bodyFatPercent', 'waistCm', 'chestCm', 'hipsCm', 'armCm', 'thighCm', 'restingHeartRate'] as const;
     if (!measures.some((k) => b[k] !== null && b[k] !== undefined)) errors.weightKg = ['Enter at least one measurement.'];
-    if (b.weightKg != null && (b.weightKg < 20 || b.weightKg > 400)) errors.weightKg = ['Weight must be between 20 and 400 kg.'];
-    if (b.bodyFatPercent != null && (b.bodyFatPercent < 2 || b.bodyFatPercent > 75)) errors.bodyFatPercent = ['Body fat must be between 2 and 75%.'];
-    if (b.restingHeartRate != null && (b.restingHeartRate < 25 || b.restingHeartRate > 250)) errors.restingHeartRate = ['Resting heart rate must be between 25 and 250.'];
+    if (b.weightKg != null && (b.weightKg < 20 || b.weightKg > 400)) errors.weightKg = ['Must be between 20 and 400 with at most 2 decimals.'];
+    if (b.bodyFatPercent != null && (b.bodyFatPercent < 2 || b.bodyFatPercent > 75)) errors.bodyFatPercent = ['Must be between 2 and 75 with at most 1 decimals.'];
+    if (b.restingHeartRate != null && (b.restingHeartRate < 25 || b.restingHeartRate > 250)) errors.restingHeartRate = ['Must be between 25 and 250.'];
     for (const k of ['waistCm', 'chestCm', 'hipsCm', 'armCm', 'thighCm'] as const) {
       const v = b[k];
-      if (v != null && (v < 10 || v > 300)) errors[k] = ['Must be between 10 and 300 cm.'];
+      if (v != null && (v < 10 || v > 300)) errors[k] = ['Must be between 10 and 300 with at most 1 decimals.'];
     }
     if (Object.keys(errors).length) return validation(errors);
     const metric: T.BodyMetric = {

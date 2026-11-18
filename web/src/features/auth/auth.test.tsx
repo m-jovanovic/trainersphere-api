@@ -40,6 +40,42 @@ describe('auth journeys', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Email or password is incorrect.');
   });
 
+  it('shows a $ body error as a form-level error instead of dropping it', async () => {
+    server.use(
+      http.post('/api/auth/login', () =>
+        HttpResponse.json(
+          { status: 400, title: 'Bad Request', detail: 'The request is invalid.', code: 'Validation', errors: { $: ['The request body is not valid JSON.'] } },
+          { status: 400 },
+        ),
+      ),
+    );
+    const { user } = renderApp('/login');
+    await findHeading('Log in');
+    await user.type(screen.getByLabelText('Email'), TRAINER_EMAIL);
+    await user.type(screen.getByLabelText('Password'), DEMO_PASSWORD);
+    await user.click(screen.getByRole('button', { name: 'Log in' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('The request body is not valid JSON.');
+  });
+
+  it('shows a validation key with no matching field as a form-level error', async () => {
+    server.use(
+      http.post('/api/auth/signup', () =>
+        HttpResponse.json(
+          { status: 400, title: 'Bad Request', detail: 'The request is invalid.', code: 'Validation', errors: { timeZone: ['Must be a known IANA time zone, for example Europe/Belgrade.'] } },
+          { status: 400 },
+        ),
+      ),
+    );
+    const { user } = renderApp('/signup');
+    await findHeading('Create your trainer account');
+    await user.type(screen.getByLabelText('First name'), 'Nina');
+    await user.type(screen.getByLabelText('Last name'), 'Ortiz');
+    await user.type(screen.getByLabelText('Email'), 'nina@example.com');
+    await user.type(screen.getByLabelText('Password'), 'long-enough-1');
+    await user.click(screen.getByRole('button', { name: 'Create account' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Time zone: Must be a known IANA time zone, for example Europe/Belgrade.');
+  });
+
   it('ignores open redirects', async () => {
     const { user, router } = renderApp('/login?redirect=%2F%2Fevil.example');
     await findHeading('Log in');
@@ -161,7 +197,7 @@ describe('auth journeys', () => {
     await bad.user.type(screen.getByLabelText('New password'), 'brand-new-pass');
     await bad.user.type(screen.getByLabelText('Confirm password'), 'brand-new-pass');
     await bad.user.click(screen.getByRole('button', { name: 'Update password' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('This reset link is invalid, already used or expired.');
+    expect(await screen.findByRole('alert')).toHaveTextContent('The reset link is invalid or has expired.');
     bad.unmount();
 
     const good = renderApp('/reset-password?token=good-token');

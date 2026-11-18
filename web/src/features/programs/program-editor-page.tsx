@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, getRouteApi, useNavigate } from '@tanstack/react-router';
-import { ArrowLeft, CalendarRange, Copy, Plus, X } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowLeft, CalendarRange, CircleAlert, Copy, Plus, X } from 'lucide-react';
+import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { programsApi } from '@/lib/api/endpoints';
-import { errorMessage } from '@/lib/api/http';
+import { applyProblem } from '@/lib/api/form-errors';
 import { keys, queries } from '@/lib/api/queries';
 import type { Program } from '@/lib/api/types';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Field, FormError } from '@/components/ui/field';
 import { Input, Textarea } from '@/components/ui/input';
@@ -61,17 +62,21 @@ function Editor({ program }: { program: Program | undefined }) {
   const workouts = useQuery(queries.workouts(''));
   const [saved, setSaved] = useState(() => toDraft(program));
   const [draft, setDraft] = useState(saved);
-  const [errors, setErrors] = useState<{ name?: string; form?: string }>({});
+  const [errors, setErrors] = useState<{ name?: string; form?: string; slots?: Set<string> }>({});
+  // Keys of the slots in the order they were sent, so `slots[i]` errors find their chip.
+  const sentKeys = useRef<string[]>([]);
   const dirty = fingerprint(draft) !== fingerprint(saved);
   const outOfRange = draft.slots.filter((s) => s.week > draft.weeks).length;
 
   const save = useMutation({
     mutationFn: () => {
+      const sent = draft.slots.filter((s) => s.week <= draft.weeks).sort((a, b) => a.week - b.week || a.day - b.day);
+      sentKeys.current = sent.map((s) => s.key);
       const body = {
         name: draft.name.trim(),
         description: draft.description.trim() || null,
         weeks: draft.weeks,
-        slots: draft.slots.filter((s) => s.week <= draft.weeks).sort((a, b) => a.week - b.week || a.day - b.day).map(({ week, day, workoutId }) => ({ week, day, workoutId })),
+        slots: sent.map(({ week, day, workoutId }) => ({ week, day, workoutId })),
       };
       return program ? programsApi.update(program.id, body) : programsApi.create(body);
     },
@@ -85,7 +90,26 @@ function Editor({ program }: { program: Program | undefined }) {
       // The guard may not have re-rendered with the saved state yet, so it would block this redirect.
       if (!program) void navigate({ to: '/programs/$programId', params: { programId: p.id }, replace: true, ignoreBlocker: true });
     },
-    onError: (err) => setErrors({ form: errorMessage(err) }),
+    onError: (err) => {
+      let name: string | undefined;
+      const slots = new Set<string>();
+      const slotKey = (path: string) => {
+        const m = /^slots\.(\d+)\.workoutId$/.exec(path);
+        return m ? sentKeys.current[Number(m[1])] : undefined;
+      };
+      const { formError } = applyProblem(err, {
+        isField: (k) => k === 'name' || slotKey(k) !== undefined,
+        setFieldError: (path, message) => {
+          const k = slotKey(path);
+          if (k) slots.add(k);
+          else name = message;
+        },
+      });
+      const slotMessage = slots.size
+        ? `${slots.size === 1 ? 'A workout in this program is' : `${slots.size} workouts in this program are`} no longer available (archived or deleted). Remove the marked ${slots.size === 1 ? 'one' : 'ones'} and save again.`
+        : undefined;
+      setErrors({ name, form: formError ?? slotMessage, slots });
+    },
   });
 
   const submit = () => {
@@ -100,7 +124,10 @@ function Editor({ program }: { program: Program | undefined }) {
   };
   const patch = (p: Partial<Draft>) => setDraft((d) => ({ ...d, ...p }));
   const add = (week: number, day: number, w: { id: string; name: string }) => patch({ slots: [...draft.slots, { key: key(), week, day, workoutId: w.id, workoutName: w.name }] });
-  const removeSlot = (k: string) => patch({ slots: draft.slots.filter((s) => s.key !== k) });
+  const removeSlot = (k: string) => {
+    patch({ slots: draft.slots.filter((s) => s.key !== k) });
+    if (errors.slots?.has(k)) setErrors((e) => ({ ...e, slots: new Set([...(e.slots ?? [])].filter((x) => x !== k)) }));
+  };
   const repeatWeek1 = () => {
     const week1 = draft.slots.filter((s) => s.week === 1);
     const rest = Array.from({ length: draft.weeks - 1 }, (_, i) => week1.map((s) => ({ ...s, key: key(), week: i + 2 }))).flat();
@@ -177,14 +204,21 @@ function Editor({ program }: { program: Program | undefined }) {
                     <div key={day} className="flex min-w-0 items-start gap-2 rounded-lg bg-surface-2 p-2 md:min-h-24 md:flex-col" role="group" aria-label={`Week ${week}, day ${day}`}>
                       <span className="w-12 shrink-0 pt-1.5 text-xs font-medium text-muted md:w-auto md:pt-0">Day {day}</span>
                       <div className="flex min-w-0 flex-1 flex-wrap gap-1.5 md:w-full md:flex-col md:flex-nowrap">
-                        {slots.map((s) => (
-                          <span key={s.key} title={s.workoutName} className="flex min-h-8 min-w-0 items-center gap-1 rounded-md border border-border bg-surface py-0.5 pr-0.5 pl-2 text-xs font-medium">
-                            <span className="line-clamp-2 min-w-0 flex-1 leading-tight break-words">{s.workoutName}</span>
+                        {slots.map((s) => {
+                          const unavailable = errors.slots?.has(s.key) ?? false;
+                          return (
+                          <span key={s.key} title={unavailable ? `${s.workoutName} is no longer available` : s.workoutName} className={cn('flex min-h-8 min-w-0 items-center gap-1 rounded-md border bg-surface py-0.5 pr-0.5 pl-2 text-xs font-medium', unavailable ? 'border-danger text-danger' : 'border-border')}>
+                            {unavailable && <CircleAlert className="size-3.5 shrink-0" aria-hidden />}
+                            <span className="line-clamp-2 min-w-0 flex-1 leading-tight break-words">
+                              {s.workoutName}
+                              {unavailable && <span className="sr-only"> (no longer available)</span>}
+                            </span>
                             <button type="button" aria-label={`Remove ${s.workoutName} from week ${week}, day ${day}`} onClick={() => removeSlot(s.key)} className="flex size-7 shrink-0 items-center justify-center rounded text-muted hover:bg-surface-2 hover:text-fg">
                               <X className="size-3.5" aria-hidden />
                             </button>
                           </span>
-                        ))}
+                          );
+                        })}
                         {slots.length < MAX_PER_DAY && (
                           <Menu
                             align="start"

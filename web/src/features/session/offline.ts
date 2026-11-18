@@ -4,6 +4,8 @@ import { sessionsApi } from '@/lib/api/endpoints';
 import { ApiError, NetworkError, errorMessage } from '@/lib/api/http';
 import { keys, queries } from '@/lib/api/queries';
 import type { Assignment, PutSetRequest, Session, SessionSet, StartSessionRequest } from '@/lib/api/types';
+import { uuid } from '@/lib/utils';
+import { aliasId, originalId, resolveId } from './id-aliases';
 
 export const sessionKeys = {
   start: ['session', 'start'] as const,
@@ -37,7 +39,7 @@ type SessionKey = (typeof sessionKeys)[keyof typeof sessionKeys];
  * Returns the mutation promise; callers that don't await it must not let it reject unhandled.
  */
 export function runSessionWrite(qc: QueryClient, key: SessionKey, sessionId: string, variables: StartVars | PutSetVars | DeleteSetVars | CompleteVars): Promise<unknown> {
-  const mutation = qc.getMutationCache().build<unknown, unknown, unknown, unknown>(qc, { mutationKey: key, scope: { id: `session:${sessionId}` } });
+  const mutation = qc.getMutationCache().build<unknown, unknown, unknown, unknown>(qc, { mutationKey: key, scope: { id: `session:${originalId(sessionId)}` } });
   return mutation.execute(variables);
 }
 
@@ -49,6 +51,28 @@ export function retryWrite(failureCount: number, error: unknown): boolean {
 }
 
 const retryDelay = (attempt: number) => Math.min(30_000, 1000 * 2 ** attempt);
+
+/**
+ * Ids made on this device can collide with an id another session already owns (`Session.IdInUse`,
+ * `Set.IdInUse`). That is not the user's mistake, so the write moves to a fresh id once and
+ * the alias makes later writes and the open page follow it.
+ */
+export async function withFreshIdOnCollision<R>(code: string, id: string, run: (id: string) => Promise<R>, onAlias: (from: string, to: string) => void): Promise<R> {
+  const current = resolveId(id);
+  try {
+    return await run(current);
+  } catch (err) {
+    if (!(err instanceof ApiError && err.code === code)) throw err;
+    const fresh = uuid();
+    aliasId(id, fresh);
+    onAlias(current, fresh);
+    return run(fresh);
+  }
+}
+
+function renameSet(session: Session, from: string, to: string): Session {
+  return { ...session, exercises: session.exercises.map((e) => ({ ...e, sets: e.sets.map((s) => (s.id === from ? { ...s, id: to } : s)) })) };
+}
 
 export function upsertSet(session: Session, set: SessionSet): Session {
   return {
@@ -127,10 +151,14 @@ export function optimisticAdHocSession(id: string, clientId: string, workoutName
  * offline and persisted to storage can resume after a reload, when no component is mounted.
  */
 export function registerMutationDefaults(qc: QueryClient) {
-  const detailKey = (id: string) => queries.session(id).queryKey;
+  const detailKey = (id: string) => queries.session(resolveId(id)).queryKey;
+  const moveSession = (from: string, to: string) => {
+    const local = qc.getQueryData<Session>(queries.session(from).queryKey);
+    if (local) qc.setQueryData(queries.session(to).queryKey, { ...local, id: to });
+  };
 
   qc.setMutationDefaults(sessionKeys.start, {
-    mutationFn: (body: StartVars) => sessionsApi.start(body),
+    mutationFn: (body: StartVars) => withFreshIdOnCollision('Session.IdInUse', body.id, (id) => sessionsApi.start({ ...body, id }), moveSession),
     retry: retryWrite,
     retryDelay,
     onSuccess: (session: Session) => {
@@ -142,13 +170,17 @@ export function registerMutationDefaults(qc: QueryClient) {
   });
 
   qc.setMutationDefaults(sessionKeys.putSet, {
-    mutationFn: ({ sessionId, setId, body }: PutSetVars) => sessionsApi.putSet(sessionId, setId, body),
+    mutationFn: ({ sessionId, setId, body }: PutSetVars) =>
+      withFreshIdOnCollision('Set.IdInUse', setId, (id) => sessionsApi.putSet(resolveId(sessionId), id, body), (from, to) => {
+        const s = qc.getQueryData<Session>(detailKey(sessionId));
+        if (s) qc.setQueryData(detailKey(sessionId), renameSet(s, from, to));
+      }),
     retry: retryWrite,
     retryDelay,
     onMutate: async ({ sessionId, setId, body }: PutSetVars) => {
       await qc.cancelQueries({ queryKey: detailKey(sessionId) });
       const prev = qc.getQueryData<Session>(detailKey(sessionId));
-      if (prev) qc.setQueryData(detailKey(sessionId), upsertSet(prev, { id: setId, ...body, updatedAt: new Date().toISOString() }));
+      if (prev) qc.setQueryData(detailKey(sessionId), upsertSet(prev, { id: resolveId(setId), ...body, updatedAt: new Date().toISOString() }));
       return { prev };
     },
     onError: (err, { sessionId }: PutSetVars, ctx) => {
@@ -159,13 +191,13 @@ export function registerMutationDefaults(qc: QueryClient) {
   });
 
   qc.setMutationDefaults(sessionKeys.deleteSet, {
-    mutationFn: ({ sessionId, setId }: DeleteSetVars) => sessionsApi.deleteSet(sessionId, setId),
+    mutationFn: ({ sessionId, setId }: DeleteSetVars) => sessionsApi.deleteSet(resolveId(sessionId), resolveId(setId)),
     retry: retryWrite,
     retryDelay,
     onMutate: async ({ sessionId, setId }: DeleteSetVars) => {
       await qc.cancelQueries({ queryKey: detailKey(sessionId) });
       const prev = qc.getQueryData<Session>(detailKey(sessionId));
-      if (prev) qc.setQueryData(detailKey(sessionId), removeSet(prev, setId));
+      if (prev) qc.setQueryData(detailKey(sessionId), removeSet(prev, resolveId(setId)));
       return { prev };
     },
     onError: (err, { sessionId }: DeleteSetVars, ctx) => {
@@ -176,7 +208,7 @@ export function registerMutationDefaults(qc: QueryClient) {
   });
 
   qc.setMutationDefaults(sessionKeys.complete, {
-    mutationFn: ({ sessionId, completedAt, notes }: CompleteVars) => sessionsApi.complete(sessionId, { completedAt, notes }),
+    mutationFn: ({ sessionId, completedAt, notes }: CompleteVars) => sessionsApi.complete(resolveId(sessionId), { completedAt, notes }),
     retry: retryWrite,
     retryDelay,
     onMutate: ({ sessionId, completedAt, notes }: CompleteVars) => {

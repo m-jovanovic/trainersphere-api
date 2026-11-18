@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { exercisesApi } from '@/lib/api/endpoints';
 import { ApiError, errorMessage } from '@/lib/api/http';
+import { applyProblem } from '@/lib/api/form-errors';
 import { keys, queries } from '@/lib/api/queries';
 import type { Exercise } from '@/lib/api/types';
 import { humanize } from '@/lib/domain';
@@ -59,12 +60,9 @@ export function ExerciseFormDialog({ exercise, onClose, onSaved }: { exercise: E
         setError('name', { type: 'server', message: errorMessage(err) });
         return;
       }
-      if (err instanceof ApiError) {
-        const entries = Object.entries(err.fieldErrors).filter(([k]) => k in schema.shape);
-        for (const [k, message] of entries) setError(k as keyof Values, { type: 'server', message });
-        if (entries.length) return;
-      }
-      setFormError(errorMessage(err));
+      setFormError(
+        applyProblem(err, { isField: (k) => k in schema.shape, setFieldError: (k, message) => setError(k as keyof Values, { type: 'server', message }) }).formError,
+      );
     },
   });
 

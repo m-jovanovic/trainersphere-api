@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { invitationsApi } from '@/lib/api/endpoints';
 import { ApiError, errorMessage } from '@/lib/api/http';
+import { applyProblem } from '@/lib/api/form-errors';
 import { keys } from '@/lib/api/queries';
 import type { Invitation } from '@/lib/api/types';
 import { formatAgo } from '@/lib/dates';
@@ -54,17 +55,12 @@ export function InviteClientDialog({ open, onOpenChange }: { open: boolean; onOp
         setError('email', { type: 'server', message: errorMessage(err) });
         return;
       }
-      if (err instanceof ApiError) {
-        let matched = false;
-        for (const [field, message] of Object.entries(err.fieldErrors)) {
-          if (field in inviteSchema.shape) {
-            setError(field as keyof InviteForm, { type: 'server', message });
-            matched = true;
-          }
-        }
-        if (matched) return;
-      }
-      setFormError(errorMessage(err));
+      setFormError(
+        applyProblem(err, {
+          isField: (k) => k in inviteSchema.shape,
+          setFieldError: (k, message) => setError(k as keyof InviteForm, { type: 'server', message }),
+        }).formError,
+      );
     },
   });
 

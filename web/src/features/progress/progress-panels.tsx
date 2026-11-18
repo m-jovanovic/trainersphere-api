@@ -17,6 +17,8 @@ import { QueryError } from '@/components/layout/page-states';
 
 const dims = { width: 600, height: 240 };
 
+const plural = (n: number, word: string) => `${String(n)} ${word}${n === 1 ? '' : 's'}`;
+
 export function TrainingSummaryCard({ clientId }: { clientId: string }) {
   const units = useUnits();
   const { data, error, refetch } = useQuery(queries.progressSummary(clientId, 12));
@@ -36,9 +38,9 @@ export function TrainingSummaryCard({ clientId }: { clientId: string }) {
         </div>
         <ChartFrame
           caption="Weekly training volume"
-          summary={`Weekly volume for the last ${rows.length} weeks${latest ? `; this week ${formatVolume(latest.volumeKg, units)} over ${latest.sessions} sessions` : ''}.`}
+          summary={`Weekly volume for the last ${rows.length} weeks${latest ? `; this week ${formatVolume(latest.volumeKg, units)} over ${plural(latest.sessions, 'session')}` : ''}.`}
           columns={['Week of', 'Volume']}
-          rows={data.weeks.map((w) => [formatDay(w.weekStart, 'd MMM yyyy'), `${formatVolume(w.volumeKg, units)}, ${w.sessions} sessions`])}
+          rows={data.weeks.map((w) => [formatDay(w.weekStart, 'd MMM yyyy'), `${formatVolume(w.volumeKg, units)}, ${plural(w.sessions, 'session')}`])}
         >
           <ResponsiveContainer width="100%" height="100%" initialDimension={dims}>
             <BarChart data={rows} margin={{ top: 8, right: 4, bottom: 0, left: 0 }}>
@@ -129,7 +131,11 @@ export function ExerciseProgressCard({ clientId, exerciseId, onExerciseChange }:
         {progress.isPending ? (
           <Skeleton className="h-60" />
         ) : withValues.length === 0 ? (
-          <p className="py-10 text-center text-sm text-muted">No weighted sets logged for this exercise.</p>
+          <p className="py-10 text-center text-sm text-muted">
+            {metric === 'e1rm' && points.some((p) => p.topSetWeightKg !== null)
+              ? 'No estimated 1RM yet: it counts sets of 1 to 12 reps. Top set and Volume show the rest.'
+              : 'No weighted sets logged for this exercise.'}
+          </p>
         ) : (
           <ChartFrame
             caption={`${metricLabel[metric]} for ${current?.exercise.name ?? 'exercise'}`}

@@ -6,7 +6,7 @@ export const Route = createFileRoute('/_authed/_shell/_trainer/clients/')({
   validateSearch: z.object({
     q: z.string().optional(),
     status: z.enum(['active', 'archived']).optional(),
-    sort: z.enum(['name', '-lastSessionAt', 'adherence7d']).optional(),
+    sort: z.enum(['name', '-name', 'lastSessionAt', '-lastSessionAt', 'adherence7d', '-adherence7d']).optional(),
     invite: z.boolean().optional(),
   }),
   head: () => ({ meta: [{ title: 'Clients · TrainerSphere' }] }),

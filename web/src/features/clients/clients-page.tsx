@@ -17,9 +17,12 @@ import { InviteClientDialog, PendingInvitationList } from './invitations';
 const route = getRouteApi('/_authed/_shell/_trainer/clients/');
 
 const sortOptions: { value: ClientSort; label: string }[] = [
-  { value: 'name', label: 'Name' },
+  { value: 'name', label: 'Name (A to Z)' },
+  { value: '-name', label: 'Name (Z to A)' },
   { value: '-lastSessionAt', label: 'Recently active' },
+  { value: 'lastSessionAt', label: 'Longest since last session' },
   { value: 'adherence7d', label: 'Lowest adherence' },
+  { value: '-adherence7d', label: 'Highest adherence' },
 ];
 
 export function ClientsPage() {

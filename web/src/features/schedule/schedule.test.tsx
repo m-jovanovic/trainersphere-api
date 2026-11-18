@@ -126,10 +126,24 @@ describe('schedule (agenda)', () => {
     a!.status = 'completed';
 
     await user.click(dialog.getByRole('button', { name: 'Save changes' }));
-    expect(await dialog.findByRole('alert')).toHaveTextContent('This workout was already started or completed, so it can no longer be changed.');
-    await user.click(dialog.getByRole('button', { name: 'Mark skipped' }));
-    expect(await dialog.findByRole('alert')).toHaveTextContent('This workout was already started or completed');
+    expect(await dialog.findByRole('alert')).toHaveTextContent('This workout was already completed or skipped, so it can no longer be changed.');
+    expect(dialog.queryByRole('link', { name: 'View the session' })).not.toBeInTheDocument();
     expect(a!.status).toBe('completed');
+  });
+
+  it('links to the session when the client started the workout meanwhile', async () => {
+    const [a] = upcomingFor(ALEX);
+    const started = db.state.sessions.find((s) => s.clientId === clientId(ALEX))!;
+    await signIn();
+    const { user } = renderApp(`/schedule?month=${a!.date}&client=${clientId(ALEX)}`);
+    await findHeading('Schedule');
+    const dialog = await openFromAgenda(user, a!);
+    a!.sessionId = started.id;
+
+    await user.click(dialog.getByRole('button', { name: 'Mark skipped' }));
+    expect(await dialog.findByRole('alert')).toHaveTextContent('The client already started this workout');
+    expect(dialog.getByRole('link', { name: 'View the session' })).toHaveAttribute('href', `/sessions/${started.id}`);
+    expect(a!.status).toBe('scheduled');
   });
 
   it('schedules from the client page with the client preset', async () => {

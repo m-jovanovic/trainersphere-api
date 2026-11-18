@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using TrainerSphere.Api.Modules.Identity.Domain;
+using TrainerSphere.SharedKernel.Domain;
 using TrainerSphere.SharedKernel.Http;
 
 namespace TrainerSphere.Api.Modules.Identity.Infrastructure;
@@ -77,7 +78,7 @@ internal sealed class AccessTokenIssuer(IOptions<AuthOptions> options, TimeProvi
     public string Issue(User user)
     {
         AuthOptions settings = options.Value;
-        DateTime now = timeProvider.GetUtcNow().UtcDateTime;
+        DateTime now = timeProvider.UtcNow();
 
         Dictionary<string, object> claims = new(StringComparer.Ordinal)
         {

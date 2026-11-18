@@ -427,7 +427,7 @@ public sealed class InvitationTests(ApiFactory factory) : IntegrationTest(factor
         await ShouldOnlyFailOn(response, field);
     }
 
-    [Fact(Skip = "QA-F1: request binding failures return 400 BadRequest without errors instead of Validation")]
+    [Fact]
     public async Task ListInvitations_WithNonNumericPage_Returns400Validation()
     {
         TestUser trainer = await CreateTrainerAsync();

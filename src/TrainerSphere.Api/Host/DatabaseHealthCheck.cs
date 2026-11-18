@@ -1,21 +1,20 @@
-using Dapper;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Npgsql;
+using TrainerSphere.SharedKernel.Migrations;
 
 namespace TrainerSphere.Api.Host;
 
-internal sealed class DatabaseHealthCheck(NpgsqlDataSource dataSource) : IHealthCheck
+internal sealed class DatabaseHealthCheck(MigrationRunner migrations) : IHealthCheck
 {
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
         try
         {
-            await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(cancellationToken);
-            bool migrated = await connection.ExecuteScalarAsync<bool>(new CommandDefinition(
-                "SELECT to_regclass('public.schema_migrations') IS NOT NULL",
-                cancellationToken: cancellationToken));
+            IReadOnlyList<Migration> pending = await migrations.GetPendingAsync(cancellationToken);
 
-            return migrated ? HealthCheckResult.Healthy() : HealthCheckResult.Unhealthy("Migrations have not been applied.");
+            return pending.Count == 0
+                ? HealthCheckResult.Healthy()
+                : HealthCheckResult.Unhealthy($"{pending.Count} migration(s) are not applied.");
         }
         catch (NpgsqlException ex)
         {

@@ -47,7 +47,7 @@ public sealed class HealthTests(ApiFactory factory) : IntegrationTest(factory), 
         }
     }
 
-    [Fact(Skip = "QA-F7: readiness only checks that the migration history table exists, not that every migration is applied")]
+    [Fact]
     public async Task HealthReady_WithPendingMigration_Returns503()
     {
         const string Latest = "(module, version) = (SELECT module, version FROM public.schema_migrations ORDER BY applied_at DESC, version DESC LIMIT 1)";

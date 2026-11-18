@@ -32,6 +32,7 @@ internal static class HostingExtensions
         services.ConfigureHttpJsonOptions(options => JsonDefaults.Configure(options.SerializerOptions));
         services.Configure<RouteHandlerOptions>(options => options.ThrowOnBadRequest = true);
         services.AddProblemDetails(options => options.CustomizeProblemDetails = Customize);
+        services.AddExceptionHandler<BindingExceptionHandler>();
         services.AddExceptionHandler(options => options.StatusCodeSelector = exception =>
             exception is BadHttpRequestException badRequest ? badRequest.StatusCode : StatusCodes.Status500InternalServerError);
 
@@ -59,7 +60,9 @@ internal static class HostingExtensions
         services.AddAuthorizationBuilder().AddPermissionPolicies();
         services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
-        services.AddOpenApi(options => options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
+        services.AddOpenApi(options => options
+            .AddDocumentTransformer<BearerSecuritySchemeTransformer>()
+            .AddSchemaTransformer<KebabCaseEnumSchemaTransformer>());
         services.AddHealthChecks().AddCheck<DatabaseHealthCheck>("database", tags: ["ready"]);
         services.AddRateLimiter(options => ConfigureRateLimiting(options, configuration));
 
@@ -104,6 +107,20 @@ internal static class HostingExtensions
 
     private static void Customize(ProblemDetailsContext context)
     {
+        int status = context.ProblemDetails.Status ?? context.HttpContext.Response.StatusCode;
+
+        context.ProblemDetails.Type ??= status switch
+        {
+            StatusCodes.Status413PayloadTooLarge => "https://tools.ietf.org/html/rfc9110#section-15.5.14",
+            StatusCodes.Status429TooManyRequests => "https://tools.ietf.org/html/rfc6585#section-4",
+            StatusCodes.Status503ServiceUnavailable => "https://tools.ietf.org/html/rfc9110#section-15.6.4",
+            _ => "about:blank",
+        };
+
+        // A 500 never echoes what went wrong, whichever layer produced it.
+        context.ProblemDetails.Detail = status == StatusCodes.Status500InternalServerError
+            ? "An unexpected error occurred."
+            : context.ProblemDetails.Detail ?? DefaultDetail(status);
         context.ProblemDetails.Instance ??= context.HttpContext.Request.Path;
         context.ProblemDetails.Extensions["traceId"] =
             Activity.Current?.Id ?? context.HttpContext.Features.Get<IHttpActivityFeature>()?.Activity.Id ?? context.HttpContext.TraceIdentifier;
@@ -117,11 +134,26 @@ internal static class HostingExtensions
                 StatusCodes.Status403Forbidden => "Auth.Forbidden",
                 StatusCodes.Status404NotFound => "NotFound",
                 StatusCodes.Status405MethodNotAllowed => "MethodNotAllowed",
+                StatusCodes.Status415UnsupportedMediaType => "UnsupportedMediaType",
                 StatusCodes.Status429TooManyRequests => "RateLimited",
                 _ => "Server.Error",
             };
         }
     }
+
+    private static string DefaultDetail(int status) =>
+        status switch
+        {
+            StatusCodes.Status400BadRequest => "The request is invalid.",
+            StatusCodes.Status401Unauthorized => "Authentication is required. Sign in and send a valid access token.",
+            StatusCodes.Status403Forbidden => "You do not have permission to perform this action.",
+            StatusCodes.Status404NotFound => "The requested resource was not found.",
+            StatusCodes.Status405MethodNotAllowed => "The HTTP method is not allowed for this resource.",
+            StatusCodes.Status409Conflict => "The request conflicts with the current state of the resource.",
+            StatusCodes.Status415UnsupportedMediaType => "The request content type is not supported. Send application/json.",
+            StatusCodes.Status429TooManyRequests => "Too many attempts. Try again in a minute.",
+            _ => "The request could not be processed.",
+        };
 
     private static void ConfigureRateLimiting(RateLimiterOptions options, IConfiguration configuration)
     {

@@ -3,13 +3,16 @@ namespace TrainerSphere.SharedKernel.Domain;
 public static class TimeProviderExtensions
 {
     /// <summary>
-    /// Returns the current time as a UTC <see cref="DateTime"/>; Npgsql only accepts UTC kinds for timestamptz.
+    /// Returns the current time as a UTC <see cref="DateTime"/> (Npgsql only accepts UTC kinds for timestamptz),
+    /// truncated to the microsecond precision Postgres stores, so a value returned right after a write equals the
+    /// value read back later.
     /// </summary>
     public static DateTime UtcNow(this TimeProvider timeProvider)
     {
         ArgumentNullException.ThrowIfNull(timeProvider);
 
-        return timeProvider.GetUtcNow().UtcDateTime;
+        DateTime now = timeProvider.GetUtcNow().UtcDateTime;
+        return new DateTime(now.Ticks - (now.Ticks % TimeSpan.TicksPerMicrosecond), DateTimeKind.Utc);
     }
 
     /// <summary>

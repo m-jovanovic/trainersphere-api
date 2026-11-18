@@ -64,6 +64,31 @@ public sealed partial class MigrationRunner(NpgsqlDataSource dataSource, IEnumer
 {
     private const long AdvisoryLockKey = 0x7472_6169_6e65_72; // "trainer"
 
+    private readonly Lazy<IReadOnlyList<Migration>> _migrations = new(() => [.. sources.SelectMany(s => s.Load())]);
+
+    /// <summary>
+    /// Returns the embedded migrations that are not recorded as applied, or whose applied checksum differs.
+    /// </summary>
+    public async Task<IReadOnlyList<Migration>> GetPendingAsync(CancellationToken cancellationToken)
+    {
+        await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(cancellationToken);
+
+        bool hasHistory = await connection.ExecuteScalarAsync<bool>(new CommandDefinition(
+            "SELECT to_regclass('public.schema_migrations') IS NOT NULL",
+            cancellationToken: cancellationToken));
+
+        if (!hasHistory)
+        {
+            return _migrations.Value;
+        }
+
+        IEnumerable<(string Module, int Version, string Checksum)> rows = await connection.QueryAsync<(string Module, int Version, string Checksum)>(
+            new CommandDefinition("SELECT module, version, checksum FROM public.schema_migrations", cancellationToken: cancellationToken));
+        HashSet<(string Module, int Version, string Checksum)> applied = [.. rows];
+
+        return [.. _migrations.Value.Where(m => !applied.Contains((m.Module, m.Version, m.Checksum)))];
+    }
+
     public async Task<IReadOnlyList<Migration>> RunAsync(CancellationToken cancellationToken)
     {
         await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(cancellationToken);
@@ -91,7 +116,7 @@ public sealed partial class MigrationRunner(NpgsqlDataSource dataSource, IEnumer
 
             List<Migration> executed = [];
 
-            foreach (Migration migration in sources.SelectMany(s => s.Load()))
+            foreach (Migration migration in _migrations.Value)
             {
                 if (applied.TryGetValue((migration.Module, migration.Version), out string? checksum))
                 {

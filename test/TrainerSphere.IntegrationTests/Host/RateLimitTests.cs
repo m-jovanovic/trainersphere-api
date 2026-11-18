@@ -79,7 +79,7 @@ public sealed class RateLimitTests(RateLimitedApiFactory factory) : IntegrationT
         problem.Detail.ShouldBe("Too many attempts. Try again in a minute.");
     }
 
-    [Fact(Skip = "QA-F6: the 429 problem has no type member")]
+    [Fact]
     public async Task Login_OverTheLimit_Returns429ProblemWithEveryMember()
     {
         HttpClient client = _limited.CreateClientFromNewAddress();

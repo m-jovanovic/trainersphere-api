@@ -208,9 +208,9 @@ public sealed class MeTests(ApiFactory factory) : IntegrationTest(factory), ICla
     }
 
     [Theory]
-    [InlineData("stone", Skip = "QA-F1: request binding failures return 400 BadRequest without errors instead of Validation")]
-    [InlineData("KG", Skip = "QA-F2: enum binding is case-insensitive, so KG is accepted")]
-    [InlineData("", Skip = "QA-F1: request binding failures return 400 BadRequest without errors instead of Validation")]
+    [InlineData("stone")]
+    [InlineData("KG")]
+    [InlineData("")]
     public async Task PutMe_WithUnknownUnits_Returns400UnitsError(string units)
     {
         TestUser trainer = await CreateTrainerAsync();
@@ -220,7 +220,7 @@ public sealed class MeTests(ApiFactory factory) : IntegrationTest(factory), ICla
         await response.ShouldBeValidationProblemAsync("units");
     }
 
-    [Fact(Skip = "QA-F3: omitted units silently defaults to kg")]
+    [Fact]
     public async Task PutMe_WithoutUnits_Returns400UnitsError()
     {
         TestUser trainer = await CreateTrainerAsync();

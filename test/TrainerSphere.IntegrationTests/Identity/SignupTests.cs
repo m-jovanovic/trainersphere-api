@@ -87,7 +87,7 @@ public sealed class SignupTests(ApiFactory factory) : IntegrationTest(factory), 
         me.CreatedAt.ShouldBe(auth.User.CreatedAt, TimeSpan.FromMilliseconds(1));
     }
 
-    [Fact(Skip = "QA-F4: signup serializes createdAt with 7 fractional digits, GET /me with 6")]
+    [Fact]
     public async Task Signup_CreatedAt_IsTheSameValueGetMeReturns()
     {
         HttpResponseMessage response = await SignupAsync(new SignupBuilder().Build());
@@ -309,7 +309,7 @@ public sealed class SignupTests(ApiFactory factory) : IntegrationTest(factory), 
         Factory.Events.OfType<TrainerRegistered>().ShouldNotContain(e => e.Email == request.Email);
     }
 
-    [Fact(Skip = "QA-F1: request binding failures return 400 BadRequest without errors instead of Validation")]
+    [Fact]
     public async Task Signup_WithMalformedJson_Returns400Validation()
     {
         HttpResponseMessage response = await CreateAnonymousClient().SendRawJsonAsync(HttpMethod.Post, IdentityRoutes.Signup, """{ "email": "maya@example.com", """);
@@ -317,7 +317,7 @@ public sealed class SignupTests(ApiFactory factory) : IntegrationTest(factory), 
         await response.ShouldBeProblemAsync(HttpStatusCode.BadRequest, "Validation");
     }
 
-    [Fact(Skip = "QA-F1: request binding failures return 400 BadRequest without errors instead of Validation")]
+    [Fact]
     public async Task Signup_WithWrongJsonType_Returns400ValidationForThatField()
     {
         HttpResponseMessage response = await CreateAnonymousClient().SendRawJsonAsync(

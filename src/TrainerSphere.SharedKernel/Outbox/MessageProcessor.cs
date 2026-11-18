@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Npgsql;
 using TrainerSphere.SharedKernel.Data;
+using TrainerSphere.SharedKernel.Domain;
 
 namespace TrainerSphere.SharedKernel.Outbox;
 
@@ -112,7 +113,7 @@ internal sealed partial class MessageProcessor : IMessageProcessor
                     error is null
                         ? $"UPDATE {Schema}.{_table} SET processed_at = @Now, error = NULL WHERE id = @Id"
                         : $"UPDATE {Schema}.{_table} SET attempts = attempts + 1, error = @Error WHERE id = @Id",
-                    new { message.Id, Now = _timeProvider.GetUtcNow().UtcDateTime, Error = error },
+                    new { message.Id, Now = _timeProvider.UtcNow(), Error = error },
                     transaction,
                     cancellationToken: cancellationToken));
         }
@@ -196,7 +197,7 @@ internal sealed partial class MessageProcessor : IMessageProcessor
             await collector.FlushToOutboxAsync(session, cancellationToken);
             await session.ExecuteAsync(
                 $"INSERT INTO {Schema}.{_table[..^1]}_consumers (message_id, handler, processed_at) VALUES (@Id, @Handler, @Now)",
-                new { Id = messageId, Handler = consumer, Now = _timeProvider.GetUtcNow().UtcDateTime },
+                new { Id = messageId, Handler = consumer, Now = _timeProvider.UtcNow() },
                 cancellationToken);
             await session.CommitAsync(cancellationToken);
 

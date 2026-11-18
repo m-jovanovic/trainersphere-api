@@ -1,62 +1,88 @@
 namespace TrainerSphere.SharedKernel.Results;
 
 /// <summary>
-/// Factory helpers for <see cref="Result{T}"/>.
+/// Factory and combination helpers for <see cref="Result{T}"/>.
 /// </summary>
 public static class Result
 {
     private static readonly Result<Unit> UnitSuccess = new Success<Unit>(default);
 
+    /// <summary>
+    /// Returns a successful result without a value.
+    /// </summary>
+    /// <returns>The successful result.</returns>
     public static Result<Unit> Success() => UnitSuccess;
 
+    /// <summary>
+    /// Returns a successful result with the specified value.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="value">The value.</param>
+    /// <returns>The successful result.</returns>
     public static Result<T> Success<T>(T value)
         where T : notnull =>
         new Success<T>(value);
 
+    /// <summary>
+    /// Returns a failed result with the specified error.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="error">The error.</param>
+    /// <returns>The failed result.</returns>
     public static Result<T> Failure<T>(Error error)
         where T : notnull =>
         new(error ?? throw new ArgumentNullException(nameof(error)));
 
-    public static Result<Unit> Failure(Error error) => Failure<Unit>(error);
-
-    public static Result<T> FromNullable<T>(T? value, Error whenNull)
-        where T : class =>
-        value is null ? Failure<T>(whenNull) : Success(value);
-
-    public static Result<T> FromNullable<T>(T? value, Error whenNull)
-        where T : struct =>
-        value is { } v ? Success(v) : Failure<T>(whenNull);
-
     /// <summary>
-    /// Returns success when the condition holds, otherwise the error.
+    /// Combines two results into a tuple. Validation errors from both are merged; otherwise the first error wins.
     /// </summary>
-    public static Result<Unit> Require(bool condition, Error error) => condition ? UnitSuccess : Failure(error);
-
-    /// <summary>
-    /// Combines two results. Validation errors from both sides are merged; otherwise the first error wins.
-    /// </summary>
+    /// <typeparam name="T1">The first value type.</typeparam>
+    /// <typeparam name="T2">The second value type.</typeparam>
+    /// <param name="first">The first result.</param>
+    /// <param name="second">The second result.</param>
+    /// <returns>The combined result.</returns>
     public static Result<(T1 First, T2 Second)> Combine<T1, T2>(Result<T1> first, Result<T2> second)
         where T1 : notnull
         where T2 : notnull =>
         (first, second) switch
         {
-            (Success<T1> a, Success<T2> b) => Success((a.Value, b.Value)),
-            (ValidationError a, ValidationError b) => Failure<(T1, T2)>(a.Merge(b)),
-            (Error a, _) => Failure<(T1, T2)>(a),
-            (_, Error b) => Failure<(T1, T2)>(b),
+            (Success<T1> a, Success<T2> b) => new Success<(T1, T2)>((a.Value, b.Value)),
+            _ => CombineErrors([ErrorOf(first), ErrorOf(second)]),
         };
 
     /// <summary>
-    /// Collects all values, or returns the first error (merging every validation error encountered).
+    /// Combines three results into a tuple. Validation errors are merged; otherwise the first error wins.
     /// </summary>
-    public static Result<IReadOnlyList<T>> Sequence<T>(IEnumerable<Result<T>> results)
+    /// <typeparam name="T1">The first value type.</typeparam>
+    /// <typeparam name="T2">The second value type.</typeparam>
+    /// <typeparam name="T3">The third value type.</typeparam>
+    /// <param name="first">The first result.</param>
+    /// <param name="second">The second result.</param>
+    /// <param name="third">The third result.</param>
+    /// <returns>The combined result.</returns>
+    public static Result<(T1 First, T2 Second, T3 Third)> Combine<T1, T2, T3>(Result<T1> first, Result<T2> second, Result<T3> third)
+        where T1 : notnull
+        where T2 : notnull
+        where T3 : notnull =>
+        (first, second, third) switch
+        {
+            (Success<T1> a, Success<T2> b, Success<T3> c) => new Success<(T1, T2, T3)>((a.Value, b.Value, c.Value)),
+            _ => CombineErrors([ErrorOf(first), ErrorOf(second), ErrorOf(third)]),
+        };
+
+    /// <summary>
+    /// Combines a sequence of results into a list of values. Validation errors are merged; otherwise the first error wins.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="results">The results.</param>
+    /// <returns>The combined result.</returns>
+    public static Result<IReadOnlyList<T>> Combine<T>(IEnumerable<Result<T>> results)
         where T : notnull
     {
         ArgumentNullException.ThrowIfNull(results);
 
         List<T> values = [];
-        ValidationError? validation = null;
-        Error? firstError = null;
+        List<Error> errors = [];
 
         foreach (Result<T> result in results)
         {
@@ -65,20 +91,32 @@ public static class Result
                 case Success<T> success:
                     values.Add(success.Value);
                     break;
-                case ValidationError v:
-                    validation = validation is null ? v : validation.Merge(v);
+                case Error error:
+                    errors.Add(error);
                     break;
-                case Error e:
-                    firstError ??= e;
-                    break;
+                case null:
+                    throw ResultGuard.Uninitialized();
             }
         }
 
-        if (firstError is not null)
-        {
-            return Failure<IReadOnlyList<T>>(firstError);
-        }
+        return errors.Count == 0 ? new Success<IReadOnlyList<T>>(values) : CombineErrors(errors);
+    }
 
-        return validation is not null ? Failure<IReadOnlyList<T>>(validation) : Success<IReadOnlyList<T>>(values);
+    private static Error? ErrorOf<T>(Result<T> result)
+        where T : notnull =>
+        result switch
+        {
+            Success<T> => null,
+            Error error => error,
+            null => throw ResultGuard.Uninitialized(),
+        };
+
+    private static Error CombineErrors(IReadOnlyList<Error?> errors)
+    {
+        List<Error> failures = [.. errors.OfType<Error>()];
+
+        return failures.TrueForAll(error => error is ValidationError)
+            ? ValidationError.Merge(failures.Cast<ValidationError>())
+            : failures[0];
     }
 }

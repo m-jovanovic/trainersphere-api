@@ -47,7 +47,7 @@ internal sealed class LoggingCommandDecorator<TCommand, TResponse>(
         Result<TResponse> result = await inner.Handle(command, cancellationToken);
         long elapsed = (long)Stopwatch.GetElapsedTime(start).TotalMilliseconds;
 
-        if (result.TryGetError(out Error? error))
+        if (result.Value is Error error)
         {
             HandlerLog.Failed(logger, typeof(TCommand).FullName ?? typeof(TCommand).Name, error.Code, elapsed);
         }
@@ -72,7 +72,7 @@ internal sealed class LoggingQueryDecorator<TQuery, TResponse>(
         Result<TResponse> result = await inner.Handle(query, cancellationToken);
         long elapsed = (long)Stopwatch.GetElapsedTime(start).TotalMilliseconds;
 
-        if (result.TryGetError(out Error? error))
+        if (result.Value is Error error)
         {
             HandlerLog.Failed(logger, typeof(TQuery).FullName ?? typeof(TQuery).Name, error.Code, elapsed);
         }

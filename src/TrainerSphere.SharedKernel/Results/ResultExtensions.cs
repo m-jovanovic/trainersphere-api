@@ -1,106 +1,58 @@
 namespace TrainerSphere.SharedKernel.Results;
 
 /// <summary>
-/// Railway-oriented combinators for <see cref="Result{T}"/>.
+/// Railway-oriented combinators for <see cref="Result{T}"/>. Every combinator short-circuits on failure:
+/// the delegate for the success track is not invoked once a result is an <see cref="Error"/>.
 /// </summary>
-public static class ResultExtensions
+public static partial class ResultExtensions
 {
-    public static TOut Match<T, TOut>(this Result<T> result, Func<T, TOut> onSuccess, Func<Error, TOut> onFailure)
-        where T : notnull
-    {
-        ArgumentNullException.ThrowIfNull(onSuccess);
-        ArgumentNullException.ThrowIfNull(onFailure);
-
-        return result switch
-        {
-            Success<T> success => onSuccess(success.Value),
-            Error error => onFailure(error),
-        };
-    }
-
-    public static bool TryGetValue<T>(this Result<T> result, [System.Diagnostics.CodeAnalysis.MaybeNullWhen(false)] out T value)
-        where T : notnull
-    {
-        if (result is Success<T> success)
-        {
-            value = success.Value;
-            return true;
-        }
-
-        value = default;
-        return false;
-    }
-
-    public static bool TryGetError<T>(this Result<T> result, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out Error? error)
-        where T : notnull
-    {
-        error = result.Value as Error;
-        return error is not null;
-    }
-
     /// <summary>
-    /// Returns the value or throws; intended for tests and for states proven unreachable.
+    /// Transforms the success value.
     /// </summary>
-    public static T GetValueOrThrow<T>(this Result<T> result)
-        where T : notnull =>
-        result switch
-        {
-            Success<T> success => success.Value,
-            Error error => throw new InvalidOperationException($"Result is a failure: {error.Code}: {error.Message}"),
-        };
-
-    public static Error GetErrorOrThrow<T>(this Result<T> result)
-        where T : notnull =>
-        result switch
-        {
-            Success<T> => throw new InvalidOperationException("Result is a success."),
-            Error error => error,
-        };
-
+    /// <typeparam name="T">The input value type.</typeparam>
+    /// <typeparam name="TOut">The output value type.</typeparam>
+    /// <param name="result">The result.</param>
+    /// <param name="map">The transformation.</param>
+    /// <returns>The transformed result, or the original error.</returns>
     public static Result<TOut> Map<T, TOut>(this Result<T> result, Func<T, TOut> map)
         where T : notnull
-        where TOut : notnull
-    {
-        ArgumentNullException.ThrowIfNull(map);
-
-        return result switch
+        where TOut : notnull =>
+        result switch
         {
-            Success<T> success => Result.Success(map(success.Value)),
-            Error error => Result.Failure<TOut>(error),
+            Success<T> success => new Success<TOut>(map(success.Value)),
+            Error error => error,
+            null => throw ResultGuard.Uninitialized(),
         };
-    }
 
+    /// <summary>
+    /// Continues with an operation that can fail.
+    /// </summary>
+    /// <typeparam name="T">The input value type.</typeparam>
+    /// <typeparam name="TOut">The output value type.</typeparam>
+    /// <param name="result">The result.</param>
+    /// <param name="bind">The next operation.</param>
+    /// <returns>The result of the next operation, or the original error.</returns>
     public static Result<TOut> Bind<T, TOut>(this Result<T> result, Func<T, Result<TOut>> bind)
         where T : notnull
-        where TOut : notnull
-    {
-        ArgumentNullException.ThrowIfNull(bind);
-
-        return result switch
+        where TOut : notnull =>
+        result switch
         {
             Success<T> success => bind(success.Value),
-            Error error => Result.Failure<TOut>(error),
+            Error error => error,
+            null => throw ResultGuard.Uninitialized(),
         };
-    }
 
-    public static Result<T> MapError<T>(this Result<T> result, Func<Error, Error> map)
-        where T : notnull
-    {
-        ArgumentNullException.ThrowIfNull(map);
-
-        return result switch
-        {
-            Success<T> => result,
-            Error error => Result.Failure<T>(map(error)),
-        };
-    }
-
+    /// <summary>
+    /// Runs a side effect with the success value.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="result">The result.</param>
+    /// <param name="action">The side effect.</param>
+    /// <returns>The same result.</returns>
     public static Result<T> Tap<T>(this Result<T> result, Action<T> action)
         where T : notnull
     {
-        ArgumentNullException.ThrowIfNull(action);
-
-        if (result is Success<T> success)
+        if (Unwrap(result) is Success<T> success)
         {
             action(success.Value);
         }
@@ -108,12 +60,46 @@ public static class ResultExtensions
         return result;
     }
 
+    /// <summary>
+    /// Fails with <paramref name="error"/> when the success value does not satisfy <paramref name="predicate"/>.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="result">The result.</param>
+    /// <param name="predicate">The condition.</param>
+    /// <param name="error">The error when the condition is not met.</param>
+    /// <returns>The same result, or <paramref name="error"/>.</returns>
+    // Pattern on Value rather than a union switch: CA1508 misreads union patterns in this shape as always true.
+    public static Result<T> Ensure<T>(this Result<T> result, Func<T, bool> predicate, Error error)
+        where T : notnull =>
+        Unwrap(result) is Success<T> success && !predicate(success.Value) ? error : result;
+
+    /// <summary>
+    /// Transforms the error, for example to replace a generic error with a domain-specific one.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="result">The result.</param>
+    /// <param name="map">The error transformation.</param>
+    /// <returns>The same success, or the transformed error.</returns>
+    public static Result<T> MapError<T>(this Result<T> result, Func<Error, Error> map)
+        where T : notnull =>
+        result switch
+        {
+            Success<T> => result,
+            Error error => map(error),
+            null => throw ResultGuard.Uninitialized(),
+        };
+
+    /// <summary>
+    /// Runs a side effect with the error, for example logging.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="result">The result.</param>
+    /// <param name="action">The side effect.</param>
+    /// <returns>The same result.</returns>
     public static Result<T> TapError<T>(this Result<T> result, Action<Error> action)
         where T : notnull
     {
-        ArgumentNullException.ThrowIfNull(action);
-
-        if (result.Value is Error error)
+        if (Unwrap(result) is Error error)
         {
             action(error);
         }
@@ -121,90 +107,35 @@ public static class ResultExtensions
         return result;
     }
 
-    public static Result<T> Ensure<T>(this Result<T> result, Func<T, bool> predicate, Error error)
-        where T : notnull
-    {
-        ArgumentNullException.ThrowIfNull(predicate);
-
-        return result switch
+    /// <summary>
+    /// Leaves the railway by handling both tracks.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <typeparam name="TOut">The output type.</typeparam>
+    /// <param name="result">The result.</param>
+    /// <param name="onSuccess">The success handler.</param>
+    /// <param name="onFailure">The failure handler.</param>
+    /// <returns>The handler output.</returns>
+    public static TOut Match<T, TOut>(this Result<T> result, Func<T, TOut> onSuccess, Func<Error, TOut> onFailure)
+        where T : notnull =>
+        result switch
         {
-            Success<T> success => predicate(success.Value) ? result : Result.Failure<T>(error),
-            Error => result,
+            Success<T> success => onSuccess(success.Value),
+            Error error => onFailure(error),
+            null => throw ResultGuard.Uninitialized(),
         };
-    }
 
+    /// <summary>
+    /// Discards the success value, for commands whose callers only need to know that they succeeded.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="result">The result.</param>
+    /// <returns>A unit result, or the original error.</returns>
     public static Result<Unit> ToUnit<T>(this Result<T> result)
         where T : notnull =>
         result.Map(static _ => default(Unit));
 
-    public static async Task<Result<TOut>> Map<T, TOut>(this Task<Result<T>> resultTask, Func<T, TOut> map)
-        where T : notnull
-        where TOut : notnull =>
-        (await resultTask).Map(map);
-
-    public static async Task<Result<TOut>> MapAsync<T, TOut>(this Result<T> result, Func<T, Task<TOut>> map)
-        where T : notnull
-        where TOut : notnull
-    {
-        ArgumentNullException.ThrowIfNull(map);
-
-        return result switch
-        {
-            Success<T> success => Result.Success(await map(success.Value)),
-            Error error => Result.Failure<TOut>(error),
-        };
-    }
-
-    public static async Task<Result<TOut>> MapAsync<T, TOut>(this Task<Result<T>> resultTask, Func<T, Task<TOut>> map)
-        where T : notnull
-        where TOut : notnull =>
-        await (await resultTask).MapAsync(map);
-
-    public static async Task<Result<TOut>> Bind<T, TOut>(this Task<Result<T>> resultTask, Func<T, Result<TOut>> bind)
-        where T : notnull
-        where TOut : notnull =>
-        (await resultTask).Bind(bind);
-
-    public static async Task<Result<TOut>> BindAsync<T, TOut>(this Result<T> result, Func<T, Task<Result<TOut>>> bind)
-        where T : notnull
-        where TOut : notnull
-    {
-        ArgumentNullException.ThrowIfNull(bind);
-
-        return result switch
-        {
-            Success<T> success => await bind(success.Value),
-            Error error => Result.Failure<TOut>(error),
-        };
-    }
-
-    public static async Task<Result<TOut>> BindAsync<T, TOut>(this Task<Result<T>> resultTask, Func<T, Task<Result<TOut>>> bind)
-        where T : notnull
-        where TOut : notnull =>
-        await (await resultTask).BindAsync(bind);
-
-    public static async Task<Result<T>> TapAsync<T>(this Result<T> result, Func<T, Task> action)
-        where T : notnull
-    {
-        ArgumentNullException.ThrowIfNull(action);
-
-        if (result is Success<T> success)
-        {
-            await action(success.Value);
-        }
-
-        return result;
-    }
-
-    public static async Task<Result<T>> TapAsync<T>(this Task<Result<T>> resultTask, Func<T, Task> action)
+    private static object Unwrap<T>(Result<T> result)
         where T : notnull =>
-        await (await resultTask).TapAsync(action);
-
-    public static async Task<Result<T>> Ensure<T>(this Task<Result<T>> resultTask, Func<T, bool> predicate, Error error)
-        where T : notnull =>
-        (await resultTask).Ensure(predicate, error);
-
-    public static async Task<TOut> Match<T, TOut>(this Task<Result<T>> resultTask, Func<T, TOut> onSuccess, Func<Error, TOut> onFailure)
-        where T : notnull =>
-        (await resultTask).Match(onSuccess, onFailure);
+        result.Value ?? throw ResultGuard.Uninitialized();
 }

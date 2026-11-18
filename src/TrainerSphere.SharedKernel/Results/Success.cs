@@ -8,5 +8,8 @@ namespace TrainerSphere.SharedKernel.Results;
 public sealed record Success<T>(T Value)
     where T : notnull
 {
+    /// <summary>
+    /// Gets the success value. Never null, even when <typeparamref name="T"/> is instantiated with a nullable reference type.
+    /// </summary>
     public T Value { get; } = Value ?? throw new ArgumentNullException(nameof(Value));
 }

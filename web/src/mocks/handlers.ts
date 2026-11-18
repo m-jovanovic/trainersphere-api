@@ -152,7 +152,7 @@ async function body<B>(request: Request, { optional = false } = {}): Promise<B> 
   const text = await request.text();
   if (!text.trim()) {
     if (optional) return {} as B;
-    throw new BindingFailure({ $: ['A non-empty request body is required.'] });
+    throw new BindingFailure({ $: ['A request body is required.'] });
   }
   let value: unknown;
   try {
@@ -170,12 +170,13 @@ function requireMembers(b: object, required: readonly string[], nullable: readon
   const rec = b as Record<string, unknown>;
   for (const name of required) {
     const v = rec[name];
-    if (v === undefined || (v === null && !nullable.includes(name))) errors[prefix + name] = ['Required.'];
+    if (v === undefined || (v === null && !nullable.includes(name))) errors[prefix + name] = ['This field is required.'];
   }
   if (Object.keys(errors).length) throw new BindingFailure(errors);
 }
 
 const mustBeOneOf = (allowed: readonly string[]) => [`Must be one of: ${allowed.join(', ')}.`];
+const GOAL_MAX = { reps: 100, time: 7200, distance: 100_000 } as const;
 
 /** Enum values bind by exact kebab-case match only. */
 function checkEnum(value: unknown, allowed: readonly string[], key: string, errors: Record<string, string[]>) {
@@ -209,12 +210,12 @@ function isTimeZone(tz: unknown): boolean {
 }
 
 function checkPassword(password: unknown, field: string, errors: Record<string, string[]>) {
-  if (typeof password !== 'string' || password.length < 8) errors[field] = ['Password must be at least 8 characters long.'];
-  else if (password.length > 128) errors[field] = ['Password must be at most 128 characters long.'];
+  if (typeof password !== 'string' || password.length === 0) errors[field] = ['Must not be empty.'];
+  else if (password.length < 8 || password.length > 128) errors[field] = ['Must be between 8 and 128 characters.'];
 }
 
 function checkName(value: unknown, field: string, errors: Record<string, string[]>) {
-  if (typeof value !== 'string' || value.trim().length === 0) errors[field] = ['Required.'];
+  if (typeof value !== 'string' || value.trim().length === 0) errors[field] = ['Must not be empty.'];
   else if (value.length > 100) errors[field] = ['Must be at most 100 characters.'];
 }
 
@@ -270,19 +271,19 @@ function visibleExercises(user: DbUser) {
 function validateExercise(b: Partial<T.UpsertExerciseRequest>) {
   const errors: Record<string, string[]> = {};
   checkName(b.name, 'name', errors);
-  if (!b.category) errors.category = ['Required.'];
-  if (!b.movementPattern) errors.movementPattern = ['Required.'];
-  if (!b.primaryMuscles?.length) errors.primaryMuscles = ['Pick at least one primary muscle.'];
+  if (!b.category) errors.category = ['Must not be empty.'];
+  if (!b.movementPattern) errors.movementPattern = ['Must not be empty.'];
+  if (!b.primaryMuscles?.length) errors.primaryMuscles = ['At least one primary muscle is required.'];
   if (b.cue && b.cue.length > 1000) errors.cue = ['Must be at most 1000 characters.'];
   const t = seedTaxonomy;
-  if (b.category && !t.categories.includes(b.category)) errors.category = [`'${b.category}' is not a known category.`];
-  if (b.movementPattern && !t.movementPatterns.includes(b.movementPattern)) errors.movementPattern = [`'${b.movementPattern}' is not a known movement pattern.`];
+  if (b.category && !t.categories.includes(b.category)) errors.category = mustBeOneOf(t.categories);
+  if (b.movementPattern && !t.movementPatterns.includes(b.movementPattern)) errors.movementPattern = mustBeOneOf(t.movementPatterns);
   for (const field of ['primaryMuscles', 'secondaryMuscles'] as const) {
     const bad = (b[field] ?? []).find((m) => !t.muscles.includes(m));
-    if (bad) errors[field] = [`'${bad}' is not a known muscle.`];
+    if (bad) errors[field] = mustBeOneOf(t.muscles);
   }
   const badEquipment = (b.equipment ?? []).find((x) => !t.equipment.includes(x));
-  if (badEquipment) errors.equipment = [`'${badEquipment}' is not known equipment.`];
+  if (badEquipment) errors.equipment = mustBeOneOf(t.equipment);
   return errors;
 }
 
@@ -290,15 +291,14 @@ function validateWorkout(b: Partial<T.UpsertWorkoutRequest>) {
   const errors: Record<string, string[]> = {};
   checkName(b.name, 'name', errors);
   const list = b.exercises ?? [];
-  if (list.length < 1) errors.exercises = ['Add at least one exercise.'];
-  if (list.length > 30) errors.exercises = ['At most 30 exercises.'];
+  if (list.length < 1 || list.length > 30) errors.exercises = ['A workout needs 1 to 30 exercises.'];
   list.forEach((e, i) => {
     checkEnum(e.goal?.type, ['reps', 'time', 'distance'], `exercises[${i}].goal.type`, errors);
     checkEnum(e.load?.type, ['none', 'bodyweight', 'weight', 'percent-1rm', 'rpe'], `exercises[${i}].load.type`, errors);
-    if (!(e.sets >= 1 && e.sets <= 20)) errors[`exercises[${i}].sets`] = ['Sets must be between 1 and 20.'];
-    if (e.goal && e.goal.max < e.goal.min) errors[`exercises[${i}].goal.max`] = ['Max must be greater than or equal to min.'];
-    if (!(e.restSeconds >= 0 && e.restSeconds <= 1800)) errors[`exercises[${i}].restSeconds`] = ['Rest must be between 0 and 1800 seconds.'];
-    if (e.tempo && !/^[0-9X]-[0-9X]-[0-9X]-[0-9X]$/.test(e.tempo)) errors[`exercises[${i}].tempo`] = ['Tempo must look like 3-1-X-0.'];
+    if (!(e.sets >= 1 && e.sets <= 20)) errors[`exercises[${i}].sets`] = ['Must be between 1 and 20.'];
+    if (e.goal && e.goal.max < e.goal.min) errors[`exercises[${i}].goal.max`] = [`Must be between 'min' and ${GOAL_MAX[e.goal.type]}.`];
+    if (!(e.restSeconds >= 0 && e.restSeconds <= 1800)) errors[`exercises[${i}].restSeconds`] = ['Must be between 0 and 1800.'];
+    if (e.tempo && !/^[0-9X]-[0-9X]-[0-9X]-[0-9X]$/.test(e.tempo)) errors[`exercises[${i}].tempo`] = ['Must look like 3-1-X-0 (four digits or X separated by dashes).'];
   });
   return errors;
 }
@@ -380,7 +380,7 @@ export const handlers = [
     const b = await body<T.SignUpRequest>(request);
     const errors: Record<string, string[]> = {};
     const email = (b.email ?? '').trim().toLowerCase();
-    if (!EMAIL.test(email)) errors.email = ['Email is not a valid email address.'];
+    if (!EMAIL.test(email)) errors.email = ['Must be a valid email address.'];
     checkPassword(b.password, 'password', errors);
     checkName(b.firstName, 'firstName', errors);
     checkName(b.lastName, 'lastName', errors);
@@ -430,7 +430,7 @@ export const handlers = [
     checkName(b.firstName, 'firstName', errors);
     checkName(b.lastName, 'lastName', errors);
     checkEnum(b.units, ['kg', 'lb'], 'units', errors);
-    if (!isTimeZone(b.timeZone)) errors.timeZone = [`'${b.timeZone}' is not a known IANA time zone.`];
+    if (!isTimeZone(b.timeZone)) errors.timeZone = ['Must be a known IANA time zone, for example Europe/Belgrade.'];
     if (Object.keys(errors).length) return validation(errors);
     Object.assign(user, { firstName: b.firstName.trim(), lastName: b.lastName.trim(), units: b.units, timeZone: b.timeZone });
     return HttpResponse.json(publicUser(user));
@@ -439,7 +439,7 @@ export const handlers = [
   http.post(`${API}/auth/change-password`, authed('any', async ({ request, user }) => {
     const b = await body<T.ChangePasswordRequest>(request);
     const errors: Record<string, string[]> = {};
-    if (b.currentPassword !== user.password) errors.currentPassword = ['Current password is incorrect.'];
+    if (b.currentPassword !== user.password) errors.currentPassword = ['The current password is incorrect.'];
     checkPassword(b.newPassword, 'newPassword', errors);
     if (Object.keys(errors).length) return validation(errors);
     user.password = b.newPassword;
@@ -459,7 +459,7 @@ export const handlers = [
     checkPassword(b.newPassword, 'newPassword', errors);
     const userId = db.state.resetTokens[b.token];
     const user = db.state.users.find((u) => u.id === userId);
-    if (!user) errors.token = ['This reset link is invalid, already used or expired.'];
+    if (!user) errors.token = ['The reset link is invalid or has expired.'];
     if (Object.keys(errors).length || !user) return validation(errors);
     user.password = b.newPassword;
     delete db.state.resetTokens[b.token];
@@ -532,10 +532,10 @@ export const handlers = [
     const b = await body<T.InviteClientRequest>(request);
     const errors: Record<string, string[]> = {};
     const email = (b.email ?? '').trim().toLowerCase();
-    if (!EMAIL.test(email)) errors.email = ['Email is not a valid email address.'];
+    if (!EMAIL.test(email)) errors.email = ['Must be a valid email address.'];
     checkName(b.firstName, 'firstName', errors);
     checkName(b.lastName, 'lastName', errors);
-    if (b.message && b.message.length > 500) errors.message = ['Message must be at most 500 characters.'];
+    if (b.message && b.message.length > 500) errors.message = ['Must be at most 500 characters.'];
     if (Object.keys(errors).length) return validation(errors);
     if (db.state.users.some((u) => u.email === email)) return problem(409, 'User.EmailInUse', `'${email}' already has an account.`);
     if (db.state.invitations.some((i) => i.trainerId === user.id && i.email === email && toInvitation(i).status === 'pending'))
@@ -731,7 +731,7 @@ export const handlers = [
       if (method === 'put') requireMembers(b, ['name', 'weeks', 'slots']);
       const errors: Record<string, string[]> = {};
       checkName(b.name, 'name', errors);
-      if (!(b.weeks >= 1 && b.weeks <= 52)) errors.weeks = ['Weeks must be between 1 and 52.'];
+      if (!(b.weeks >= 1 && b.weeks <= 52)) errors.weeks = ['Must be between 1 and 52.'];
       if (Object.keys(errors).length) return validation(errors);
       const current = method === 'put' ? db.state.programs.find((x) => x.id === param(ctx, 'id') && x.trainerId === ctx.user.id) : undefined;
       if (method === 'put' && !current) return notFound('Program');
@@ -776,8 +776,8 @@ export const handlers = [
     if (!p) return notFound('Program');
     const b = await body<T.AssignProgramRequest>(ctx.request);
     const errors: Record<string, string[]> = {};
-    if (!b.clientIds?.length) errors.clientIds = ['Pick at least one client.'];
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(b.startDate ?? '')) errors.startDate = ['Start date is required.'];
+    if (!b.clientIds?.length || b.clientIds.length > 50) errors.clientIds = ['Choose 1 to 50 clients.'];
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(b.startDate ?? '')) errors.startDate = ['This field is required.'];
     if (Object.keys(errors).length) return validation(errors);
     const out: T.ProgramAssignment[] = [];
     for (const clientId of b.clientIds) {
@@ -865,7 +865,7 @@ export const handlers = [
     if (c.status === 'archived') return problem(422, 'Client.Archived', 'Archived clients cannot get new assignments.');
     const w = db.state.workouts.find((x) => x.id === b.workoutId && x.trainerId === user.id);
     if (!w) return notFound('Workout');
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(b.date)) return validation({ date: ['Date is required.'] });
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(b.date)) return validation({ date: ['This field is required.'] });
     const a: DbAssignment = {
       id: newId(),
       clientId: c.id,
@@ -889,7 +889,7 @@ export const handlers = [
     if (a.status !== 'scheduled') return notScheduled(a);
     const b = await body<T.UpdateAssignmentRequest>(ctx.request);
     requireMembers(b, ['date', 'notes'], ['notes']);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(b.date)) return validation({ date: ['Date must be a calendar date (yyyy-MM-dd).'] });
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(b.date)) return validation({ date: ['This field is required.'] });
     a.date = b.date;
     a.notes = b.notes;
     return HttpResponse.json(toAssignment(a));
@@ -927,7 +927,7 @@ export const handlers = [
       if (assignment.sessionId)
         return problem(409, 'Session.AlreadyStartedForAssignment', 'A session was already started for this assignment.', undefined, { sessionId: assignment.sessionId });
     } else if (!b.workoutName?.trim()) {
-      return validation({ workoutName: ['Name the workout or start it from an assignment.'] });
+      return validation({ workoutName: ["Either 'assignmentId' or 'workoutName' is required."] });
     }
     const s: DbSession = {
       id: b.id ?? newId(),
@@ -971,7 +971,7 @@ export const handlers = [
     if (!s) return notFound('Session');
     const b = await body<{ workoutName: string; notes: string | null }>(ctx.request);
     requireMembers(b, ['workoutName', 'notes'], ['notes']);
-    if (typeof b.workoutName !== 'string' || !b.workoutName.trim()) return validation({ workoutName: ['Required.'] });
+    if (typeof b.workoutName !== 'string' || !b.workoutName.trim()) return validation({ workoutName: ['Must not be empty.'] });
     if (b.notes !== null && typeof b.notes !== 'string') return validation({ notes: ['Must be a string or null.'] });
     s.workoutName = b.workoutName.trim();
     s.notes = b.notes;
@@ -997,10 +997,10 @@ export const handlers = [
       notes: raw.notes ?? null,
     };
     const errors: Record<string, string[]> = {};
-    if (!(b.setNumber >= 1 && b.setNumber <= 50)) errors.setNumber = ['Set number must be between 1 and 50.'];
-    if (b.weightKg !== null && !(b.weightKg >= 0 && b.weightKg <= 1000)) errors.weightKg = ['Weight must be between 0 and 1000 kg.'];
-    if (b.reps !== null && !(b.reps >= 0 && b.reps <= 1000)) errors.reps = ['Reps must be between 0 and 1000.'];
-    if (b.rpe !== null && !(b.rpe >= 1 && b.rpe <= 10)) errors.rpe = ['RPE must be between 1 and 10.'];
+    if (!(b.setNumber >= 1 && b.setNumber <= 50)) errors.setNumber = ['Must be between 1 and 50.'];
+    if (b.weightKg !== null && !(b.weightKg >= 0 && b.weightKg <= 1000)) errors.weightKg = ['Must be between 0 and 1000 with at most 2 decimals.'];
+    if (b.reps !== null && !(b.reps >= 0 && b.reps <= 1000)) errors.reps = ['Must be between 0 and 1000.'];
+    if (b.rpe !== null && !(b.rpe >= 1 && b.rpe <= 10)) errors.rpe = ['Must be between 1 and 10 in steps of 0.5.'];
     if (Object.keys(errors).length) return validation(errors);
     const setId = param(ctx, 'setId');
     if (db.state.sessions.some((x) => x.id !== s.id && x.sets.some((y) => y.id === setId)))
@@ -1205,15 +1205,15 @@ export const handlers = [
     const all = ['weightKg', 'bodyFatPercent', 'waistCm', 'chestCm', 'hipsCm', 'armCm', 'thighCm', 'restingHeartRate', 'notes'];
     requireMembers(b, all, all);
     const errors: Record<string, string[]> = {};
-    if (date > todayIso()) errors.date = ['Date cannot be in the future.'];
+    if (date > todayIso()) errors.date = ['Measurements cannot be recorded for a future date.'];
     const measures = ['weightKg', 'bodyFatPercent', 'waistCm', 'chestCm', 'hipsCm', 'armCm', 'thighCm', 'restingHeartRate'] as const;
     if (!measures.some((k) => b[k] !== null && b[k] !== undefined)) errors.weightKg = ['Enter at least one measurement.'];
-    if (b.weightKg != null && (b.weightKg < 20 || b.weightKg > 400)) errors.weightKg = ['Weight must be between 20 and 400 kg.'];
-    if (b.bodyFatPercent != null && (b.bodyFatPercent < 2 || b.bodyFatPercent > 75)) errors.bodyFatPercent = ['Body fat must be between 2 and 75%.'];
-    if (b.restingHeartRate != null && (b.restingHeartRate < 25 || b.restingHeartRate > 250)) errors.restingHeartRate = ['Resting heart rate must be between 25 and 250.'];
+    if (b.weightKg != null && (b.weightKg < 20 || b.weightKg > 400)) errors.weightKg = ['Must be between 20 and 400 with at most 2 decimals.'];
+    if (b.bodyFatPercent != null && (b.bodyFatPercent < 2 || b.bodyFatPercent > 75)) errors.bodyFatPercent = ['Must be between 2 and 75 with at most 1 decimals.'];
+    if (b.restingHeartRate != null && (b.restingHeartRate < 25 || b.restingHeartRate > 250)) errors.restingHeartRate = ['Must be between 25 and 250.'];
     for (const k of ['waistCm', 'chestCm', 'hipsCm', 'armCm', 'thighCm'] as const) {
       const v = b[k];
-      if (v != null && (v < 10 || v > 300)) errors[k] = ['Must be between 10 and 300 cm.'];
+      if (v != null && (v < 10 || v > 300)) errors[k] = ['Must be between 10 and 300 with at most 1 decimals.'];
     }
     if (Object.keys(errors).length) return validation(errors);
     const metric: T.BodyMetric = {

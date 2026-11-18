@@ -61,7 +61,7 @@ describe('auth journeys', () => {
     server.use(
       http.post('/api/auth/signup', () =>
         HttpResponse.json(
-          { status: 400, title: 'Bad Request', detail: 'The request is invalid.', code: 'Validation', errors: { timeZone: ["'Mars/Olympus Mons' is not a known time zone."] } },
+          { status: 400, title: 'Bad Request', detail: 'The request is invalid.', code: 'Validation', errors: { timeZone: ['Must be a known IANA time zone, for example Europe/Belgrade.'] } },
           { status: 400 },
         ),
       ),
@@ -73,7 +73,7 @@ describe('auth journeys', () => {
     await user.type(screen.getByLabelText('Email'), 'nina@example.com');
     await user.type(screen.getByLabelText('Password'), 'long-enough-1');
     await user.click(screen.getByRole('button', { name: 'Create account' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent("Time zone: 'Mars/Olympus Mons' is not a known time zone.");
+    expect(await screen.findByRole('alert')).toHaveTextContent('Time zone: Must be a known IANA time zone, for example Europe/Belgrade.');
   });
 
   it('ignores open redirects', async () => {
@@ -197,7 +197,7 @@ describe('auth journeys', () => {
     await bad.user.type(screen.getByLabelText('New password'), 'brand-new-pass');
     await bad.user.type(screen.getByLabelText('Confirm password'), 'brand-new-pass');
     await bad.user.click(screen.getByRole('button', { name: 'Update password' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('This reset link is invalid, already used or expired.');
+    expect(await screen.findByRole('alert')).toHaveTextContent('The reset link is invalid or has expired.');
     bad.unmount();
 
     const good = renderApp('/reset-password?token=good-token');

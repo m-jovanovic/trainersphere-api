@@ -22,13 +22,21 @@ describe('applyProblem', () => {
 
   it('shows keys the form does not know as form-level messages with their path', () => {
     const seen: [string, string][] = [];
-    const r = applyProblem(validation({ firstName: ['Required.'], timeZone: ["'Mars/Olympus Mons' is not a known time zone."] }), {
+    const r = applyProblem(validation({ firstName: ['Must not be empty.'], timeZone: ['Must be a known IANA time zone, for example Europe/Belgrade.'] }), {
       isField: oneOf(['firstName', 'lastName']),
       setFieldError: (p, m) => seen.push([p, m]),
     });
-    expect(seen).toEqual([['firstName', 'Required.']]);
+    expect(seen).toEqual([['firstName', 'Must not be empty.']]);
     expect(r.fields).toEqual(['firstName']);
-    expect(r.formError).toBe("Time zone: 'Mars/Olympus Mons' is not a known time zone.");
+    expect(r.formError).toBe('Time zone: Must be a known IANA time zone, for example Europe/Belgrade.');
+  });
+
+  it('names the field for every field-free message (contract v1.8) that lands in the banner', () => {
+    const r = applyProblem(
+      validation({ to: ["Must not be before 'from'."], 'exercises[1].goal.max': ["Must be between 'min' and 100."], units: ['Must be one of: kg, lb.'], $: ['A request body is required.'] }),
+      { isField: () => false, setFieldError: () => undefined },
+    );
+    expect(r.formError).toBe("To: Must not be before 'from'. Exercise 2 goal max: Must be between 'min' and 100. Units: Must be one of: kg, lb. A request body is required.");
   });
 
   it('converts JSON paths and applies mapPath before matching', () => {

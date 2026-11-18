@@ -72,8 +72,8 @@ describe('settings', () => {
     await user.type(screen.getByLabelText('Confirm new password'), 'NewPass123!');
     await user.click(screen.getByRole('button', { name: 'Change password' }));
 
-    expect(await screen.findByText('Current password is incorrect.')).toBeInTheDocument();
-    expect(screen.getByLabelText('Current password')).toHaveAccessibleDescription('Current password is incorrect.');
+    expect(await screen.findByText('The current password is incorrect.')).toBeInTheDocument();
+    expect(screen.getByLabelText('Current password')).toHaveAccessibleDescription('The current password is incorrect.');
   });
 
   it('changes the password and accepts the new password at login', async () => {

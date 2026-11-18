@@ -78,4 +78,18 @@ describe('client progress', () => {
 
     expect(await dialog.findByRole('alert')).toHaveTextContent('This measurement could not be saved.');
   });
+  it('explains a missing estimated 1RM when only high-rep weighted sets were logged', async () => {
+    const point = { sessionId: 's1', estimatedOneRepMaxKg: null, topSetWeightKg: 22.5, topSetReps: 15, volumeKg: 1575, totalReps: 45, completedSets: 3 };
+    server.use(
+      http.get('/api/clients/:id/progress/exercises/:exerciseId', () =>
+        HttpResponse.json({ exercise: null, points: [{ ...point, date: '2026-11-10' }, { ...point, date: '2026-11-13' }] }),
+      ),
+    );
+    const { user } = await openProgress();
+
+    expect(await screen.findByText(/No estimated 1RM yet: it counts sets of 1 to 12 reps\./)).toBeInTheDocument();
+    await user.click(screen.getByRole('radio', { name: 'Top set' }));
+    expect(await screen.findByRole('table', { name: /^Top set for / })).toBeInTheDocument();
+    expect(screen.getAllByText('22.5 kg').length).toBeGreaterThan(0);
+  });
 });

@@ -43,6 +43,44 @@ internal static class TrainingRules
             ? null
             : "%" + search.Trim().Replace("\\", "\\\\", StringComparison.Ordinal).Replace("%", "\\%", StringComparison.Ordinal).Replace("_", "\\_", StringComparison.Ordinal) + "%";
 
+    /// <summary>
+    /// Npgsql only writes UTC timestamps; JSON times with an offset arrive as local and without one as unspecified.
+    /// </summary>
+    public static DateTime AsUtc(this DateTime value) =>
+        value.Kind switch
+        {
+            DateTimeKind.Utc => value,
+            DateTimeKind.Local => value.ToUniversalTime(),
+            _ => DateTime.SpecifyKind(value, DateTimeKind.Utc),
+        };
+
+    /// <summary>
+    /// Resolves the client filter of a list: a client always sees only themself; a trainer sees all their clients
+    /// or narrows to one of them. Any other client is not found.
+    /// </summary>
+    public static async Task<Result<ListScope>> ScopeAsync(this IClientRepository clients, Viewer viewer, Guid? clientId, CancellationToken cancellationToken)
+    {
+        if (viewer.IsClient)
+        {
+            return clientId is null || clientId == viewer.UserId ? new ListScope(null, viewer.UserId) : ClientErrors.NotFound(clientId.Value);
+        }
+
+        if (clientId is not { } id)
+        {
+            return new ListScope(viewer.UserId, null);
+        }
+
+        return await clients.GetAccessibleAsync(viewer, id, cancellationToken).Map(client => new ListScope(viewer.UserId, client.Id));
+    }
+
+    /// <summary>
+    /// Gets the viewer's time zone: the trainer's or the client's own.
+    /// </summary>
+    public static async Task<string?> TimeZoneOfAsync(this IClientRepository clients, Viewer viewer, CancellationToken cancellationToken) =>
+        viewer.IsTrainer
+            ? await clients.GetTrainerTimeZoneAsync(viewer.UserId, cancellationToken)
+            : (await clients.GetAsync(viewer.UserId, cancellationToken))?.TimeZone;
+
     public static async Task<IReadOnlyDictionary<Guid, ExerciseSummary>> GetSummariesAsync(this IExerciseRepository exercises, IEnumerable<Guid> ids, CancellationToken cancellationToken)
     {
         Guid[] distinct = [.. ids.Distinct()];
@@ -64,6 +102,11 @@ internal static class TrainingRules
             .ToResult(ClientErrors.NotFound(clientId))
             .Ensure(client => client.IsAccessibleBy(viewer), ClientErrors.NotFound(clientId));
 }
+
+/// <summary>
+/// The rows a list may return: those of a trainer, of a client, or both when both are set.
+/// </summary>
+internal sealed record ListScope(Guid? TrainerId, Guid? ClientId);
 
 internal abstract class PagedQueryValidator<T> : AbstractValidator<T>
     where T : IPagedQuery

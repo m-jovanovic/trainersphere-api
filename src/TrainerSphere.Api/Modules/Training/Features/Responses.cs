@@ -2,7 +2,10 @@ using TrainerSphere.Api.Modules.Training.Domain;
 
 namespace TrainerSphere.Api.Modules.Training.Features;
 
-internal sealed record ClientRef(Guid Id, string FirstName, string LastName);
+internal sealed record ClientRef(Guid Id, string FirstName, string LastName)
+{
+    public static ClientRef From(ClientProfile client) => new(client.Id, client.FirstName, client.LastName);
+}
 
 internal sealed record ExerciseResponse(
     Guid Id,
@@ -112,7 +115,24 @@ internal sealed record AssignmentResponse(
     string? Notes,
     Guid? SessionId,
     DateTime? CompletedAt,
-    DateTime CreatedAt);
+    DateTime CreatedAt)
+{
+    public static AssignmentResponse From(Assignment assignment, ClientProfile client, DateOnly clientToday) =>
+        new(
+            assignment.Id,
+            assignment.ClientId,
+            ClientRef.From(client),
+            assignment.Date,
+            assignment.StatusOn(clientToday),
+            assignment.WorkoutId,
+            assignment.Workout,
+            assignment.ProgramAssignmentId,
+            assignment.ProgramName,
+            assignment.Notes,
+            assignment.SessionId,
+            assignment.CompletedAt,
+            assignment.CreatedAt);
+}
 
 internal sealed record PrescriptionResponse(int Sets, Goal Goal, Load Load, int RestSeconds, string? Tempo, string? SupersetGroup, string? Notes)
 {
@@ -161,7 +181,11 @@ internal sealed record PersonalRecordResponse(
     decimal? WeightKg,
     int? Reps,
     Guid SessionId,
-    DateTime AchievedAt);
+    DateTime AchievedAt)
+{
+    public static PersonalRecordResponse From(PersonalRecord record, ExerciseSummary exercise) =>
+        new(record.Id, record.ClientId, record.ExerciseId, exercise, record.Type, record.Value, record.PreviousValue, record.WeightKg, record.Reps, record.SessionId, record.AchievedAt);
+}
 
 internal sealed record ClientPersonalRecordResponse(
     Guid Id,

@@ -133,6 +133,8 @@ internal sealed class Session
         return new Session(state);
     }
 
+    public bool IsAccessibleBy(Viewer viewer) => viewer.IsTrainer ? TrainerId == viewer.UserId : ClientId == viewer.UserId;
+
     public SessionState ToState() =>
         new(Id, ClientId, TrainerId, AssignmentId, WorkoutName, Status, StartedAt, CompletedAt, Notes, Prescription, CreatedAt, UpdatedAt);
 

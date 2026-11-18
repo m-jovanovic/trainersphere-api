@@ -5,7 +5,15 @@ namespace TrainerSphere.Api.Modules.Training.Data;
 
 internal interface IAssignmentRepository
 {
-    Task<Assignment?> GetAsync(Guid id, CancellationToken cancellationToken);
+    /// <summary>
+    /// Gets the assignment; with <paramref name="forUpdate"/> the row is locked until the transaction ends.
+    /// </summary>
+    Task<Assignment?> GetAsync(Guid id, bool forUpdate, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Lists assignments dated from <paramref name="from"/> to <paramref name="to"/> (inclusive) of a trainer, a client, or both, by date.
+    /// </summary>
+    Task<IReadOnlyList<Assignment>> ListAsync(Guid? trainerId, Guid? clientId, DateOnly from, DateOnly to, CancellationToken cancellationToken);
 
     Task AddAsync(Assignment assignment, CancellationToken cancellationToken);
 
@@ -52,6 +60,13 @@ internal interface ISessionRepository
     Task<IReadOnlyList<LoggedSet>> GetHistoryAsync(Guid clientId, IReadOnlyCollection<Guid> exerciseIds, Guid exceptSessionId, CancellationToken cancellationToken);
 
     Task AddPersonalRecordsAsync(IReadOnlyCollection<PersonalRecord> records, CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<PersonalRecord>> GetPersonalRecordsAsync(Guid sessionId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Gets, per exercise, the completed sets of the client's most recent other completed session that logged it.
+    /// </summary>
+    Task<IReadOnlyList<PerformedSet>> GetLastPerformanceAsync(Guid clientId, Guid exceptSessionId, IReadOnlyCollection<Guid> exerciseIds, CancellationToken cancellationToken);
 }
 
 internal interface IBodyMetricRepository
@@ -61,19 +76,36 @@ internal interface IBodyMetricRepository
     Task DeleteAsync(Guid clientId, DateOnly date, CancellationToken cancellationToken);
 }
 
+internal sealed record PerformedSet(Guid ExerciseId, Guid SessionId, DateTime StartedAt, int SetNumber, decimal? WeightKg, int? Reps, decimal? Rpe);
+
 internal sealed class AssignmentRepository(IDbSession db) : IAssignmentRepository
 {
     public const string Columns =
         "id, client_id, trainer_id, date, status, workout_id, workout::text AS workout, program_assignment_id, program_name, notes, session_id, completed_at, skipped_at, skip_reason, created_at, updated_at";
 
-    public async Task<Assignment?> GetAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<Assignment?> GetAsync(Guid id, bool forUpdate, CancellationToken cancellationToken)
     {
         AssignmentRow? row = await db.QuerySingleOrDefaultAsync<AssignmentRow>(
-            $"SELECT {Columns} FROM training.assignments WHERE id = @Id",
+            $"SELECT {Columns} FROM training.assignments WHERE id = @Id{(forUpdate ? " FOR UPDATE" : string.Empty)}",
             new { Id = id },
             cancellationToken);
 
         return row is null ? null : Assignment.Restore(row.ToState());
+    }
+
+    public async Task<IReadOnlyList<Assignment>> ListAsync(Guid? trainerId, Guid? clientId, DateOnly from, DateOnly to, CancellationToken cancellationToken)
+    {
+        IReadOnlyList<AssignmentRow> rows = await db.QueryAsync<AssignmentRow>(
+            $"""
+            SELECT {Columns} FROM training.assignments
+            WHERE (@TrainerId::uuid IS NULL OR trainer_id = @TrainerId::uuid) AND (@ClientId::uuid IS NULL OR client_id = @ClientId::uuid)
+              AND date BETWEEN @From AND @To
+            ORDER BY date, created_at, id
+            """,
+            new { TrainerId = trainerId, ClientId = clientId, From = from, To = to },
+            cancellationToken);
+
+        return [.. rows.Select(r => Assignment.Restore(r.ToState()))];
     }
 
     public Task AddAsync(Assignment assignment, CancellationToken cancellationToken) =>
@@ -191,6 +223,9 @@ internal sealed class SessionRepository(IDbSession db) : ISessionRepository
 {
     public const string Columns =
         "id, client_id, trainer_id, assignment_id, workout_name, status, started_at, completed_at, notes, prescription::text AS prescription, created_at, updated_at";
+
+    public const string PersonalRecordColumns =
+        "id, client_id, trainer_id, exercise_id, type, value, previous_value, weight_kg, reps, session_id, achieved_at";
 
     public const string SetColumns =
         "id, session_id, exercise_id, position, set_number, weight_kg, reps, duration_seconds, distance_meters, rpe, completed, notes, updated_at";
@@ -315,6 +350,87 @@ internal sealed class SessionRepository(IDbSession db) : ISessionRepository
             }).ToList(),
             cancellationToken);
     }
+
+    public async Task<IReadOnlyList<PersonalRecord>> GetPersonalRecordsAsync(Guid sessionId, CancellationToken cancellationToken)
+    {
+        IReadOnlyList<PersonalRecordRow> rows = await db.QueryAsync<PersonalRecordRow>(
+            $"SELECT {PersonalRecordColumns} FROM training.personal_records WHERE session_id = @SessionId ORDER BY exercise_id, type",
+            new { SessionId = sessionId },
+            cancellationToken);
+
+        return [.. rows.Select(r => r.ToDomain())];
+    }
+
+    public async Task<IReadOnlyList<PerformedSet>> GetLastPerformanceAsync(Guid clientId, Guid exceptSessionId, IReadOnlyCollection<Guid> exerciseIds, CancellationToken cancellationToken)
+    {
+        if (exerciseIds.Count == 0)
+        {
+            return [];
+        }
+
+        IReadOnlyList<PerformedSetRow> rows = await db.QueryAsync<PerformedSetRow>(
+            """
+            WITH latest AS (
+                SELECT DISTINCT ON (ss.exercise_id) ss.exercise_id, s.id AS session_id, s.started_at
+                FROM training.session_sets ss
+                JOIN training.sessions s ON s.id = ss.session_id
+                WHERE s.client_id = @ClientId AND s.status = 'Completed' AND s.id <> @ExceptSessionId AND ss.completed AND ss.exercise_id = ANY(@ExerciseIds)
+                ORDER BY ss.exercise_id, s.completed_at DESC, s.id DESC)
+            SELECT l.exercise_id, l.session_id, l.started_at, ss.set_number, ss.weight_kg, ss.reps, ss.rpe
+            FROM latest l
+            JOIN training.session_sets ss ON ss.session_id = l.session_id AND ss.exercise_id = l.exercise_id AND ss.completed
+            ORDER BY l.exercise_id, ss.set_number, ss.position
+            """,
+            new { ClientId = clientId, ExceptSessionId = exceptSessionId, ExerciseIds = exerciseIds.Distinct().ToArray() },
+            cancellationToken);
+
+        return [.. rows.Select(r => new PerformedSet(r.ExerciseId, r.SessionId, r.StartedAt, r.SetNumber, r.WeightKg, r.Reps, r.Rpe))];
+    }
+}
+
+internal sealed record PersonalRecordRow
+{
+    public Guid Id { get; init; }
+
+    public Guid ClientId { get; init; }
+
+    public Guid TrainerId { get; init; }
+
+    public Guid ExerciseId { get; init; }
+
+    public string Type { get; init; } = string.Empty;
+
+    public decimal Value { get; init; }
+
+    public decimal PreviousValue { get; init; }
+
+    public decimal? WeightKg { get; init; }
+
+    public int? Reps { get; init; }
+
+    public Guid SessionId { get; init; }
+
+    public DateTime AchievedAt { get; init; }
+
+    public PersonalRecord ToDomain() =>
+        new(Id, ClientId, TrainerId, ExerciseId, Enum.Parse<PersonalRecordType>(Type), Value, PreviousValue, WeightKg, Reps, SessionId, AchievedAt);
+}
+
+internal sealed record PerformedSetRow
+{
+    public Guid ExerciseId { get; init; }
+
+    public Guid SessionId { get; init; }
+
+    public DateTime StartedAt { get; init; }
+
+    public int SetNumber { get; init; }
+
+    public decimal? WeightKg { get; init; }
+
+    public int? Reps { get; init; }
+
+    public decimal? Rpe { get; init; }
 }
 
 internal sealed record SessionRow

@@ -114,6 +114,8 @@ internal sealed class Assignment
 
     public AssignmentStatus StatusOn(DateOnly clientToday) => StatusOn(StoredStatus, Date, clientToday);
 
+    public bool IsAccessibleBy(Viewer viewer) => viewer.IsTrainer ? TrainerId == viewer.UserId : ClientId == viewer.UserId;
+
     public AssignmentState ToState() =>
         new(Id, ClientId, TrainerId, Date, StoredStatus, WorkoutId, Workout, ProgramAssignmentId, ProgramName, Notes, SessionId, CompletedAt, SkippedAt, SkipReason, CreatedAt, UpdatedAt);
 

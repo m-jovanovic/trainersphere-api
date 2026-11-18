@@ -25,7 +25,7 @@ internal sealed class KebabCaseEnumSchemaTransformer : IOpenApiSchemaTransformer
 
         schema.Type = underlying is null ? JsonSchemaType.String : JsonSchemaType.String | JsonSchemaType.Null;
         schema.Format = null;
-        schema.Enum = [.. Enum.GetNames(enumType).Select(name => (System.Text.Json.Nodes.JsonNode)System.Text.Json.JsonNamingPolicy.KebabCaseLower.ConvertName(name))];
+        schema.Enum = [.. Enum.GetValues(enumType).Cast<Enum>().Select(value => (System.Text.Json.Nodes.JsonNode)value.ToKebab())];
 
         return Task.CompletedTask;
     }

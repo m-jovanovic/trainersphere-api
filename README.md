@@ -24,6 +24,11 @@ Demo data is seeded on startup. Every demo account uses the password `Demo123!`:
 - Clients: `alex@trainersphere.dev`, `sam@trainersphere.dev`, `jordan@trainersphere.dev`
 - A pending invitation for `riley@trainersphere.dev` (the email is in Mailpit)
 
+The trainer also gets a full training history: five workouts (Lower A/B, Upper A/B, Full Body Conditioning), a
+repeating four-week "Strong Start" program (one finished cycle, one in progress) for all three clients, about six
+weeks of logged sessions with progressive weights, personal records, weekly body metrics, a few skipped and missed
+assignments for varied adherence, and an assignment for every client today.
+
 ## Develop
 
 Requirements: .NET 11 SDK, Docker, Node.js (for `web/`).

@@ -1,7 +1,9 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
 using Shouldly;
 using TrainerSphere.Api.Host;
+using TrainerSphere.SharedKernel.Http;
 using TrainerSphere.SharedKernel.Results;
 
 namespace TrainerSphere.UnitTests.Host;
@@ -14,6 +16,31 @@ public sealed class JsonBindingTests
     {
         NotStarted,
         InProgress,
+    }
+
+    public enum Effort
+    {
+        [JsonStringEnumMemberName("percent-1rm")]
+        Percent1Rm,
+
+        [JsonStringEnumMemberName("estimated-1rm")]
+        Estimated1Rm,
+        MaxWeight,
+    }
+
+    [Fact]
+    public void Enum_JsonStringEnumMemberName_OverridesTheDerivedKebabName()
+    {
+        JsonSerializer.Serialize(Effort.Percent1Rm, Options).ShouldBe("\"percent-1rm\"");
+        JsonSerializer.Deserialize<Effort>("\"percent-1rm\"", Options).ShouldBe(Effort.Percent1Rm);
+        JsonSerializer.Serialize(Effort.Estimated1Rm, Options).ShouldBe("\"estimated-1rm\"");
+        JsonSerializer.Deserialize<Effort>("\"estimated-1rm\"", Options).ShouldBe(Effort.Estimated1Rm);
+        JsonSerializer.Serialize(Effort.MaxWeight, Options).ShouldBe("\"max-weight\"");
+
+        KebabCase.TryParse<Effort>("percent-1rm", out Effort parsed).ShouldBeTrue();
+        parsed.ShouldBe(Effort.Percent1Rm);
+        KebabCase.TryParse<Effort>("percent1-rm", out _).ShouldBeFalse();
+        KebabCase.Allowed<Effort>().ShouldBe("percent-1rm, estimated-1rm, max-weight");
     }
 
     [Theory]

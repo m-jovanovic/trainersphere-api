@@ -64,6 +64,25 @@ public sealed class DemoSeedTests(DemoSeedApiFactory factory) : IntegrationTest(
     }
 
     [Fact]
+    public async Task DemoTrainer_HasSeededProgramHistoryRecordsAndMetrics()
+    {
+        (await Factory.QuerySingleAsync<int>("SELECT count(*)::int FROM training.workouts")).ShouldBe(5);
+        (await Factory.QuerySingleAsync<int>("SELECT count(*)::int FROM training.programs WHERE NOT archived")).ShouldBe(1);
+        (await Factory.QuerySingleAsync<int>("SELECT count(*)::int FROM training.program_assignments")).ShouldBe(6);
+        (await Factory.QuerySingleAsync<int>("SELECT count(*)::int FROM training.sessions WHERE status = 'Completed'")).ShouldBeInRange(40, 60);
+        (await Factory.QuerySingleAsync<int>("SELECT count(*)::int FROM training.session_sets")).ShouldBeGreaterThan(300);
+        (await Factory.QuerySingleAsync<int>("SELECT count(*)::int FROM training.personal_records")).ShouldBeGreaterThan(5);
+        (await Factory.QuerySingleAsync<int>("SELECT count(*)::int FROM training.body_metrics")).ShouldBe(21);
+        (await Factory.QuerySingleAsync<int>("SELECT count(*)::int FROM training.assignments WHERE status = 'Skipped'")).ShouldBe(6);
+
+        var demoToday = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Europe/Belgrade")));
+        int todays = await Factory.QuerySingleAsync<int>(
+            "SELECT count(*)::int FROM training.assignments WHERE date = @Date AND status = 'Scheduled'",
+            new { Date = demoToday });
+        todays.ShouldBe(3);
+    }
+
+    [Fact]
     public async Task Seed_RunAgain_AddsNothing()
     {
         DemoSeedStartupTask seed = Factory.Services.GetServices<IStartupTask>().OfType<DemoSeedStartupTask>().Single();

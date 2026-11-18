@@ -62,10 +62,12 @@ internal static class WorkoutViews
         WorkoutResponse.From(workout, await exercises.GetSummariesAsync(workout.Exercises.Select(e => e.ExerciseId), cancellationToken));
 
     /// <summary>
-    /// Checks that every referenced exercise exists, is visible to the trainer and is not archived. Archived
-    /// exercises the workout already uses stay allowed so existing workouts remain editable.
+    /// Checks that every referenced exercise exists, is visible to the trainer and is not archived. Unknown and
+    /// other trainers' exercises are the same 404 <c>Exercise.NotFound</c> (existence is not leaked across
+    /// trainers); archived ones are 422 <c>Exercise.Archived</c>, except exercises the workout already uses so
+    /// existing workouts remain editable. Both carry per-item errors keyed by the workout line.
     /// </summary>
-    public static async Task<ValidationError?> CheckExercisesAsync(
+    public static async Task<Error?> CheckExercisesAsync(
         IReadOnlyList<WorkoutExerciseRequest> lines,
         Guid trainerId,
         IReadOnlySet<Guid> alreadyUsed,
@@ -75,7 +77,8 @@ internal static class WorkoutViews
         IReadOnlyList<Exercise> found = await exercises.GetManyAsync([.. lines.Select(l => l.ExerciseId)], cancellationToken);
         var byId = found.ToDictionary(e => e.Id);
         var trainer = Viewer.Trainer(trainerId);
-        List<FieldError> errors = [];
+        List<FieldError> notFound = [];
+        List<FieldError> archived = [];
 
         for (int index = 0; index < lines.Count; index++)
         {
@@ -85,16 +88,21 @@ internal static class WorkoutViews
             if (!byId.TryGetValue(exerciseId, out Exercise? exercise) || !exercise.IsVisibleTo(trainer))
             {
                 NotFoundError error = ExerciseErrors.NotFound(exerciseId);
-                errors.Add(new FieldError(field, error.Code, error.Message));
+                notFound.Add(new FieldError(field, error.Code, error.Message));
             }
             else if (exercise.Archived && !alreadyUsed.Contains(exerciseId))
             {
                 DomainError error = ExerciseErrors.Archived(exerciseId);
-                errors.Add(new FieldError(field, error.Code, error.Message));
+                archived.Add(new FieldError(field, error.Code, error.Message));
             }
         }
 
-        return errors.Count == 0 ? null : new ValidationError(errors);
+        if (notFound.Count > 0)
+        {
+            return ExerciseErrors.NotFound(notFound);
+        }
+
+        return archived.Count > 0 ? ExerciseErrors.Archived(archived) : null;
     }
 
     public static WorkoutDefinition ToDefinition(string name, string? description, IReadOnlyList<WorkoutExerciseRequest> lines) =>

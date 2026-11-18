@@ -1,5 +1,6 @@
 using TrainerSphere.Api.Host;
 using TrainerSphere.Api.Modules.Training.Data;
+using TrainerSphere.Api.Modules.Training.Features;
 using TrainerSphere.SharedKernel.Migrations;
 using TrainerSphere.SharedKernel.Modules;
 
@@ -19,6 +20,7 @@ internal sealed class TrainingModule : IModule
     {
         services.AddSingleton(_ => ExerciseLibrary.LoadEmbedded());
         services.AddScoped<IStartupTask, ExerciseLibrarySeeder>();
+        services.AddScoped<IDemoSeeder, TrainingDemoSeeder>();
 
         services.AddScoped<IProfileProjection, ProfileProjection>();
         services.AddScoped<IInvitationProjection, InvitationProjection>();

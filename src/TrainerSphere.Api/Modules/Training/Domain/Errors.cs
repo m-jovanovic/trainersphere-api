@@ -17,9 +17,24 @@ internal static class ExerciseErrors
 
     public static NotFoundError NotFound(Guid id) => new("Exercise.NotFound", $"The exercise '{id}' was not found.");
 
+    /// <summary>Per-item form: 404 with an <c>errors</c> member keyed by the workout line, for example <c>exercises[0].exerciseId</c>.</summary>
+    public static NotFoundError NotFound(IReadOnlyList<FieldError> errors) =>
+        new("Exercise.NotFound", "One or more referenced exercises were not found.") { Extensions = PerItem(errors) };
+
     public static DomainError Archived(Guid id) => new("Exercise.Archived", $"The exercise '{id}' is archived.");
 
+    /// <summary>Per-item form: 422 with an <c>errors</c> member keyed by the workout line, for example <c>exercises[0].exerciseId</c>.</summary>
+    public static DomainError Archived(IReadOnlyList<FieldError> errors) =>
+        new("Exercise.Archived", "One or more referenced exercises are archived.") { Extensions = PerItem(errors) };
+
     public static ConflictError NameInUse(string name) => new("Exercise.NameInUse", $"You already have an exercise named '{name}'.");
+
+    private static Dictionary<string, object?> PerItem(IReadOnlyList<FieldError> errors) =>
+        new(StringComparer.Ordinal)
+        {
+            ["errors"] = errors.GroupBy(error => error.Field, StringComparer.Ordinal)
+                .ToDictionary(group => group.Key, group => group.Select(error => error.Message).ToArray(), StringComparer.Ordinal),
+        };
 }
 
 internal static class WorkoutErrors

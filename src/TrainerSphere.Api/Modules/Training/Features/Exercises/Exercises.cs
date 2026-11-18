@@ -1,4 +1,6 @@
+using System.Linq.Expressions;
 using FluentValidation;
+using FluentValidation.Results;
 using TrainerSphere.Api.Modules.Training.Data;
 using TrainerSphere.Api.Modules.Training.Domain;
 using TrainerSphere.SharedKernel.Data;
@@ -32,7 +34,21 @@ internal static class ExerciseRules
 {
     public static IRuleBuilderOptions<T, string> InTaxonomy<T>(this IRuleBuilder<T, string> rule, IReadOnlyList<string> allowed) =>
         rule.Must(value => allowed.Contains(value, StringComparer.Ordinal))
-            .WithMessage($"'{{PropertyName}}' must be one of: {string.Join(", ", allowed)}.");
+            .WithMessage(Message(allowed));
+
+    /// <summary>
+    /// Query filters report one error per invalid value, keyed by the query parameter name rather than an item index.
+    /// </summary>
+    public static void TaxonomyFilter<T>(this AbstractValidator<T> validator, Expression<Func<T, IReadOnlyList<string>>> values, string parameter, IReadOnlyList<string> allowed) =>
+        validator.RuleFor(values).Custom((items, context) =>
+        {
+            foreach (string item in items.Where(item => !allowed.Contains(item, StringComparer.Ordinal)))
+            {
+                context.AddFailure(new ValidationFailure(parameter, Message(allowed)) { ErrorCode = "PredicateValidator" });
+            }
+        });
+
+    private static string Message(IReadOnlyList<string> allowed) => $"Must be one of: {string.Join(", ", allowed)}.";
 }
 
 internal sealed record ListExercisesQuery(
@@ -55,10 +71,10 @@ internal sealed class ListExercisesValidator : PagedQueryValidator<ListExercises
         : base(MaxPageSize)
     {
         RuleFor(q => q.Search).MaximumLength(TrainingRules.SearchMaxLength);
-        RuleForEach(q => q.Category).InTaxonomy(library.Taxonomy.Categories);
-        RuleForEach(q => q.Pattern).InTaxonomy(library.Taxonomy.MovementPatterns);
-        RuleForEach(q => q.Muscle).InTaxonomy(library.Taxonomy.Muscles);
-        RuleForEach(q => q.Equipment).InTaxonomy(library.Taxonomy.Equipment);
+        this.TaxonomyFilter(q => q.Category, "category", library.Taxonomy.Categories);
+        this.TaxonomyFilter(q => q.Pattern, "pattern", library.Taxonomy.MovementPatterns);
+        this.TaxonomyFilter(q => q.Muscle, "muscle", library.Taxonomy.Muscles);
+        this.TaxonomyFilter(q => q.Equipment, "equipment", library.Taxonomy.Equipment);
     }
 }
 

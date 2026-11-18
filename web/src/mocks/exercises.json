@@ -1,0 +1,996 @@
+{
+  "version": 1,
+  "illustrations": {
+    "detail": "<slug>.svg",
+    "small": "<slug>-sm.svg",
+    "archive": "illustrations.zip"
+  },
+  "taxonomy": {
+    "categories": [
+      "strength",
+      "cardio",
+      "mobility"
+    ],
+    "movementPatterns": [
+      "squat",
+      "hinge",
+      "lunge",
+      "horizontal-push",
+      "vertical-push",
+      "horizontal-pull",
+      "vertical-pull",
+      "carry",
+      "core",
+      "isolation",
+      "cardio",
+      "mobility"
+    ],
+    "muscles": [
+      "chest",
+      "front-delts",
+      "side-delts",
+      "rear-delts",
+      "lats",
+      "upper-back",
+      "traps",
+      "lower-back",
+      "biceps",
+      "triceps",
+      "forearms",
+      "abs",
+      "obliques",
+      "glutes",
+      "quads",
+      "hamstrings",
+      "adductors",
+      "abductors",
+      "calves",
+      "hip-flexors"
+    ],
+    "equipment": [
+      "barbell",
+      "dumbbell",
+      "kettlebell",
+      "machine",
+      "cable",
+      "bodyweight",
+      "bench",
+      "pull-up-bar",
+      "band",
+      "cardio-machine",
+      "box",
+      "mat",
+      "dip-station",
+      "jump-rope"
+    ]
+  },
+  "exercises": [
+    {
+      "slug": "barbell-back-squat",
+      "name": "Barbell Back Squat",
+      "category": "strength",
+      "movementPattern": "squat",
+      "primaryMuscles": [
+        "quads",
+        "glutes"
+      ],
+      "secondaryMuscles": [
+        "adductors",
+        "hamstrings",
+        "lower-back"
+      ],
+      "equipment": [
+        "barbell"
+      ],
+      "unilateral": false,
+      "cue": "Brace, sit down between your hips and drive the floor away, keeping the bar over mid-foot.",
+      "illustration": "barbell-back-squat.svg"
+    },
+    {
+      "slug": "barbell-bench-press",
+      "name": "Barbell Bench Press",
+      "category": "strength",
+      "movementPattern": "horizontal-push",
+      "primaryMuscles": [
+        "chest"
+      ],
+      "secondaryMuscles": [
+        "front-delts",
+        "triceps"
+      ],
+      "equipment": [
+        "barbell",
+        "bench"
+      ],
+      "unilateral": false,
+      "cue": "Shoulder blades pinned and feet planted; lower the bar to the lower chest and press it back up over the shoulders.",
+      "illustration": "barbell-bench-press.svg"
+    },
+    {
+      "slug": "barbell-bent-over-row",
+      "name": "Barbell Bent-Over Row",
+      "category": "strength",
+      "movementPattern": "horizontal-pull",
+      "primaryMuscles": [
+        "lats",
+        "upper-back"
+      ],
+      "secondaryMuscles": [
+        "rear-delts",
+        "biceps",
+        "lower-back"
+      ],
+      "equipment": [
+        "barbell"
+      ],
+      "unilateral": false,
+      "cue": "Hinge until the torso is close to parallel, keep the back flat and pull the bar to the lower ribs.",
+      "illustration": "barbell-bent-over-row.svg"
+    },
+    {
+      "slug": "barbell-deadlift",
+      "name": "Barbell Deadlift",
+      "category": "strength",
+      "movementPattern": "hinge",
+      "primaryMuscles": [
+        "glutes",
+        "hamstrings",
+        "lower-back"
+      ],
+      "secondaryMuscles": [
+        "quads",
+        "traps",
+        "lats",
+        "forearms"
+      ],
+      "equipment": [
+        "barbell"
+      ],
+      "unilateral": false,
+      "cue": "Bar over mid-foot, shins to the bar, flat back; push the floor away and keep the bar against your legs.",
+      "illustration": "barbell-deadlift.svg"
+    },
+    {
+      "slug": "barbell-front-squat",
+      "name": "Barbell Front Squat",
+      "category": "strength",
+      "movementPattern": "squat",
+      "primaryMuscles": [
+        "quads",
+        "glutes"
+      ],
+      "secondaryMuscles": [
+        "abs",
+        "upper-back",
+        "adductors"
+      ],
+      "equipment": [
+        "barbell"
+      ],
+      "unilateral": false,
+      "cue": "Elbows high and chest up; sit straight down and stand up without letting the elbows drop.",
+      "illustration": "barbell-front-squat.svg"
+    },
+    {
+      "slug": "barbell-hip-thrust",
+      "name": "Barbell Hip Thrust",
+      "category": "strength",
+      "movementPattern": "hinge",
+      "primaryMuscles": [
+        "glutes"
+      ],
+      "secondaryMuscles": [
+        "hamstrings",
+        "quads"
+      ],
+      "equipment": [
+        "barbell",
+        "bench"
+      ],
+      "unilateral": false,
+      "cue": "Upper back on the bench, chin tucked; drive through the heels until hips line up with knees and shoulders.",
+      "illustration": "barbell-hip-thrust.svg"
+    },
+    {
+      "slug": "barbell-overhead-press",
+      "name": "Barbell Overhead Press",
+      "category": "strength",
+      "movementPattern": "vertical-push",
+      "primaryMuscles": [
+        "front-delts"
+      ],
+      "secondaryMuscles": [
+        "side-delts",
+        "triceps",
+        "upper-back"
+      ],
+      "equipment": [
+        "barbell"
+      ],
+      "unilateral": false,
+      "cue": "Squeeze the glutes and brace; press the bar straight up past your face and finish with it over mid-foot.",
+      "illustration": "barbell-overhead-press.svg"
+    },
+    {
+      "slug": "barbell-romanian-deadlift",
+      "name": "Barbell Romanian Deadlift",
+      "category": "strength",
+      "movementPattern": "hinge",
+      "primaryMuscles": [
+        "hamstrings",
+        "glutes"
+      ],
+      "secondaryMuscles": [
+        "lower-back",
+        "forearms"
+      ],
+      "equipment": [
+        "barbell"
+      ],
+      "unilateral": false,
+      "cue": "Soft knees; push the hips back and slide the bar down your thighs until the hamstrings stretch, then drive the hips forward.",
+      "illustration": "barbell-romanian-deadlift.svg"
+    },
+    {
+      "slug": "bird-dog",
+      "name": "Bird Dog",
+      "category": "strength",
+      "movementPattern": "core",
+      "primaryMuscles": [
+        "abs",
+        "lower-back"
+      ],
+      "secondaryMuscles": [
+        "glutes"
+      ],
+      "equipment": [
+        "bodyweight",
+        "mat"
+      ],
+      "unilateral": false,
+      "cue": "From hands and knees, reach the opposite arm and leg long and level without rotating the hips.",
+      "illustration": "bird-dog.svg"
+    },
+    {
+      "slug": "box-step-up",
+      "name": "Box Step-Up",
+      "category": "strength",
+      "movementPattern": "lunge",
+      "primaryMuscles": [
+        "quads",
+        "glutes"
+      ],
+      "secondaryMuscles": [
+        "hamstrings",
+        "calves"
+      ],
+      "equipment": [
+        "dumbbell",
+        "box"
+      ],
+      "unilateral": true,
+      "cue": "Whole foot on the box; drive through that heel to stand tall without pushing off the back foot.",
+      "illustration": "box-step-up.svg"
+    },
+    {
+      "slug": "bulgarian-split-squat",
+      "name": "Bulgarian Split Squat",
+      "category": "strength",
+      "movementPattern": "lunge",
+      "primaryMuscles": [
+        "quads",
+        "glutes"
+      ],
+      "secondaryMuscles": [
+        "adductors",
+        "hamstrings"
+      ],
+      "equipment": [
+        "dumbbell",
+        "bench"
+      ],
+      "unilateral": true,
+      "cue": "Rear foot on the bench; lower straight down until the front thigh is about parallel to the floor.",
+      "illustration": "bulgarian-split-squat.svg"
+    },
+    {
+      "slug": "cable-face-pull",
+      "name": "Cable Face Pull",
+      "category": "strength",
+      "movementPattern": "horizontal-pull",
+      "primaryMuscles": [
+        "rear-delts",
+        "upper-back"
+      ],
+      "secondaryMuscles": [
+        "traps"
+      ],
+      "equipment": [
+        "cable"
+      ],
+      "unilateral": false,
+      "cue": "Rope at face height; pull toward your forehead with the elbows high and rotate the hands back.",
+      "illustration": "cable-face-pull.svg"
+    },
+    {
+      "slug": "cable-triceps-pushdown",
+      "name": "Cable Triceps Pushdown",
+      "category": "strength",
+      "movementPattern": "isolation",
+      "primaryMuscles": [
+        "triceps"
+      ],
+      "secondaryMuscles": [],
+      "equipment": [
+        "cable"
+      ],
+      "unilateral": false,
+      "cue": "Elbows pinned at your sides; push the bar down until the arms are straight, then let it rise slowly.",
+      "illustration": "cable-triceps-pushdown.svg"
+    },
+    {
+      "slug": "childs-pose",
+      "name": "Child's Pose",
+      "category": "mobility",
+      "movementPattern": "mobility",
+      "primaryMuscles": [
+        "lats",
+        "lower-back"
+      ],
+      "secondaryMuscles": [
+        "glutes"
+      ],
+      "equipment": [
+        "bodyweight",
+        "mat"
+      ],
+      "unilateral": false,
+      "cue": "Sit back onto your heels, reach the arms long and let the chest sink toward the floor.",
+      "illustration": "childs-pose.svg"
+    },
+    {
+      "slug": "crunch",
+      "name": "Crunch",
+      "category": "strength",
+      "movementPattern": "core",
+      "primaryMuscles": [
+        "abs"
+      ],
+      "secondaryMuscles": [
+        "obliques"
+      ],
+      "equipment": [
+        "bodyweight",
+        "mat"
+      ],
+      "unilateral": false,
+      "cue": "Keep the lower back down and curl the shoulders off the floor by shortening the abs.",
+      "illustration": "crunch.svg"
+    },
+    {
+      "slug": "dead-bug",
+      "name": "Dead Bug",
+      "category": "strength",
+      "movementPattern": "core",
+      "primaryMuscles": [
+        "abs"
+      ],
+      "secondaryMuscles": [
+        "obliques",
+        "hip-flexors"
+      ],
+      "equipment": [
+        "bodyweight",
+        "mat"
+      ],
+      "unilateral": false,
+      "cue": "Lower back pressed into the floor; slowly extend the opposite arm and leg without the back arching.",
+      "illustration": "dead-bug.svg"
+    },
+    {
+      "slug": "downward-dog",
+      "name": "Downward Dog",
+      "category": "mobility",
+      "movementPattern": "mobility",
+      "primaryMuscles": [
+        "hamstrings",
+        "calves"
+      ],
+      "secondaryMuscles": [
+        "lats",
+        "front-delts"
+      ],
+      "equipment": [
+        "bodyweight",
+        "mat"
+      ],
+      "unilateral": false,
+      "cue": "Push the hips up and back, lengthen the spine and press the heels toward the floor.",
+      "illustration": "downward-dog.svg"
+    },
+    {
+      "slug": "dumbbell-biceps-curl",
+      "name": "Dumbbell Biceps Curl",
+      "category": "strength",
+      "movementPattern": "isolation",
+      "primaryMuscles": [
+        "biceps"
+      ],
+      "secondaryMuscles": [
+        "forearms"
+      ],
+      "equipment": [
+        "dumbbell"
+      ],
+      "unilateral": false,
+      "cue": "Elbows pinned to your sides; curl without swinging and lower under control.",
+      "illustration": "dumbbell-biceps-curl.svg"
+    },
+    {
+      "slug": "dumbbell-hammer-curl",
+      "name": "Dumbbell Hammer Curl",
+      "category": "strength",
+      "movementPattern": "isolation",
+      "primaryMuscles": [
+        "biceps",
+        "forearms"
+      ],
+      "secondaryMuscles": [],
+      "equipment": [
+        "dumbbell"
+      ],
+      "unilateral": false,
+      "cue": "Palms facing each other; curl with the elbows still at your sides.",
+      "illustration": "dumbbell-hammer-curl.svg"
+    },
+    {
+      "slug": "dumbbell-lateral-raise",
+      "name": "Dumbbell Lateral Raise",
+      "category": "strength",
+      "movementPattern": "isolation",
+      "primaryMuscles": [
+        "side-delts"
+      ],
+      "secondaryMuscles": [
+        "traps",
+        "front-delts"
+      ],
+      "equipment": [
+        "dumbbell"
+      ],
+      "unilateral": false,
+      "cue": "Slight bend in the elbows; raise the dumbbells out to shoulder height, leading with the elbows.",
+      "illustration": "dumbbell-lateral-raise.svg"
+    },
+    {
+      "slug": "dumbbell-lunge",
+      "name": "Dumbbell Lunge",
+      "category": "strength",
+      "movementPattern": "lunge",
+      "primaryMuscles": [
+        "quads",
+        "glutes"
+      ],
+      "secondaryMuscles": [
+        "hamstrings",
+        "adductors"
+      ],
+      "equipment": [
+        "dumbbell"
+      ],
+      "unilateral": true,
+      "cue": "Take a long step, drop the back knee toward the floor and push back up through the front heel.",
+      "illustration": "dumbbell-lunge.svg"
+    },
+    {
+      "slug": "dumbbell-overhead-triceps-extension",
+      "name": "Dumbbell Overhead Triceps Extension",
+      "category": "strength",
+      "movementPattern": "isolation",
+      "primaryMuscles": [
+        "triceps"
+      ],
+      "secondaryMuscles": [],
+      "equipment": [
+        "dumbbell"
+      ],
+      "unilateral": false,
+      "cue": "Elbows pointing up and close to your head; lower the dumbbell behind the head, then extend fully.",
+      "illustration": "dumbbell-overhead-triceps-extension.svg"
+    },
+    {
+      "slug": "farmers-carry",
+      "name": "Farmer's Carry",
+      "category": "strength",
+      "movementPattern": "carry",
+      "primaryMuscles": [
+        "forearms",
+        "traps"
+      ],
+      "secondaryMuscles": [
+        "abs",
+        "obliques",
+        "glutes"
+      ],
+      "equipment": [
+        "kettlebell"
+      ],
+      "unilateral": false,
+      "cue": "Stand tall with heavy weights at your sides, shoulders down; walk with short, controlled steps.",
+      "illustration": "farmers-carry.svg"
+    },
+    {
+      "slug": "glute-bridge",
+      "name": "Glute Bridge",
+      "category": "strength",
+      "movementPattern": "hinge",
+      "primaryMuscles": [
+        "glutes"
+      ],
+      "secondaryMuscles": [
+        "hamstrings"
+      ],
+      "equipment": [
+        "bodyweight",
+        "mat"
+      ],
+      "unilateral": false,
+      "cue": "Feet flat near the glutes; drive through the heels until knees, hips and shoulders form a line.",
+      "illustration": "glute-bridge.svg"
+    },
+    {
+      "slug": "goblet-squat",
+      "name": "Goblet Squat",
+      "category": "strength",
+      "movementPattern": "squat",
+      "primaryMuscles": [
+        "quads",
+        "glutes"
+      ],
+      "secondaryMuscles": [
+        "adductors",
+        "abs"
+      ],
+      "equipment": [
+        "dumbbell"
+      ],
+      "unilateral": false,
+      "cue": "Hold the dumbbell against your chest and sit down between the knees with an upright torso.",
+      "illustration": "goblet-squat.svg"
+    },
+    {
+      "slug": "half-kneeling-hip-flexor-stretch",
+      "name": "Half-Kneeling Hip Flexor Stretch",
+      "category": "mobility",
+      "movementPattern": "mobility",
+      "primaryMuscles": [
+        "hip-flexors"
+      ],
+      "secondaryMuscles": [
+        "quads"
+      ],
+      "equipment": [
+        "bodyweight",
+        "mat"
+      ],
+      "unilateral": true,
+      "cue": "Tuck the pelvis and squeeze the glute of the kneeling leg, then shift forward until the front of the hip stretches.",
+      "illustration": "half-kneeling-hip-flexor-stretch.svg"
+    },
+    {
+      "slug": "hanging-leg-raise",
+      "name": "Hanging Leg Raise",
+      "category": "strength",
+      "movementPattern": "core",
+      "primaryMuscles": [
+        "abs",
+        "hip-flexors"
+      ],
+      "secondaryMuscles": [
+        "obliques",
+        "forearms"
+      ],
+      "equipment": [
+        "pull-up-bar"
+      ],
+      "unilateral": false,
+      "cue": "Hang still and raise straight legs to hip height by tilting the pelvis; lower without swinging.",
+      "illustration": "hanging-leg-raise.svg"
+    },
+    {
+      "slug": "incline-dumbbell-press",
+      "name": "Incline Dumbbell Press",
+      "category": "strength",
+      "movementPattern": "horizontal-push",
+      "primaryMuscles": [
+        "chest",
+        "front-delts"
+      ],
+      "secondaryMuscles": [
+        "triceps"
+      ],
+      "equipment": [
+        "dumbbell",
+        "bench"
+      ],
+      "unilateral": false,
+      "cue": "Bench at 30-45 degrees; lower the dumbbells to the upper chest and press them up over the shoulders.",
+      "illustration": "incline-dumbbell-press.svg"
+    },
+    {
+      "slug": "jump-rope",
+      "name": "Jump Rope",
+      "category": "cardio",
+      "movementPattern": "cardio",
+      "primaryMuscles": [
+        "calves"
+      ],
+      "secondaryMuscles": [
+        "quads",
+        "forearms"
+      ],
+      "equipment": [
+        "jump-rope"
+      ],
+      "unilateral": false,
+      "cue": "Stay on the balls of the feet with small jumps and turn the rope from the wrists.",
+      "illustration": "jump-rope.svg"
+    },
+    {
+      "slug": "jumping-jacks",
+      "name": "Jumping Jacks",
+      "category": "cardio",
+      "movementPattern": "cardio",
+      "primaryMuscles": [
+        "calves"
+      ],
+      "secondaryMuscles": [
+        "quads",
+        "abductors",
+        "side-delts"
+      ],
+      "equipment": [
+        "bodyweight"
+      ],
+      "unilateral": false,
+      "cue": "Jump the feet out as the arms swing overhead, then jump back to the start; land softly.",
+      "illustration": "jumping-jacks.svg"
+    },
+    {
+      "slug": "kettlebell-swing",
+      "name": "Kettlebell Swing",
+      "category": "strength",
+      "movementPattern": "hinge",
+      "primaryMuscles": [
+        "glutes",
+        "hamstrings"
+      ],
+      "secondaryMuscles": [
+        "lower-back",
+        "abs",
+        "forearms"
+      ],
+      "equipment": [
+        "kettlebell"
+      ],
+      "unilateral": false,
+      "cue": "Hike the bell back, then snap the hips forward so it floats to chest height; the arms only guide it.",
+      "illustration": "kettlebell-swing.svg"
+    },
+    {
+      "slug": "lat-pulldown",
+      "name": "Lat Pulldown",
+      "category": "strength",
+      "movementPattern": "vertical-pull",
+      "primaryMuscles": [
+        "lats"
+      ],
+      "secondaryMuscles": [
+        "biceps",
+        "upper-back",
+        "rear-delts"
+      ],
+      "equipment": [
+        "cable",
+        "machine"
+      ],
+      "unilateral": false,
+      "cue": "Chest up; pull the bar to the upper chest by driving the elbows down and back.",
+      "illustration": "lat-pulldown.svg"
+    },
+    {
+      "slug": "leg-extension",
+      "name": "Leg Extension",
+      "category": "strength",
+      "movementPattern": "isolation",
+      "primaryMuscles": [
+        "quads"
+      ],
+      "secondaryMuscles": [],
+      "equipment": [
+        "machine"
+      ],
+      "unilateral": false,
+      "cue": "Knee lined up with the machine pivot; extend fully, squeeze and lower under control.",
+      "illustration": "leg-extension.svg"
+    },
+    {
+      "slug": "leg-press",
+      "name": "Leg Press",
+      "category": "strength",
+      "movementPattern": "squat",
+      "primaryMuscles": [
+        "quads",
+        "glutes"
+      ],
+      "secondaryMuscles": [
+        "hamstrings",
+        "adductors"
+      ],
+      "equipment": [
+        "machine"
+      ],
+      "unilateral": false,
+      "cue": "Feet shoulder-width on the platform; lower until the knees approach the chest without the lower back lifting, then press.",
+      "illustration": "leg-press.svg"
+    },
+    {
+      "slug": "lying-leg-curl",
+      "name": "Lying Leg Curl",
+      "category": "strength",
+      "movementPattern": "isolation",
+      "primaryMuscles": [
+        "hamstrings"
+      ],
+      "secondaryMuscles": [
+        "calves"
+      ],
+      "equipment": [
+        "machine"
+      ],
+      "unilateral": false,
+      "cue": "Hips pressed into the pad; curl the heels toward the glutes and lower slowly.",
+      "illustration": "lying-leg-curl.svg"
+    },
+    {
+      "slug": "one-arm-dumbbell-row",
+      "name": "One-Arm Dumbbell Row",
+      "category": "strength",
+      "movementPattern": "horizontal-pull",
+      "primaryMuscles": [
+        "lats",
+        "upper-back"
+      ],
+      "secondaryMuscles": [
+        "rear-delts",
+        "biceps"
+      ],
+      "equipment": [
+        "dumbbell",
+        "bench"
+      ],
+      "unilateral": true,
+      "cue": "Brace on the bench with a flat back; pull the dumbbell toward your hip with the elbow close to the body.",
+      "illustration": "one-arm-dumbbell-row.svg"
+    },
+    {
+      "slug": "parallel-bar-dip",
+      "name": "Parallel Bar Dip",
+      "category": "strength",
+      "movementPattern": "vertical-push",
+      "primaryMuscles": [
+        "chest",
+        "triceps"
+      ],
+      "secondaryMuscles": [
+        "front-delts"
+      ],
+      "equipment": [
+        "dip-station"
+      ],
+      "unilateral": false,
+      "cue": "Lean slightly forward and lower until the upper arms are about parallel to the floor, then press back to straight arms.",
+      "illustration": "parallel-bar-dip.svg"
+    },
+    {
+      "slug": "plank",
+      "name": "Plank",
+      "category": "strength",
+      "movementPattern": "core",
+      "primaryMuscles": [
+        "abs"
+      ],
+      "secondaryMuscles": [
+        "obliques",
+        "front-delts",
+        "glutes"
+      ],
+      "equipment": [
+        "bodyweight",
+        "mat"
+      ],
+      "unilateral": false,
+      "cue": "Elbows under the shoulders; squeeze the glutes, brace and hold a straight line from head to heels.",
+      "illustration": "plank.svg"
+    },
+    {
+      "slug": "pull-up",
+      "name": "Pull-Up",
+      "category": "strength",
+      "movementPattern": "vertical-pull",
+      "primaryMuscles": [
+        "lats"
+      ],
+      "secondaryMuscles": [
+        "biceps",
+        "upper-back",
+        "rear-delts",
+        "forearms"
+      ],
+      "equipment": [
+        "pull-up-bar"
+      ],
+      "unilateral": false,
+      "cue": "Start from a dead hang and pull your chest toward the bar until the chin clears it.",
+      "illustration": "pull-up.svg"
+    },
+    {
+      "slug": "push-up",
+      "name": "Push-Up",
+      "category": "strength",
+      "movementPattern": "horizontal-push",
+      "primaryMuscles": [
+        "chest"
+      ],
+      "secondaryMuscles": [
+        "triceps",
+        "front-delts",
+        "abs"
+      ],
+      "equipment": [
+        "bodyweight"
+      ],
+      "unilateral": false,
+      "cue": "Body in one straight line, hands under the shoulders; lower the chest to just above the floor.",
+      "illustration": "push-up.svg"
+    },
+    {
+      "slug": "rowing-machine",
+      "name": "Rowing Machine",
+      "category": "cardio",
+      "movementPattern": "cardio",
+      "primaryMuscles": [
+        "quads",
+        "upper-back"
+      ],
+      "secondaryMuscles": [
+        "lats",
+        "glutes",
+        "hamstrings",
+        "biceps"
+      ],
+      "equipment": [
+        "cardio-machine"
+      ],
+      "unilateral": false,
+      "cue": "Drive with legs, then body, then arms; return with arms, body, then legs.",
+      "illustration": "rowing-machine.svg"
+    },
+    {
+      "slug": "seated-cable-row",
+      "name": "Seated Cable Row",
+      "category": "strength",
+      "movementPattern": "horizontal-pull",
+      "primaryMuscles": [
+        "upper-back",
+        "lats"
+      ],
+      "secondaryMuscles": [
+        "biceps",
+        "rear-delts",
+        "lower-back"
+      ],
+      "equipment": [
+        "cable"
+      ],
+      "unilateral": false,
+      "cue": "Sit tall; pull the handle to your stomach and squeeze the shoulder blades together without leaning back.",
+      "illustration": "seated-cable-row.svg"
+    },
+    {
+      "slug": "seated-dumbbell-shoulder-press",
+      "name": "Seated Dumbbell Shoulder Press",
+      "category": "strength",
+      "movementPattern": "vertical-push",
+      "primaryMuscles": [
+        "front-delts",
+        "side-delts"
+      ],
+      "secondaryMuscles": [
+        "triceps",
+        "traps"
+      ],
+      "equipment": [
+        "dumbbell",
+        "bench"
+      ],
+      "unilateral": false,
+      "cue": "Back against the pad; press the dumbbells overhead without arching, then lower them to ear height.",
+      "illustration": "seated-dumbbell-shoulder-press.svg"
+    },
+    {
+      "slug": "standing-calf-raise",
+      "name": "Standing Calf Raise",
+      "category": "strength",
+      "movementPattern": "isolation",
+      "primaryMuscles": [
+        "calves"
+      ],
+      "secondaryMuscles": [],
+      "equipment": [
+        "dumbbell"
+      ],
+      "unilateral": false,
+      "cue": "Rise onto the balls of the feet as high as you can, pause, then lower slowly.",
+      "illustration": "standing-calf-raise.svg"
+    },
+    {
+      "slug": "standing-quad-stretch",
+      "name": "Standing Quad Stretch",
+      "category": "mobility",
+      "movementPattern": "mobility",
+      "primaryMuscles": [
+        "quads"
+      ],
+      "secondaryMuscles": [
+        "hip-flexors"
+      ],
+      "equipment": [
+        "bodyweight"
+      ],
+      "unilateral": true,
+      "cue": "Knees together; pull the heel toward the glute and tuck the pelvis slightly.",
+      "illustration": "standing-quad-stretch.svg"
+    },
+    {
+      "slug": "stationary-bike",
+      "name": "Stationary Bike",
+      "category": "cardio",
+      "movementPattern": "cardio",
+      "primaryMuscles": [
+        "quads"
+      ],
+      "secondaryMuscles": [
+        "glutes",
+        "hamstrings",
+        "calves"
+      ],
+      "equipment": [
+        "cardio-machine"
+      ],
+      "unilateral": false,
+      "cue": "Saddle at hip height so the knee stays slightly bent at the bottom; keep a smooth, steady cadence.",
+      "illustration": "stationary-bike.svg"
+    },
+    {
+      "slug": "treadmill-run",
+      "name": "Treadmill Run",
+      "category": "cardio",
+      "movementPattern": "cardio",
+      "primaryMuscles": [
+        "quads",
+        "calves"
+      ],
+      "secondaryMuscles": [
+        "hamstrings",
+        "glutes"
+      ],
+      "equipment": [
+        "cardio-machine"
+      ],
+      "unilateral": false,
+      "cue": "Run tall and land under your hips with quick, light steps.",
+      "illustration": "treadmill-run.svg"
+    }
+  ]
+}

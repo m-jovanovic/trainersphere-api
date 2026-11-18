@@ -141,7 +141,7 @@ describe('schedule (agenda)', () => {
     a!.sessionId = started.id;
 
     await user.click(dialog.getByRole('button', { name: 'Mark skipped' }));
-    expect(await dialog.findByRole('alert')).toHaveTextContent('The client already started this workout');
+    expect(await dialog.findByRole('alert')).toHaveTextContent('The client already started or finished this workout');
     expect(dialog.getByRole('link', { name: 'View the session' })).toHaveAttribute('href', `/sessions/${started.id}`);
     expect(a!.status).toBe('scheduled');
   });

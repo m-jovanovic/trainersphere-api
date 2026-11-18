@@ -338,11 +338,10 @@ function visibleAssignment(user: DbUser, id: string): DbAssignment | null {
   return clientFor(user, a.clientId) ? a : null;
 }
 
-/** 409 `Assignment.NotScheduled`; a started (still scheduled) assignment carries the session's id. */
-function notScheduled(a: DbAssignment, { withSession = true } = {}) {
-  if (a.status === 'scheduled' && a.sessionId && withSession)
-    return problem(409, 'Assignment.NotScheduled', 'A session was already started from this assignment.', undefined, { sessionId: a.sessionId });
-  return problem(409, 'Assignment.NotScheduled', `The assignment is ${a.status}, not scheduled.`);
+/** 409 `Assignment.NotScheduled`, carrying the session's id whenever one exists (started or completed). */
+function notScheduled(a: DbAssignment) {
+  const detail = a.status === 'scheduled' ? 'A session was already started from this assignment.' : `The assignment is ${a.status}, not scheduled.`;
+  return problem(409, 'Assignment.NotScheduled', detail, undefined, a.sessionId ? { sessionId: a.sessionId } : undefined);
 }
 
 function visibleSession(user: DbUser, id: string): DbSession | null {
@@ -923,7 +922,7 @@ export const handlers = [
     if (b.assignmentId) {
       assignment = visibleAssignment(user, b.assignmentId);
       if (!assignment) return notFound('Assignment');
-      if (assignment.status !== 'scheduled') return notScheduled(assignment, { withSession: false });
+      if (assignment.status !== 'scheduled') return notScheduled(assignment);
       if (assignment.sessionId)
         return problem(409, 'Session.AlreadyStartedForAssignment', 'A session was already started for this assignment.', undefined, { sessionId: assignment.sessionId });
     } else if (!b.workoutName?.trim()) {

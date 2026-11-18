@@ -52,7 +52,9 @@ export function LiveSessionPage() {
 
   if (startError instanceof ApiError) {
     const other = typeof startError.problem.sessionId === 'string' ? startError.problem.sessionId : null;
-    if (startError.code === 'Session.AlreadyStartedForAssignment' || (startError.code === 'Assignment.NotScheduled' && other)) return <AlreadyStarted otherId={other} />;
+    if (startError.code === 'Session.AlreadyStartedForAssignment') return <AlreadyStarted otherId={other} />;
+    // A start only gets NotScheduled with a session when that session already completed the assignment.
+    if (startError.code === 'Assignment.NotScheduled' && other) return <AlreadyDone sessionId={other} />;
     return <StartRejected error={startError} />;
   }
   if (!q.data) {
@@ -111,6 +113,31 @@ function AlreadyStarted({ otherId }: { otherId: string | null }) {
                 </Link>
               </Button>
             )}
+            <Button asChild variant="secondary">
+              <Link to="/">Back to today</Link>
+            </Button>
+          </div>
+        }
+      />
+    </FullScreen>
+  );
+}
+
+function AlreadyDone({ sessionId }: { sessionId: string }) {
+  return (
+    <FullScreen>
+      <EmptyState
+        className="min-h-[60dvh]"
+        icon={<Flag />}
+        title="This workout is already done"
+        description="It was finished on another device."
+        action={
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button asChild>
+              <Link to="/sessions/$sessionId" params={{ sessionId }}>
+                See how it went
+              </Link>
+            </Button>
             <Button asChild variant="secondary">
               <Link to="/">Back to today</Link>
             </Button>

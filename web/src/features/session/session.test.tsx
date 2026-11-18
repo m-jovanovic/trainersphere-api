@@ -130,6 +130,20 @@ describe('live session logging', () => {
     await findHeading(assignment.snapshot.name);
   });
 
+  it('points to the finished session when the assignment was completed elsewhere', async () => {
+    const assignment = todaysAssignment();
+    await signIn(CLIENT_EMAIL);
+    const fullAssignment = await assignmentsApi.get(assignment.id);
+    const finished = await sessionsApi.start({ assignmentId: assignment.id });
+    await sessionsApi.complete(finished.id, {});
+    const attemptedId = crypto.randomUUID();
+    const { queryClient } = renderApp(`/log/${attemptedId}`);
+    queryClient.setQueryData(queries.session(attemptedId).queryKey, optimisticSession(attemptedId, fullAssignment, new Date().toISOString()));
+    void runSessionWrite(queryClient, sessionKeys.start, attemptedId, { id: attemptedId, assignmentId: assignment.id }).catch(() => undefined);
+
+    expect(await screen.findByText('This workout is already done')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'See how it went' })).toHaveAttribute('href', `/sessions/${finished.id}`);
+  });
   it('keeps a set done offline and replays the write after reconnecting', async () => {
     const { user, sessionId } = await openScheduledWorkout();
     onlineManager.setOnline(false);

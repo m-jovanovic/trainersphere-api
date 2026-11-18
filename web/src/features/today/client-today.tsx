@@ -296,7 +296,7 @@ function SkipDialog({ assignment: a, open, onOpenChange }: { assignment: Assignm
         void qc.invalidateQueries({ queryKey: keys.dashboard });
         void qc.invalidateQueries({ queryKey: keys.assignments });
         onOpenChange(false);
-        toast.error(typeof err.problem.sessionId === 'string' ? 'You already started this workout. Finish or discard it instead.' : 'This workout was already completed or skipped.');
+        toast.error(typeof err.problem.sessionId === 'string' ? 'You already started or finished this workout, so it can no longer be skipped.' : 'This workout was already completed or skipped.');
         return;
       }
       toast.error(errorMessage(err));

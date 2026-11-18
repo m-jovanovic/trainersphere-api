@@ -120,13 +120,14 @@ export function AssignmentDialog({ assignment: a, onClose, showClient = true }: 
   const [confirmDelete, setConfirmDelete] = useState(false);
   const editable = a.status === 'scheduled' || a.status === 'missed';
   const { register, handleSubmit, formState, setError } = useForm<EditValues>({ resolver: zodResolver(editSchema), defaultValues: { date: a.date, notes: a.notes ?? '' } });
-  const fail = (err: unknown) => {
+  // Rescheduling only fails once the workout is no longer scheduled; removing and skipping also fail once it was started.
+  const fail = (err: unknown, action: 'update' | 'skip' | 'remove') => {
     if (err instanceof ApiError && err.code === 'Assignment.NotScheduled') {
       const sessionId = typeof err.problem.sessionId === 'string' ? err.problem.sessionId : null;
       setStartedSessionId(sessionId);
       setFormError(
-        sessionId
-          ? 'The client already started this workout, so it can no longer be removed or skipped.'
+        sessionId && action !== 'update'
+          ? 'The client already started or finished this workout, so it can no longer be removed or skipped.'
           : 'This workout was already completed or skipped, so it can no longer be changed.',
       );
       invalidate();
@@ -143,7 +144,7 @@ export function AssignmentDialog({ assignment: a, onClose, showClient = true }: 
       toast.success(next.date === a.date ? 'Workout updated' : `Moved to ${formatDay(next.date, 'EEEE d MMMM')}`);
       onClose();
     },
-    onError: fail,
+    onError: (err) => fail(err, 'update'),
   });
   const skip = useMutation({
     mutationFn: () => assignmentsApi.skip(a.id),
@@ -152,7 +153,7 @@ export function AssignmentDialog({ assignment: a, onClose, showClient = true }: 
       toast.success('Marked as skipped');
       onClose();
     },
-    onError: fail,
+    onError: (err) => fail(err, 'skip'),
   });
   const remove = useMutation({
     mutationFn: () => assignmentsApi.remove(a.id),
@@ -163,7 +164,7 @@ export function AssignmentDialog({ assignment: a, onClose, showClient = true }: 
     },
     onError: (err) => {
       setConfirmDelete(false);
-      fail(err);
+      fail(err, 'remove');
     },
   });
 

@@ -33,6 +33,15 @@ public sealed class MessagingOptions
     public int BatchSize { get; set; } = 50;
 
     public int MaxAttempts { get; set; } = 5;
+
+    /// <summary>
+    /// Gets or sets the delay before the first retry; each later retry waits <see cref="RetryBackoffMultiplier"/> times longer.
+    /// </summary>
+    public int RetryBaseDelayMilliseconds { get; set; } = 1000;
+
+    public double RetryBackoffMultiplier { get; set; } = 5;
+
+    public int RetryMaxDelayMilliseconds { get; set; } = 600_000;
 }
 
 /// <summary>
@@ -86,6 +95,7 @@ internal sealed partial class MessageProcessor : IMessageProcessor
     public async Task<int> ProcessBatchAsync(CancellationToken cancellationToken)
     {
         MessagingOptions options = _options.Value;
+        DateTime now = _timeProvider.UtcNow();
 
         await using NpgsqlConnection connection = await _dataSource.OpenConnectionAsync(cancellationToken);
         await using NpgsqlTransaction transaction = await connection.BeginTransactionAsync(cancellationToken);
@@ -95,12 +105,12 @@ internal sealed partial class MessageProcessor : IMessageProcessor
                 $"""
                 SELECT id, type, content, attempts
                 FROM {Schema}.{_table}
-                WHERE processed_at IS NULL AND attempts < @MaxAttempts
+                WHERE processed_at IS NULL AND attempts < @MaxAttempts AND (next_attempt_at IS NULL OR next_attempt_at <= @Now)
                 ORDER BY occurred_at, id
                 LIMIT @BatchSize
                 FOR UPDATE SKIP LOCKED
                 """,
-                new { options.MaxAttempts, options.BatchSize },
+                new { options.MaxAttempts, options.BatchSize, Now = now },
                 transaction,
                 cancellationToken: cancellationToken))).AsList();
 
@@ -112,8 +122,14 @@ internal sealed partial class MessageProcessor : IMessageProcessor
                 new CommandDefinition(
                     error is null
                         ? $"UPDATE {Schema}.{_table} SET processed_at = @Now, error = NULL WHERE id = @Id"
-                        : $"UPDATE {Schema}.{_table} SET attempts = attempts + 1, error = @Error WHERE id = @Id",
-                    new { message.Id, Now = _timeProvider.UtcNow(), Error = error },
+                        : $"UPDATE {Schema}.{_table} SET attempts = attempts + 1, error = @Error, next_attempt_at = @NextAttemptAt WHERE id = @Id",
+                    new
+                    {
+                        message.Id,
+                        Now = _timeProvider.UtcNow(),
+                        Error = error,
+                        NextAttemptAt = now + RetryBackoff.DelayAfter(message.Attempts + 1, options),
+                    },
                     transaction,
                     cancellationToken: cancellationToken));
         }

@@ -2,7 +2,6 @@ using TrainerSphere.Api.Modules.Identity.Contracts;
 using TrainerSphere.Api.Modules.Notifications.Data;
 using TrainerSphere.Api.Modules.Notifications.Domain;
 using TrainerSphere.Api.Modules.Notifications.Infrastructure;
-using TrainerSphere.SharedKernel.Domain;
 using TrainerSphere.SharedKernel.Messaging;
 
 namespace TrainerSphere.Api.Modules.Notifications.Features.ClientJoined;
@@ -17,23 +16,15 @@ internal static class ClientJoinedEmail
             .Build(EmailKinds.ClientJoined, trainer.Email, trainer.FullName, $"{client.FullName} accepted your invitation");
 }
 
-internal sealed class NotifyTrainerOfNewClientHandler(RecipientRepository recipients, EmailDispatcher emails, WebLinks links, TimeProvider timeProvider)
+internal sealed class NotifyTrainerOfNewClientHandler(RecipientRepository recipients, EmailDispatcher emails, WebLinks links)
     : IIntegrationEventHandler<ClientRegistered>
 {
     public async Task Handle(ClientRegistered integrationEvent, CancellationToken cancellationToken)
     {
-        Recipient client = new(
-            integrationEvent.UserId,
-            integrationEvent.Email,
-            integrationEvent.FirstName,
-            integrationEvent.LastName,
-            Recipient.ClientRole,
-            integrationEvent.TrainerId);
+        Recipient client = RecipientMapping.Client(integrationEvent);
 
-        await recipients.UpsertAsync(client, timeProvider.UtcNow(), cancellationToken);
-
-        // The inbox is processed in event order, so the trainer's TrainerRegistered has been handled already unless it
-        // failed; throwing retries this message after that one succeeds.
+        // The inbox is processed in event order, so the trainer's recipient record exists unless registering it
+        // failed; throwing retries this message (with backoff) after that one succeeds.
         Recipient trainer = await recipients.GetAsync(integrationEvent.TrainerId, cancellationToken)
             ?? throw new InvalidOperationException($"Trainer {integrationEvent.TrainerId} is not a known recipient yet.");
 

@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { authApi } from '@/lib/api/endpoints';
-import { isApiError } from '@/lib/api/http';
+import { errorMessage, isApiError } from '@/lib/api/http';
 import { session } from '@/lib/auth/session';
 import { browserTimeZone } from '@/lib/domain';
 import { Button } from '@/components/ui/button';
@@ -44,7 +44,14 @@ function InvitePage() {
       session.set(res);
       await navigate({ to: '/', replace: true });
     },
-    onError: (err) => setFormError(applyServerErrors(err, form.setError, ['firstName', 'lastName', 'password'])),
+    onError: (err) => {
+      // Accepted or cancelled in another tab since the preview loaded: re-read it to show why.
+      if (isApiError(err, 409) && err.code === 'Invitation.NotPending') {
+        void preview.refetch();
+        return;
+      }
+      setFormError(applyServerErrors(err, form.setError, ['firstName', 'lastName', 'password']));
+    },
   });
 
   const content = () => {
@@ -60,14 +67,19 @@ function InvitePage() {
       );
     }
     if (preview.isError) {
-      const notPending = isApiError(preview.error, 409);
+      if (!isApiError(preview.error, 404)) {
+        return (
+          <AuthCard title="Couldn't load the invitation">
+            <p className="text-sm text-muted">{errorMessage(preview.error)}</p>
+            <Button variant="secondary" className="mt-5 w-full" loading={preview.isFetching} onClick={() => void preview.refetch()}>
+              Try again
+            </Button>
+          </AuthCard>
+        );
+      }
       return (
-        <AuthCard title={notPending ? 'Invitation no longer valid' : 'Invitation not found'}>
-          <p className="text-sm text-muted">
-            {notPending
-              ? 'This invitation was already used, cancelled or has expired. If you already set a password, log in instead. Otherwise ask your trainer for a new invite.'
-              : 'Check the link from your email, or ask your trainer to send a new invite.'}
-          </p>
+        <AuthCard title="Invitation not found">
+          <p className="text-sm text-muted">Check the link from your email, or ask your trainer to send a new invite.</p>
           <Button asChild variant="secondary" className="mt-5 w-full">
             <Link to="/login">Go to log in</Link>
           </Button>
@@ -75,6 +87,34 @@ function InvitePage() {
       );
     }
     const inv = preview.data;
+    if (inv.status === 'accepted') {
+      return (
+        <AuthCard title="You've already joined">
+          <p className="text-sm text-muted">
+            This invitation was accepted. Log in as <strong className="text-fg">{inv.email}</strong> with the password you chose.
+          </p>
+          <Button asChild className="mt-5 w-full" size="lg">
+            <Link to="/login">Go to log in</Link>
+          </Button>
+          <p className="mt-3 text-center text-sm">
+            <Link to="/forgot-password" className="font-medium text-primary hover:underline">
+              Forgot your password?
+            </Link>
+          </p>
+        </AuthCard>
+      );
+    }
+    if (inv.status === 'cancelled' || inv.status === 'expired') {
+      return (
+        <AuthCard title={inv.status === 'cancelled' ? 'Invitation cancelled' : 'Invitation expired'}>
+          <p className="text-sm text-muted">
+            {inv.status === 'cancelled'
+              ? `${inv.trainerName} cancelled this invitation. If you still want to join, contact them and ask for a new invite.`
+              : `This invitation expired on ${format(parseISO(inv.expiresAt), 'd MMM yyyy')}. Contact ${inv.trainerName} and ask them to resend it; the new link will go to ${inv.email}.`}
+          </p>
+        </AuthCard>
+      );
+    }
     const { errors } = form.formState;
     return (
       <AuthCard

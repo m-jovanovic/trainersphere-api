@@ -81,6 +81,8 @@ export interface InvitationPreview {
   lastName: string;
   trainerName: string;
   message: string | null;
+  /** Only `pending` can be accepted; the others explain why the link no longer works. */
+  status: InvitationStatus;
   expiresAt: Iso;
 }
 

@@ -173,9 +173,9 @@ function Editor({ program }: { program: Program | undefined }) {
                 {DAYS.map((day) => {
                   const slots = draft.slots.filter((s) => s.week === week && s.day === day);
                   return (
-                    <div key={day} className="flex items-start gap-2 rounded-lg bg-surface-2 p-2 md:min-h-24 md:flex-col" role="group" aria-label={`Week ${week}, day ${day}`}>
+                    <div key={day} className="flex min-w-0 items-start gap-2 rounded-lg bg-surface-2 p-2 md:min-h-24 md:flex-col" role="group" aria-label={`Week ${week}, day ${day}`}>
                       <span className="w-12 shrink-0 pt-1.5 text-xs font-medium text-muted md:w-auto md:pt-0">Day {day}</span>
-                      <div className="flex min-w-0 flex-1 flex-wrap gap-1.5 md:w-full md:flex-col">
+                      <div className="flex min-w-0 flex-1 flex-wrap gap-1.5 md:w-full md:flex-col md:flex-nowrap">
                         {slots.map((s) => (
                           <span key={s.key} className="flex min-h-8 min-w-0 items-center gap-1 rounded-md border border-border bg-surface py-0.5 pr-0.5 pl-2 text-xs font-medium">
                             <span className="truncate">{s.workoutName}</span>

@@ -103,9 +103,40 @@ describe('auth journeys', () => {
     expect(session.get().user).toMatchObject({ email: 'riley@trainersphere.dev', role: 'client' });
   });
 
-  it('explains an invitation that was already used', async () => {
-    renderApp('/invite/seed-accepted-0');
-    await findHeading('Invitation no longer valid');
+  it('sends people with an accepted invitation to log in', async () => {
+    const { user, router } = renderApp('/invite/seed-accepted-0');
+    await findHeading("You've already joined");
+    expect(screen.queryByLabelText('Password')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('link', { name: 'Go to log in' }));
+    await waitFor(() => expect(router.state.location.pathname).toBe('/login'));
+  });
+
+  it('explains cancelled and expired invitations without showing the form', async () => {
+    const riley = db.state.invitations.find((i) => i.email === 'riley@trainersphere.dev')!;
+    riley.status = 'cancelled';
+    const cancelled = renderApp(`/invite/${riley.token}`);
+    await findHeading('Invitation cancelled');
+    expect(screen.getByText(/Maya Novak cancelled this invitation/)).toBeInTheDocument();
+    expect(screen.queryByLabelText('Password')).not.toBeInTheDocument();
+    cancelled.unmount();
+
+    riley.status = 'pending';
+    riley.expiresAt = '2020-01-01T09:00:00Z';
+    renderApp(`/invite/${riley.token}`);
+    await findHeading('Invitation expired');
+    expect(screen.getByText(/expired on 1 Jan 2020.*Maya Novak.*riley@trainersphere\.dev/)).toBeInTheDocument();
+    expect(screen.queryByLabelText('Password')).not.toBeInTheDocument();
+  });
+
+  it('shows the current state when the invitation is cancelled while the form is open', async () => {
+    const riley = db.state.invitations.find((i) => i.email === 'riley@trainersphere.dev')!;
+    const { user } = renderApp(`/invite/${riley.token}`);
+    await findHeading('Join Maya Novak on TrainerSphere');
+    riley.status = 'cancelled';
+    await user.type(screen.getByLabelText('Password'), 'riley-pass-1');
+    await user.type(screen.getByLabelText('Confirm password'), 'riley-pass-1');
+    await user.click(screen.getByRole('button', { name: 'Accept and continue' }));
+    await findHeading('Invitation cancelled');
   });
 
   it('explains an unknown invitation link', async () => {
@@ -130,7 +161,7 @@ describe('auth journeys', () => {
     await bad.user.type(screen.getByLabelText('New password'), 'brand-new-pass');
     await bad.user.type(screen.getByLabelText('Confirm password'), 'brand-new-pass');
     await bad.user.click(screen.getByRole('button', { name: 'Update password' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('invalid or has expired');
+    expect(await screen.findByRole('alert')).toHaveTextContent('This reset link is invalid, already used or expired.');
     bad.unmount();
 
     const good = renderApp('/reset-password?token=good-token');

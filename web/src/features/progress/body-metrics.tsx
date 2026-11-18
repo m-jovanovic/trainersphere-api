@@ -21,7 +21,7 @@ import { Input, Textarea } from '@/components/ui/input';
 import { Menu, MenuItem } from '@/components/ui/menu';
 import { Card, CardBody, CardHeader, EmptyState, Skeleton, Stat } from '@/components/ui/misc';
 import { ChartFrame } from '@/components/chart';
-import { chartTheme } from '@/components/chart-theme';
+import { chartAnimation, chartTheme } from '@/components/chart-theme';
 import { QueryError } from '@/components/layout/page-states';
 
 type MeasureKey = Exclude<keyof BodyMetricValues, 'notes'>;
@@ -140,7 +140,7 @@ export function BodyMetricsCard({ clientId }: { clientId: string }) {
                     <XAxis dataKey="label" tick={chartTheme.tick} tickLine={false} axisLine={false} minTickGap={24} />
                     <YAxis tick={chartTheme.tick} tickLine={false} axisLine={false} width={44} domain={['dataMin - 1', 'dataMax + 1']} tickFormatter={(v: number) => String(Math.round(v))} />
                     <Tooltip {...chartTheme.tooltip} formatter={(v) => [`${String(v)} ${unit}`, meta.label]} />
-                    <Line type="monotone" dataKey="value" stroke={chartTheme.primary} strokeWidth={2.5} dot={{ r: 3, fill: chartTheme.primary }} />
+                    <Line {...chartAnimation} type="monotone" dataKey="value" stroke={chartTheme.primary} strokeWidth={2.5} dot={{ r: 3, fill: chartTheme.primary }} />
                   </LineChart>
                 </ResponsiveContainer>
               </ChartFrame>

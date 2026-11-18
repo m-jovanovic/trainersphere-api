@@ -25,6 +25,10 @@ export default defineConfig(({ mode }) => {
         '/api': { target: apiTarget, changeOrigin: true },
       },
     },
+    optimizeDeps: {
+      // Pre-bundle heavy route-split deps so first navigation doesn't trigger a re-optimize reload.
+      include: ['recharts', '@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities'],
+    },
     preview: { port: 4173, strictPort: true },
     build: { sourcemap: true },
     test: {

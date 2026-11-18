@@ -11,7 +11,7 @@ import { Segmented } from '@/components/ui/chips';
 import { NativeSelect } from '@/components/ui/input';
 import { Card, CardBody, CardHeader, EmptyState, Skeleton, Stat } from '@/components/ui/misc';
 import { ChartFrame } from '@/components/chart';
-import { chartTheme } from '@/components/chart-theme';
+import { chartAnimation, chartTheme } from '@/components/chart-theme';
 import { ExerciseArt } from '@/components/exercise-art';
 import { QueryError } from '@/components/layout/page-states';
 
@@ -50,7 +50,7 @@ export function TrainingSummaryCard({ clientId }: { clientId: string }) {
                 formatter={(v) => [`${Number(v).toLocaleString('en-US')} ${units}`, 'Volume']}
                 labelFormatter={(l) => (typeof l === 'string' ? `Week of ${l}` : '')}
               />
-              <Bar dataKey="volume" fill={chartTheme.primary} radius={[4, 4, 0, 0]} maxBarSize={36} />
+              <Bar {...chartAnimation} dataKey="volume" fill={chartTheme.primary} radius={[4, 4, 0, 0]} maxBarSize={36} />
             </BarChart>
           </ResponsiveContainer>
         </ChartFrame>
@@ -143,7 +143,7 @@ export function ExerciseProgressCard({ clientId, exerciseId, onExerciseChange }:
                 <XAxis dataKey="label" tick={chartTheme.tick} tickLine={false} axisLine={false} minTickGap={24} />
                 <YAxis tick={chartTheme.tick} tickLine={false} axisLine={false} width={48} domain={['auto', 'auto']} />
                 <Tooltip {...chartTheme.tooltip} formatter={(v) => [`${String(v)} ${units}`, metricLabel[metric]]} />
-                <Line type="monotone" dataKey="value" stroke={chartTheme.primary} strokeWidth={2.5} dot={{ r: 3, fill: chartTheme.primary }} activeDot={{ r: 5 }} connectNulls />
+                <Line {...chartAnimation} type="monotone" dataKey="value" stroke={chartTheme.primary} strokeWidth={2.5} dot={{ r: 3, fill: chartTheme.primary }} activeDot={{ r: 5 }} connectNulls />
               </LineChart>
             </ResponsiveContainer>
           </ChartFrame>
@@ -177,7 +177,7 @@ export function PersonalRecordsCard({ clientId, limit }: { clientId: string; lim
         {rows.length === 0 ? (
           <EmptyState className="py-6" icon={<Trophy />} title="No records yet" description="Records are set from the second time an exercise is logged." />
         ) : (
-          <div className="-mx-4 overflow-x-auto sm:-mx-5">
+          <div className="-mx-4 overflow-x-auto sm:-mx-5" role="region" aria-label="Personal records table" tabIndex={0}>
             <table className="w-full min-w-[32rem] text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-xs tracking-wide text-muted uppercase">

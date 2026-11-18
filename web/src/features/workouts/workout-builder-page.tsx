@@ -393,7 +393,7 @@ function SortableItem({ id, index, count, control, register, errors, units, expa
             <span className="flex items-center gap-2">
               <span className="tabular text-sm text-muted">{index + 1}</span>
               {group && <span className="rounded bg-primary-soft px-1.5 text-xs font-semibold text-primary-soft-fg">{group}</span>}
-              <span className="truncate font-medium">{name}</span>
+              <span className="line-clamp-2 min-w-0 leading-snug font-medium">{name}</span>
             </span>
             <span className={cn('block truncate text-sm', hasErrors ? 'text-danger' : 'text-muted')}>{hasErrors ? 'Fix the highlighted fields' : summary}</span>
           </span>

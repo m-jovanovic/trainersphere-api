@@ -18,3 +18,8 @@ export const chartTheme = {
     cursor: { stroke: 'var(--border-strong)', fill: 'var(--surface-2)' },
   },
 } as const;
+
+const reducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/** Spread onto Recharts series: short entrance, none for reduced-motion users. */
+export const chartAnimation = { isAnimationActive: !reducedMotion, animationDuration: 400 } as const;

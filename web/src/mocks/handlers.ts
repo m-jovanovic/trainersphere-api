@@ -362,10 +362,10 @@ export const handlers = [
     const b = await body<T.ResetPasswordRequest>(request);
     const errors: Record<string, string[]> = {};
     checkPassword(b.newPassword, 'newPassword', errors);
-    if (Object.keys(errors).length) return validation(errors);
     const userId = db.state.resetTokens[b.token];
     const user = db.state.users.find((u) => u.id === userId);
-    if (!user) return problem(400, 'Auth.InvalidResetToken', 'This reset link is invalid or has expired.');
+    if (!user) errors.token = ['This reset link is invalid, already used or expired.'];
+    if (Object.keys(errors).length || !user) return validation(errors);
     user.password = b.newPassword;
     delete db.state.resetTokens[b.token];
     return noContent();
@@ -377,7 +377,6 @@ export const handlers = [
     const inv = db.state.invitations.find((i) => i.token === token);
     if (!inv) return problem(404, 'Invitation.NotFound', 'This invitation link is not valid.');
     const view = toInvitation(inv);
-    if (view.status !== 'pending') return problem(409, 'Invitation.NotPending', `This invitation is ${view.status}.`, undefined, { status: view.status });
     const trainer = db.state.users.find((u) => u.id === inv.trainerId);
     return HttpResponse.json({
       email: inv.email,
@@ -385,6 +384,7 @@ export const handlers = [
       lastName: inv.lastName,
       trainerName: trainer ? `${trainer.firstName} ${trainer.lastName}` : 'Your trainer',
       message: inv.message,
+      status: view.status,
       expiresAt: inv.expiresAt,
     } satisfies T.InvitationPreview);
   })),

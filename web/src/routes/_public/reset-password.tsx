@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { authApi } from '@/lib/api/endpoints';
-import { isApiError } from '@/lib/api/http';
+import { ApiError } from '@/lib/api/http';
 import { Button } from '@/components/ui/button';
 import { Field, FormError } from '@/components/ui/field';
 import { AuthCard } from '@/features/auth/auth-layout';
@@ -36,11 +36,9 @@ function ResetPasswordPage() {
       await navigate({ to: '/login', replace: true });
     },
     onError: (err) => {
-      if (isApiError(err) && err.code === 'Auth.InvalidResetToken') {
-        setFormError('This reset link is invalid or has expired. Request a new one.');
-        return;
-      }
-      setFormError(applyServerErrors(err, form.setError, ['newPassword']));
+      const tokenError = err instanceof ApiError ? err.fieldErrors.token : undefined;
+      const other = applyServerErrors(err, form.setError, ['newPassword']);
+      setFormError(tokenError ? `${tokenError} Request a new link below.` : other);
     },
   });
 

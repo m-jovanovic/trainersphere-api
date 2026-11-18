@@ -51,6 +51,8 @@ services:
       Smtp__Host: mailpit
       Smtp__Port: "1025"
       OpenApi__Enabled: "true"
+      # Relaxed so demo and e2e runs that sign in repeatedly are not throttled; production default is 10/min.
+      RateLimiting__AuthPermitLimitPerMinute: "1000"
     ports:
       - "5000:8080"
 

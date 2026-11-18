@@ -42,12 +42,17 @@ internal sealed record InvitationIssued(
     Guid Id,
     DateTime OccurredAt,
     Guid InvitationId,
+    Guid TrainerId,
     string Email,
     string FirstName,
+    string LastName,
     string TrainerName,
     string? Message,
     string Token,
     DateTime ExpiresAt) : IntegrationEvent(Id, OccurredAt);
+
+/// <summary>A pending invitation was cancelled.</summary>
+internal sealed record InvitationCancelled(Guid Id, DateTime OccurredAt, Guid InvitationId, Guid TrainerId) : IntegrationEvent(Id, OccurredAt);
 
 /// <summary>A user asked for a password reset link. Carries the raw token for the email.</summary>
 internal sealed record PasswordResetRequested(

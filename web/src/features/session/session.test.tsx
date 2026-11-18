@@ -1,5 +1,5 @@
 import { onlineManager } from '@tanstack/react-query';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { assignmentsApi, sessionsApi } from '@/lib/api/endpoints';
 import { queries } from '@/lib/api/queries';
@@ -83,6 +83,23 @@ describe('live session logging', () => {
     expect(screen.getByRole('link', { name: 'View workout details' })).toHaveAttribute('href', `/sessions/${sessionId}`);
   });
 
+  it('groups the new records per exercise on the completion summary', async () => {
+    const { user, assignment } = await openScheduledWorkout();
+    const first = assignment.snapshot.exercises[0]!;
+    // Any earlier best below today's set makes every record type for this exercise a PR.
+    for (const type of ['estimated-1rm', 'max-weight', 'max-reps', 'max-volume']) db.state.bests[`${assignment.clientId}|${first.exerciseId}|${type}`] = 0.5;
+    await user.click(screen.getByRole('button', { name: 'Set 1 done' }));
+    await user.click(screen.getByRole('button', { name: 'Skip rest' }));
+    await user.click(screen.getByRole('button', { name: 'Finish' }));
+    await user.click((await findDialog('Finish workout?')).getByRole('button', { name: 'Finish workout' }));
+
+    const heading = await screen.findByRole('heading', { name: 'New PRs on 1 exercise', level: 2 });
+    const rows = within(heading.parentElement!).getAllByRole('listitem');
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toHaveTextContent(first.exercise.name);
+    expect(rows[0]).toHaveTextContent(/· also /);
+  });
+
   it('discards an in-progress workout after confirmation', async () => {
     const { user, router, assignment, sessionId } = await openScheduledWorkout();
     await user.click(screen.getByRole('button', { name: 'Workout options' }));
@@ -113,6 +130,20 @@ describe('live session logging', () => {
     await findHeading(assignment.snapshot.name);
   });
 
+  it('points to the finished session when the assignment was completed elsewhere', async () => {
+    const assignment = todaysAssignment();
+    await signIn(CLIENT_EMAIL);
+    const fullAssignment = await assignmentsApi.get(assignment.id);
+    const finished = await sessionsApi.start({ assignmentId: assignment.id });
+    await sessionsApi.complete(finished.id, {});
+    const attemptedId = crypto.randomUUID();
+    const { queryClient } = renderApp(`/log/${attemptedId}`);
+    queryClient.setQueryData(queries.session(attemptedId).queryKey, optimisticSession(attemptedId, fullAssignment, new Date().toISOString()));
+    void runSessionWrite(queryClient, sessionKeys.start, attemptedId, { id: attemptedId, assignmentId: assignment.id }).catch(() => undefined);
+
+    expect(await screen.findByText('This workout is already done')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'See how it went' })).toHaveAttribute('href', `/sessions/${finished.id}`);
+  });
   it('keeps a set done offline and replays the write after reconnecting', async () => {
     const { user, sessionId } = await openScheduledWorkout();
     onlineManager.setOnline(false);

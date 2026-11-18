@@ -9,7 +9,7 @@ import { keys, queries } from '@/lib/api/queries';
 import type { Exercise, Session, SessionExercise } from '@/lib/api/types';
 import { useUnits } from '@/lib/auth/hooks';
 import { formatDay } from '@/lib/dates';
-import { formatDuration, formatPrDelta, formatPrValue, formatSetLine, formatVolume, prLabels } from '@/lib/domain';
+import { formatDuration, formatSetLine, formatVolume, prHeading } from '@/lib/domain';
 import { useNow } from '@/lib/use-now';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ import { Textarea } from '@/components/ui/input';
 import { Menu, MenuItem } from '@/components/ui/menu';
 import { Badge, Card, CardBody, EmptyState, Stat } from '@/components/ui/misc';
 import { ExerciseArt } from '@/components/exercise-art';
+import { PrList } from '@/components/pr-list';
 import { NotFound, PageSpinner } from '@/components/layout/page-states';
 import { SyncStatus } from '@/components/layout/sync-status';
 import { ExercisePicker } from '@/features/exercises/exercise-picker';
@@ -51,7 +52,9 @@ export function LiveSessionPage() {
 
   if (startError instanceof ApiError) {
     const other = typeof startError.problem.sessionId === 'string' ? startError.problem.sessionId : null;
-    if (startError.code === 'Session.AlreadyStartedForAssignment' || (startError.code === 'Assignment.NotScheduled' && other)) return <AlreadyStarted otherId={other} />;
+    if (startError.code === 'Session.AlreadyStartedForAssignment') return <AlreadyStarted otherId={other} />;
+    // A start only gets NotScheduled with a session when that session already completed the assignment.
+    if (startError.code === 'Assignment.NotScheduled' && other) return <AlreadyDone sessionId={other} />;
     return <StartRejected error={startError} />;
   }
   if (!q.data) {
@@ -110,6 +113,31 @@ function AlreadyStarted({ otherId }: { otherId: string | null }) {
                 </Link>
               </Button>
             )}
+            <Button asChild variant="secondary">
+              <Link to="/">Back to today</Link>
+            </Button>
+          </div>
+        }
+      />
+    </FullScreen>
+  );
+}
+
+function AlreadyDone({ sessionId }: { sessionId: string }) {
+  return (
+    <FullScreen>
+      <EmptyState
+        className="min-h-[60dvh]"
+        icon={<Flag />}
+        title="This workout is already done"
+        description="It was finished on another device."
+        action={
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button asChild>
+              <Link to="/sessions/$sessionId" params={{ sessionId }}>
+                See how it went
+              </Link>
+            </Button>
             <Button asChild variant="secondary">
               <Link to="/">Back to today</Link>
             </Button>
@@ -273,7 +301,7 @@ function Logger({ session: s }: { session: Session }) {
 
       {exercises.length > 1 && <ExerciseStrip exercises={exercises} index={safeIndex} onSelect={goTo} />}
 
-      <main className={cn('mx-auto max-w-2xl px-4 pt-4', rest.state ? 'pb-48' : 'pb-28')}>
+      <main className={cn('mx-auto max-w-2xl px-4 pt-4', rest.state ? 'pb-[calc(12rem+env(safe-area-inset-bottom))]' : 'pb-[calc(7rem+env(safe-area-inset-bottom))]')}>
         {current ? (
           <ExercisePanel
             key={current.position}
@@ -588,23 +616,9 @@ function SessionComplete({ session: s }: { session: Session }) {
               <>
                 <h2 className="mb-3 flex items-center gap-2 font-semibold">
                   <Trophy className="size-5 text-pr" aria-hidden />
-                  {prs.length} new personal record{prs.length === 1 ? '' : 's'}
+                  {prHeading(prs, 'New PRs')}
                 </h2>
-                <ul className="flex flex-col gap-3">
-                  {prs.map((pr) => (
-                    <li key={pr.id} className="flex items-center gap-3">
-                      <ExerciseArt illustration={pr.exercise.illustration} name={pr.exercise.name} variant="sm" className="size-10 shrink-0" />
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-medium">{pr.exercise.name}</span>
-                        <span className="block text-xs text-muted">{prLabels[pr.type]}</span>
-                      </span>
-                      <span className="text-right">
-                        <span className="tabular block text-sm font-semibold">{formatPrValue(pr, units)}</span>
-                        <span className="tabular block text-xs text-pr">{formatPrDelta(pr, units)}</span>
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+                <PrList records={prs} units={units} showWhen={false} art />
               </>
             )}
           </CardBody>

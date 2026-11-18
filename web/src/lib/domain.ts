@@ -30,6 +30,17 @@ export function formatWeight(kg: number | null, units: Units, withUnit = true): 
   return withUnit ? `${text} ${units}` : text;
 }
 
+/** e1RM is an estimate, so it shows to the nearest 0.5 kg or 1 lb rather than reading as measured to the gram. */
+export function roundEstimate(value: number, units: Units): number {
+  return units === 'kg' ? Math.round(value * 2) / 2 : Math.round(value);
+}
+
+export function formatEstimate(kg: number | null, units: Units, withUnit = true): string {
+  if (kg === null) return '–';
+  const text = String(roundEstimate(kgToUnits(kg, units), units));
+  return withUnit ? `${text} ${units}` : text;
+}
+
 export function formatVolume(kg: number, units: Units): string {
   const v = Math.round(kgToUnits(kg, units));
   return `${v.toLocaleString('en-US')} ${units}`;
@@ -138,9 +149,23 @@ export function formatPrValue(pr: Pick<PersonalRecord, 'type' | 'value'>, units:
       return `${pr.value} reps`;
     case 'max-volume':
       return formatVolume(pr.value, units);
+    case 'estimated-1rm':
+      return formatEstimate(pr.value, units);
     default:
       return formatWeight(pr.value, units);
   }
+}
+
+/** Unrounded e1RM for a tooltip; other record types already show their exact value. */
+export function formatPrExact(pr: Pick<PersonalRecord, 'type' | 'value'>, units: Units): string | undefined {
+  if (pr.type !== 'estimated-1rm') return undefined;
+  return `Estimated ${String(round2(kgToUnits(pr.value, units)))} ${units}`;
+}
+
+/** Header for one session's records: counts distinct exercises, like the session badges, not individual records. */
+export function prHeading(prs: Pick<PersonalRecord, 'exerciseId'>[], prefix = 'PRs'): string {
+  const n = new Set(prs.map((p) => p.exerciseId)).size;
+  return `${prefix} on ${String(n)} exercise${n === 1 ? '' : 's'}`;
 }
 
 /** "+2.5 kg" style improvement over the previous best. */
@@ -148,6 +173,12 @@ export function formatPrDelta(pr: Pick<PersonalRecord, 'type' | 'value' | 'previ
   const diff = pr.value - pr.previousValue;
   if (pr.type === 'max-reps') return `+${diff} reps`;
   if (pr.type === 'max-volume') return `+${formatVolume(diff, units)}`;
+  if (pr.type === 'estimated-1rm') {
+    const shown = roundEstimate(kgToUnits(pr.value, units), units) - roundEstimate(kgToUnits(pr.previousValue, units), units);
+    if (shown > 0) return `+${String(Number(shown.toFixed(1)))} ${units}`;
+    // Both ends rounded to the same step; "+0" would read as no record at all.
+    return `+${String(Math.max(0.1, Number(kgToUnits(diff, units).toFixed(1))))} ${units}`;
+  }
   return `+${formatWeight(diff, units)}`;
 }
 

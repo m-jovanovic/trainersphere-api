@@ -3,10 +3,10 @@ import { Trophy } from 'lucide-react';
 import { useState } from 'react';
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { queries } from '@/lib/api/queries';
-import type { PersonalRecord, PrType, ProgressPoint, Units } from '@/lib/api/types';
+import type { PersonalRecord, PrType, ProgressExercise, ProgressPoint, Units } from '@/lib/api/types';
 import { useUnits } from '@/lib/auth/hooks';
 import { formatAgo, formatDay } from '@/lib/dates';
-import { formatPercent, formatPrValue, formatVolume, formatWeight, kgToUnits, prLabels } from '@/lib/domain';
+import { formatPercent, formatPrExact, formatPrValue, formatVolume, formatWeight, kgToUnits, prLabels, round2, roundEstimate } from '@/lib/domain';
 import { Segmented } from '@/components/ui/chips';
 import { NativeSelect } from '@/components/ui/input';
 import { Card, CardBody, CardHeader, EmptyState, Skeleton, Stat } from '@/components/ui/misc';
@@ -64,21 +64,46 @@ export function TrainingSummaryCard({ clientId }: { clientId: string }) {
 type Metric = 'e1rm' | 'top' | 'volume';
 const metricLabel: Record<Metric, string> = { e1rm: 'Estimated 1RM', top: 'Top set', volume: 'Volume' };
 
+/** Chart value in the user's units, unrounded beyond 2 decimals. */
 function metricValue(p: ProgressPoint, metric: Metric, units: Units): number | null {
   const kg = metric === 'e1rm' ? p.estimatedOneRepMaxKg : metric === 'top' ? p.topSetWeightKg : p.volumeKg;
-  return kg === null ? null : Math.round(kgToUnits(kg, units) * 10) / 10;
+  return kg === null ? null : round2(kgToUnits(kg, units));
+}
+
+function displayValue(value: number, metric: Metric, units: Units): number {
+  return metric === 'e1rm' ? roundEstimate(value, units) : Math.round(value * 10) / 10;
+}
+
+/** The first metric that has data for these points, so a chart never opens empty when something was logged. */
+function defaultMetric(points: ProgressPoint[]): Metric {
+  if (points.some((p) => p.estimatedOneRepMaxKg !== null)) return 'e1rm';
+  if (points.some((p) => p.topSetWeightKg !== null)) return 'top';
+  return 'volume';
+}
+
+/**
+ * Opens on the most recently trained exercise that has an estimated 1RM (an e1RM record exists), so the
+ * default chart has data; otherwise the most recent exercise, whose chart then falls back to another metric.
+ */
+function defaultExercise(list: ProgressExercise[], records: PersonalRecord[] | undefined): string | undefined {
+  const recent = [...list].sort((a, b) => b.lastPerformedAt.localeCompare(a.lastPerformedAt));
+  const withE1rm = new Set((records ?? []).filter((r) => r.type === 'estimated-1rm').map((r) => r.exerciseId));
+  return (recent.find((e) => withE1rm.has(e.exerciseId)) ?? recent[0])?.exerciseId;
 }
 
 export function ExerciseProgressCard({ clientId, exerciseId, onExerciseChange }: { clientId: string; exerciseId: string | undefined; onExerciseChange: (id: string) => void }) {
   const units = useUnits();
-  const [metric, setMetric] = useState<Metric>('e1rm');
+  // A metric picked by hand applies to the exercise it was picked on; another exercise opens on its own default.
+  const [picked, setPicked] = useState<{ exerciseId: string; metric: Metric } | null>(null);
   const exercises = useQuery(queries.progressExercises(clientId));
+  const records = useQuery(queries.personalRecords(clientId));
   const sorted = [...(exercises.data ?? [])].sort((a, b) => b.sessionCount - a.sessionCount);
-  const selected = exerciseId && sorted.some((e) => e.exerciseId === exerciseId) ? exerciseId : sorted[0]?.exerciseId;
-  const progress = useQuery({ ...queries.exerciseProgress(clientId, selected ?? ''), enabled: selected !== undefined });
+  const recordsSettled = records.data !== undefined || records.isError;
+  const selected = exerciseId && sorted.some((e) => e.exerciseId === exerciseId) ? exerciseId : defaultExercise(sorted, records.data);
+  const progress = useQuery({ ...queries.exerciseProgress(clientId, selected ?? ''), enabled: selected !== undefined && (exerciseId !== undefined || recordsSettled) });
 
   if (exercises.error && !exercises.data) return <Card><QueryError error={exercises.error} onRetry={() => void exercises.refetch()} /></Card>;
-  if (!exercises.data) return <Skeleton className="h-96" />;
+  if (!exercises.data || (!exerciseId && !recordsSettled)) return <Skeleton className="h-96" />;
   if (sorted.length === 0) {
     return (
       <Card>
@@ -89,10 +114,14 @@ export function ExerciseProgressCard({ clientId, exerciseId, onExerciseChange }:
   }
 
   const points = progress.data?.points ?? [];
+  const metric = picked && picked.exerciseId === selected ? picked.metric : defaultMetric(points);
+  const setMetric = (m: Metric) => selected && setPicked({ exerciseId: selected, metric: m });
   const data = points.map((p) => ({ date: p.date, label: formatDay(p.date, 'd MMM'), value: metricValue(p, metric, units), reps: p.topSetReps }));
-  const withValues = data.filter((d) => d.value !== null);
-  const first = withValues[0]?.value ?? null;
-  const last = withValues.at(-1)?.value ?? null;
+  const withValues = data.filter((d): d is typeof d & { value: number } => d.value !== null);
+  const firstRaw = withValues[0]?.value;
+  const lastRaw = withValues.at(-1)?.value;
+  const first = firstRaw === undefined ? null : displayValue(firstRaw, metric, units);
+  const last = lastRaw === undefined ? null : displayValue(lastRaw, metric, units);
   const firstDate = withValues[0]?.date;
   const change = first !== null && last !== null ? Math.round((last - first) * 10) / 10 : null;
   const current = sorted.find((e) => e.exerciseId === selected);
@@ -141,7 +170,7 @@ export function ExerciseProgressCard({ clientId, exerciseId, onExerciseChange }:
             caption={`${metricLabel[metric]} for ${current?.exercise.name ?? 'exercise'}`}
             summary={`${metricLabel[metric]} over ${withValues.length} sessions, latest ${last ?? '–'} ${units}.`}
             columns={['Date', metricLabel[metric]]}
-            rows={withValues.map((d) => [formatDay(d.date, 'd MMM yyyy'), `${d.value} ${units}`])}
+            rows={withValues.map((d) => [formatDay(d.date, 'd MMM yyyy'), `${String(displayValue(d.value, metric, units))} ${units}`])}
           >
             <ResponsiveContainer width="100%" height="100%" initialDimension={dims}>
               <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
@@ -175,6 +204,8 @@ export function PersonalRecordsCard({ clientId, limit }: { clientId: string; lim
     byExercise.set(pr.exerciseId, entry);
   }
   const rows = [...byExercise.entries()].sort((a, b) => b[1].latest.localeCompare(a[1].latest)).slice(0, limit);
+  // A column nobody has a record in is just a row of dashes.
+  const columns = prOrder.filter((t) => rows.some(([, r]) => r.prs[t] !== undefined));
 
   return (
     <Card>
@@ -188,7 +219,7 @@ export function PersonalRecordsCard({ clientId, limit }: { clientId: string; lim
               <thead>
                 <tr className="border-b border-border text-left text-xs tracking-wide text-muted uppercase">
                   <th scope="col" className="px-4 py-2 font-medium sm:px-5">Exercise</th>
-                  {prOrder.map((t) => (
+                  {columns.map((t) => (
                     <th key={t} scope="col" className="px-2 py-2 text-right font-medium">
                       {t === 'estimated-1rm' ? 'e1RM' : prLabels[t]}
                     </th>
@@ -207,10 +238,10 @@ export function PersonalRecordsCard({ clientId, limit }: { clientId: string; lim
                         </span>
                       </span>
                     </th>
-                    {prOrder.map((t) => {
+                    {columns.map((t) => {
                       const pr = r.prs[t];
                       return (
-                        <td key={t} className="tabular px-2 py-2.5 text-right whitespace-nowrap">
+                        <td key={t} className="tabular px-2 py-2.5 text-right whitespace-nowrap" title={pr ? formatPrExact(pr, units) : undefined}>
                           {pr ? formatPrValue(pr, units) : <span className="text-muted">–</span>}
                           {pr && t === 'max-reps' && pr.weightKg ? <span className="block text-xs text-muted">@ {formatWeight(pr.weightKg, units)}</span> : null}
                         </td>

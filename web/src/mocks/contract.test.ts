@@ -81,7 +81,7 @@ describe('mock API, contract v1.6/v1.7', () => {
     expect(Object.keys(fresh.problem.errors ?? {})).toEqual(['exercises[1].exerciseId']);
   });
 
-  it('carries the session id on Assignment.NotScheduled once a session was started', async () => {
+  it('carries the session id on Assignment.NotScheduled whenever a session exists', async () => {
     const a = db.state.assignments.find((x) => x.status === 'scheduled' && !x.sessionId && x.clientId === userId(CLIENT_EMAIL) && x.date > db.state.seededOn)!;
     await signIn(CLIENT_EMAIL);
     const s = await api<{ id: string }>('/sessions', { method: 'POST', body: { assignmentId: a.id } });
@@ -92,10 +92,14 @@ describe('mock API, contract v1.6/v1.7', () => {
       expect(err.problem.sessionId).toBe(s.id);
     }
 
-    const done = db.state.assignments.find((x) => x.status === 'completed')!;
-    const err = await fail(api('/assignments/' + done.id, { method: 'DELETE' }));
-    expect(err.code).toBe('Assignment.NotScheduled');
-    expect(err.problem.sessionId).toBeUndefined();
+    const done = db.state.assignments.find((x) => x.status === 'completed' && x.sessionId)!;
+    for (const req of [api('/assignments/' + done.id, { method: 'DELETE' }), api('/assignments/' + done.id, { method: 'PUT', body: { date: done.date, notes: null } })]) {
+      const err = await fail(req);
+      expect(err.code).toBe('Assignment.NotScheduled');
+      expect(err.problem.sessionId).toBe(done.sessionId);
+    }
+    const skipped = db.state.assignments.find((x) => x.status === 'skipped' && !x.sessionId);
+    if (skipped) expect((await fail(api('/assignments/' + skipped.id, { method: 'DELETE' }))).problem.sessionId).toBeUndefined();
   });
 
   it('sorts clients by every documented value, nulls last', async () => {

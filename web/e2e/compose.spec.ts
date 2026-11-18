@@ -137,6 +137,9 @@ test.describe('client journeys on real data', () => {
     await expect(page.getByRole('heading', { name: 'Training volume' })).toBeVisible();
     await expect(page.getByRole('region', { name: 'Personal records table' }).locator('tbody tr').first()).toBeVisible();
     expect(await page.getByLabel('Exercise', { exact: true }).locator('option').count()).toBeGreaterThan(1);
+    // The default exercise and metric always have data, so the chart never opens empty.
+    await expect(page.getByRole('table', { name: /^Estimated 1RM for / })).toBeAttached();
+    await expect(page.getByText('No estimated 1RM yet', { exact: false })).toHaveCount(0);
     await expect(page.getByText('No measurements yet')).toHaveCount(0);
     await expect(page.getByRole('button', { name: /^Actions for \d{1,2} \w{3} \d{4}$/ }).first()).toBeVisible();
   });
@@ -202,6 +205,7 @@ test.describe('trainer journeys on real data', () => {
     await expect(page.locator('a[href^="/sessions/"]').first()).toBeVisible();
     await page.getByRole('tab', { name: 'Progress' }).click();
     await expect(page.getByRole('region', { name: 'Personal records table' }).locator('tbody tr').first()).toBeVisible();
+    await expect(page.getByRole('table', { name: /^Estimated 1RM for / })).toBeAttached();
   });
 
   test('workouts and programs show the seeded library', async ({ page }) => {

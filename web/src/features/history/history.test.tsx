@@ -1,7 +1,7 @@
 import { screen, within } from '@testing-library/react';
 import { format, parseISO } from 'date-fns';
 import { describe, expect, it } from 'vitest';
-import { db, sessionTotals } from '@/mocks/db';
+import { db, exerciseRef, sessionTotals } from '@/mocks/db';
 import { CLIENT_EMAIL, findHeading, renderApp, signIn } from '@/test/utils';
 import { findCard } from '@/test/trainer';
 
@@ -32,10 +32,34 @@ describe('client history', () => {
     const totals = sessionTotals(withPr);
     expect(screen.getByText('Sets').parentElement).toHaveTextContent(String(totals.completedSets));
     expect(screen.getByText('Reps', { selector: 'span' }).parentElement).toHaveTextContent(String(totals.totalReps));
-    const records = await findCard(`${withPr.personalRecords.length} personal record${withPr.personalRecords.length === 1 ? '' : 's'}`);
-    expect(records.getAllByText(withPr.personalRecords[0]!.exercise.name).length).toBeGreaterThan(0);
+    const records = await findCard(`PRs on ${exerciseCount} exercise${exerciseCount === 1 ? '' : 's'}`);
+    expect(records.getAllByRole('listitem')).toHaveLength(exerciseCount);
+    expect(records.getAllByText(withPr.personalRecords[0]!.exercise.name)).toHaveLength(1);
     expect(screen.getAllByRole('table').length).toBeGreaterThan(0);
     expect(screen.getAllByRole('columnheader', { name: 'Set' }).length).toBeGreaterThan(0);
+  });
+
+  it('lists one row per exercise when an exercise set several records', async () => {
+    const session = clientSessions()[0]!;
+    const [a, b] = session.plan.map((p) => p.exerciseId);
+    const base = { clientId: session.clientId, weightKg: null, reps: null, sessionId: session.id, achievedAt: session.startedAt };
+    session.personalRecords = [
+      { ...base, id: 'r1', exerciseId: a!, exercise: exerciseRef(a!), type: 'estimated-1rm', value: 109.25, previousValue: 103.1 },
+      { ...base, id: 'r2', exerciseId: a!, exercise: exerciseRef(a!), type: 'max-weight', value: 80, previousValue: 75 },
+      { ...base, id: 'r3', exerciseId: a!, exercise: exerciseRef(a!), type: 'max-volume', value: 2560, previousValue: 2400 },
+      { ...base, id: 'r4', exerciseId: b!, exercise: exerciseRef(b!), type: 'estimated-1rm', value: 30.75, previousValue: 29.4 },
+    ];
+    await signIn(CLIENT_EMAIL);
+    renderApp(`/sessions/${session.id}`);
+
+    const records = await findCard('PRs on 2 exercises');
+    const rows = records.getAllByRole('listitem');
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toHaveTextContent(exerciseRef(a!).name);
+    expect(rows[0]).toHaveTextContent('Heaviest set · also e1RM, volume');
+    expect(rows[0]).toHaveTextContent('80 kg');
+    expect(rows[1]).toHaveTextContent('Estimated 1RM');
+    expect(within(rows[1]!).getByText('31 kg')).toHaveAttribute('title', 'Estimated 30.75 kg');
   });
 
   it('renders exercise set values and the prescription on the detail page', async () => {

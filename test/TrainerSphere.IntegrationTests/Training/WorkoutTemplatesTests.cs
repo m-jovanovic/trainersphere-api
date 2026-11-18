@@ -128,7 +128,7 @@ public sealed class WorkoutTemplatesTests(ApiFactory factory) : TrainingTest(fac
         await response.ShouldBeValidationProblemAsync("exercises[0].load.type");
     }
 
-    [Fact(Skip = "QA-F9: enum errors read ''Type' must be one of: ...', not the contract's 'Must be one of: ...'")]
+    [Fact(Skip = "QA-F9 (partial): taxonomy messages are fixed, but KebabEnum still reads ''Type' must be one of: ...' instead of 'Must be one of: ...' for workout goal/load types")]
     public async Task CreateWorkout_WithANonContractGoalType_ReturnsTheContractMessage()
     {
         TestUser trainer = await CreateUtcTrainerAsync();
@@ -140,7 +140,7 @@ public sealed class WorkoutTemplatesTests(ApiFactory factory) : TrainingTest(fac
         problem.Errors!["exercises[0].goal.type"][0].ShouldStartWith("Must be one of: reps, time, distance.");
     }
 
-    [Fact(Skip = "QA-F10: the API rejects the contract's load type 'percent-1rm'; KebabCase maps Percent1Rm to 'percent1-rm'")]
+    [Fact]
     public async Task CreateWorkout_WithAPercent1RmLoad_Returns201()
     {
         TestUser trainer = await CreateUtcTrainerAsync();
@@ -153,7 +153,7 @@ public sealed class WorkoutTemplatesTests(ApiFactory factory) : TrainingTest(fac
         body.GetProperty("exercises")[0].GetProperty("load").GetProperty("type").GetString().ShouldBe("percent-1rm");
     }
 
-    [Fact(Skip = "QA-F10: the OpenAPI schema documents 'percent1-rm', not the contract's 'percent-1rm'")]
+    [Fact]
     public async Task OpenApi_DocumentsPercent1RmAsTheLoadType()
     {
         TestUser trainer = await CreateUtcTrainerAsync();
@@ -286,7 +286,7 @@ public sealed class WorkoutTemplatesTests(ApiFactory factory) : TrainingTest(fac
         await response.ShouldHaveStatusAsync(HttpStatusCode.Created);
     }
 
-    [Fact(Skip = "QA-F11: a workout referencing an unknown exercise returns 400 Validation, not the contract's 404 Exercise.NotFound")]
+    [Fact]
     public async Task CreateWorkout_WithAnUnknownExercise_Returns404ExerciseNotFound()
     {
         TestUser trainer = await CreateUtcTrainerAsync();
@@ -295,7 +295,7 @@ public sealed class WorkoutTemplatesTests(ApiFactory factory) : TrainingTest(fac
         await response.ShouldBeCompleteProblemAsync(HttpStatusCode.NotFound, "Exercise.NotFound");
     }
 
-    [Fact(Skip = "QA-F11: a workout referencing an archived exercise returns 400 Validation, not the contract's 422 Exercise.Archived")]
+    [Fact]
     public async Task CreateWorkout_WithAnArchivedExercise_Returns422ExerciseArchived()
     {
         TestUser trainer = await CreateUtcTrainerAsync();
@@ -307,7 +307,7 @@ public sealed class WorkoutTemplatesTests(ApiFactory factory) : TrainingTest(fac
         await response.ShouldBeCompleteProblemAsync(HttpStatusCode.UnprocessableEntity, "Exercise.Archived");
     }
 
-    [Fact(Skip = "QA-F11: a workout referencing another trainer's exercise returns 400 Validation, not the contract's 404 Exercise.NotFound")]
+    [Fact]
     public async Task CreateWorkout_WithAnotherTrainersExercise_Returns404ExerciseNotFound()
     {
         TestUser trainer = await CreateUtcTrainerAsync();

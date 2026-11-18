@@ -131,7 +131,7 @@ public sealed class ExercisesTests(ApiFactory factory) : TrainingTest(factory), 
             e.Category == value || e.MovementPattern == value || e.Equipment.Contains(value));
     }
 
-    [Theory(Skip = "QA-F9: taxonomy errors are keyed per item ('muscle[0]') and read ''Muscle' must be one of: ...', not the contract's parameter key and 'Must be one of: ...'")]
+    [Theory]
     [InlineData("category=powerlifting", "category")]
     [InlineData("pattern=spin", "pattern")]
     [InlineData("muscle=quadriceps", "muscle")]
@@ -146,7 +146,7 @@ public sealed class ExercisesTests(ApiFactory factory) : TrainingTest(factory), 
         problem.Errors![field][0].ShouldStartWith("Must be one of:");
     }
 
-    [Fact(Skip = "QA-F9: taxonomy errors read ''Category' must be one of: ...', not the contract's 'Must be one of: ...'")]
+    [Fact]
     public async Task CreateCustomExercise_WithAnUnknownTaxonomyValue_ReturnsTheContractMessage()
     {
         TestUser trainer = await CreateUtcTrainerAsync();

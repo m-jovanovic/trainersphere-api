@@ -534,7 +534,7 @@ public sealed class SessionsTests(ApiFactory factory) : TrainingTest(factory), I
         list.Items.Single(s => s.Id == oneExercise).PersonalRecordCount.ShouldBe(1);
     }
 
-    [Fact(Skip = "QA-F10: PR types wire as 'estimated1-rm' etc., not the contract's 'estimated-1rm'")]
+    [Fact]
     public async Task PersonalRecord_Types_AreTheContractValues()
     {
         (TestUser trainer, TestUser client) = await CreateUtcTrainerWithClientAsync();

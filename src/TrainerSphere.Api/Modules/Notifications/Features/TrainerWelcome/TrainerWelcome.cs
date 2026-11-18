@@ -1,8 +1,6 @@
 using TrainerSphere.Api.Modules.Identity.Contracts;
-using TrainerSphere.Api.Modules.Notifications.Data;
 using TrainerSphere.Api.Modules.Notifications.Domain;
 using TrainerSphere.Api.Modules.Notifications.Infrastructure;
-using TrainerSphere.SharedKernel.Domain;
 using TrainerSphere.SharedKernel.Messaging;
 
 namespace TrainerSphere.Api.Modules.Notifications.Features.TrainerWelcome;
@@ -17,14 +15,8 @@ internal static class TrainerWelcomeEmail
             .Build(EmailKinds.TrainerWelcome, trainer.Email, trainer.FullName, "Welcome to TrainerSphere");
 }
 
-internal sealed class SendTrainerWelcomeHandler(RecipientRepository recipients, EmailDispatcher emails, WebLinks links, TimeProvider timeProvider)
-    : IIntegrationEventHandler<TrainerRegistered>
+internal sealed class SendTrainerWelcomeHandler(EmailDispatcher emails, WebLinks links) : IIntegrationEventHandler<TrainerRegistered>
 {
-    public async Task Handle(TrainerRegistered integrationEvent, CancellationToken cancellationToken)
-    {
-        Recipient trainer = new(integrationEvent.UserId, integrationEvent.Email, integrationEvent.FirstName, integrationEvent.LastName, Recipient.TrainerRole, TrainerId: null);
-
-        await recipients.UpsertAsync(trainer, timeProvider.UtcNow(), cancellationToken);
-        await emails.SendAsync(TrainerWelcomeEmail.Compose(trainer, links), integrationEvent.Id, cancellationToken);
-    }
+    public Task Handle(TrainerRegistered integrationEvent, CancellationToken cancellationToken) =>
+        emails.SendAsync(TrainerWelcomeEmail.Compose(RecipientMapping.Trainer(integrationEvent), links), integrationEvent.Id, cancellationToken);
 }

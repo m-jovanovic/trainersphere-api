@@ -141,7 +141,7 @@ public sealed class EmailDeliveryTests(FlakyEmailApiFactory factory) : Integrati
         }
     }
 
-    [Fact(Skip = "QA-F8: a failed welcome email also loses the trainer's recipient record, so client-joined emails to that trainer fail forever")]
+    [Fact]
     public async Task WelcomeEmailOutage_StillNotifiesTheTrainerWhenAClientJoins()
     {
         string email = Unique.Email("outage");

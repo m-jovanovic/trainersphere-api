@@ -148,6 +148,7 @@ public class ApiFactory(PostgresServer postgres) : WebApplicationFactory<Program
             ["RateLimiting:AuthPermitLimitPerMinute"] = "100000",
             ["Messaging:PollingIntervalMilliseconds"] = "50",
             ["Messaging:MaxAttempts"] = "3",
+            ["Messaging:RetryBaseDelayMilliseconds"] = "20",
             ["OpenApi:Enabled"] = "true",
             ["App:WebBaseUrl"] = "http://web.test",
             ["Logging:LogLevel:Default"] = "Warning",

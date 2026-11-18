@@ -2,7 +2,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { format, parseISO } from 'date-fns';
 import type { ReactNode } from 'react';
 import { Link } from '@tanstack/react-router';
-import { ChevronRight, History, Trophy } from 'lucide-react';
+import { ChevronRight, History } from 'lucide-react';
 import { queries } from '@/lib/api/queries';
 import type { SessionSummary } from '@/lib/api/types';
 import { useUnits } from '@/lib/auth/hooks';
@@ -10,6 +10,7 @@ import { formatDateTime } from '@/lib/dates';
 import { formatVolume } from '@/lib/domain';
 import { Button } from '@/components/ui/button';
 import { Badge, Card, EmptyState, Skeleton } from '@/components/ui/misc';
+import { SessionPrBadge } from '@/components/pr-list';
 import { QueryError } from '@/components/layout/page-states';
 
 /** Paged list of sessions, newest first, grouped by month. */
@@ -62,12 +63,7 @@ export function SessionList({ clientId, emptyAction }: { clientId?: string; empt
                         {formatDateTime(s.startedAt, 'HH:mm')} · {s.completedSets} sets · {formatVolume(s.totalVolumeKg, units)}
                       </span>
                     </span>
-                    {s.personalRecordCount > 0 && (
-                      <Badge tone="pr" aria-label={`${s.personalRecordCount} personal records`}>
-                        <Trophy aria-hidden />
-                        {s.personalRecordCount} PR{s.personalRecordCount === 1 ? '' : 's'}
-                      </Badge>
-                    )}
+                    <SessionPrBadge count={s.personalRecordCount} long />
                     <ChevronRight className="size-4 text-muted" aria-hidden />
                   </Link>
                 </li>

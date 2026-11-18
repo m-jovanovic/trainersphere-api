@@ -23,7 +23,8 @@ describe('client history', () => {
     expect(within(group).getByRole('heading', { name: month, level: 3 })).toBeInTheDocument();
     const link = within(group).getAllByRole('link', { name: new RegExp(withPr.workoutName) }).find((a) => a.getAttribute('href') === `/sessions/${withPr.id}`)!;
     expect(link).toBeInTheDocument();
-    expect(within(link).getByLabelText(`${new Set(withPr.personalRecords.map((p) => p.exerciseId)).size} personal records`)).toBeInTheDocument();
+    const exerciseCount = new Set(withPr.personalRecords.map((p) => p.exerciseId)).size;
+    expect(within(link).getByLabelText(`Records on ${exerciseCount} exercise${exerciseCount === 1 ? '' : 's'}`)).toBeInTheDocument();
 
     await user.click(link);
     await findHeading(withPr.workoutName);
@@ -32,7 +33,7 @@ describe('client history', () => {
     expect(screen.getByText('Sets').parentElement).toHaveTextContent(String(totals.completedSets));
     expect(screen.getByText('Reps', { selector: 'span' }).parentElement).toHaveTextContent(String(totals.totalReps));
     const records = await findCard(`${withPr.personalRecords.length} personal record${withPr.personalRecords.length === 1 ? '' : 's'}`);
-    expect(records.getByText(withPr.personalRecords[0]!.exercise.name)).toBeInTheDocument();
+    expect(records.getAllByText(withPr.personalRecords[0]!.exercise.name).length).toBeGreaterThan(0);
     expect(screen.getAllByRole('table').length).toBeGreaterThan(0);
     expect(screen.getAllByRole('columnheader', { name: 'Set' }).length).toBeGreaterThan(0);
   });

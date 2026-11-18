@@ -30,6 +30,13 @@ public static class JsonShape
         return element;
     }
 
+    /// <summary>
+    /// Asserts two deserialized values are equal by their JSON, for records whose list members make record
+    /// equality reference-based.
+    /// </summary>
+    public static void ShouldBeJson<T>(this T actual, T expected) =>
+        JsonSerializer.Serialize(actual, HttpAssertions.Json).ShouldBe(JsonSerializer.Serialize(expected, HttpAssertions.Json));
+
     public static JsonElement Property(this JsonElement element, string path)
     {
         JsonElement current = element;

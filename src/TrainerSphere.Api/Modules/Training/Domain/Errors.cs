@@ -4,6 +4,8 @@ namespace TrainerSphere.Api.Modules.Training.Domain;
 
 internal static class ClientErrors
 {
+    public static ForbiddenError ListForbidden { get; } = new("Client.ListForbidden", "Only trainers can list clients.");
+
     public static NotFoundError NotFound(Guid id) => new("Client.NotFound", $"The client '{id}' was not found.");
 
     public static DomainError Archived(Guid id) => new("Client.Archived", $"The client '{id}' is archived.");

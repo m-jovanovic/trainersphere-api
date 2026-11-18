@@ -13,7 +13,7 @@ internal static class SessionSummarySql
         SELECT s.id, s.client_id, s.assignment_id, s.workout_name, s.status, s.started_at, s.completed_at,
                COALESCE((SELECT sum(ss.weight_kg * ss.reps) FROM training.session_sets ss WHERE ss.session_id = s.id AND ss.completed), 0) AS total_volume_kg,
                (SELECT count(*)::int FROM training.session_sets ss WHERE ss.session_id = s.id AND ss.completed) AS completed_sets,
-               (SELECT count(*)::int FROM training.personal_records pr WHERE pr.session_id = s.id) AS personal_record_count,
+               (SELECT count(DISTINCT pr.exercise_id)::int FROM training.personal_records pr WHERE pr.session_id = s.id) AS personal_record_count,
                c.first_name, c.last_name
         FROM training.sessions s
         JOIN training.clients c ON c.id = s.client_id

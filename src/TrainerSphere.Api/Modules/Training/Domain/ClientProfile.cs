@@ -89,16 +89,20 @@ internal sealed class ClientProfile
         return true;
     }
 
-    public void Unarchive(DateTime now)
+    /// <summary>
+    /// Reactivates the client; returns false when it was not archived.
+    /// </summary>
+    public bool Unarchive(DateTime now)
     {
         if (!IsArchived)
         {
-            return;
+            return false;
         }
 
         Status = ClientStatus.Active;
         ArchivedAt = null;
         UpdatedAt = now;
+        return true;
     }
 }
 

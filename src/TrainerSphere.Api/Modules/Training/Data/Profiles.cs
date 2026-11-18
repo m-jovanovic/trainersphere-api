@@ -11,6 +11,11 @@ internal interface IClientRepository
 
     Task<IReadOnlyList<ClientProfile>> GetManyAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken);
 
+    /// <summary>
+    /// Lists a trainer's clients by name, optionally filtered by an escaped LIKE pattern and a stored status.
+    /// </summary>
+    Task<IReadOnlyList<ClientProfile>> ListAsync(Guid trainerId, string? search, string? status, CancellationToken cancellationToken);
+
     Task UpdateAsync(ClientProfile client, CancellationToken cancellationToken);
 
     Task<string?> GetTrainerTimeZoneAsync(Guid trainerId, CancellationToken cancellationToken);
@@ -48,6 +53,22 @@ internal sealed class ClientRepository(IDbSession db) : IClientRepository
         IReadOnlyList<ClientRecord> records = await db.QueryAsync<ClientRecord>(
             $"SELECT {Columns} FROM training.clients WHERE id = ANY(@Ids)",
             new { Ids = ids.ToArray() },
+            cancellationToken);
+
+        return [.. records.Select(ClientProfile.Restore)];
+    }
+
+    public async Task<IReadOnlyList<ClientProfile>> ListAsync(Guid trainerId, string? search, string? status, CancellationToken cancellationToken)
+    {
+        IReadOnlyList<ClientRecord> records = await db.QueryAsync<ClientRecord>(
+            $"""
+            SELECT {Columns} FROM training.clients
+            WHERE trainer_id = @TrainerId
+              AND (@Status::text IS NULL OR status = @Status::text)
+              AND (@Search::text IS NULL OR first_name ILIKE @Search ESCAPE '\' OR last_name ILIKE @Search ESCAPE '\' OR email ILIKE @Search ESCAPE '\')
+            ORDER BY lower(first_name), lower(last_name), id
+            """,
+            new { TrainerId = trainerId, Status = status, Search = search },
             cancellationToken);
 
         return [.. records.Select(ClientProfile.Restore)];

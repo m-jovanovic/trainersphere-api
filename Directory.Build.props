@@ -1,23 +1,17 @@
 <Project>
   <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <LangVersion>15</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
     <AnalysisLevel>latest</AnalysisLevel>
     <AnalysisMode>All</AnalysisMode>
-	<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-	<CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <!-- Needed so IDE0005 (unnecessary usings) is reported at build time; XML docs themselves are optional. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <InvariantGlobalization>false</InvariantGlobalization>
   </PropertyGroup>
-  <ItemGroup>
-    <PackageReference 
-      Include="StyleCop.Analyzers" 
-      Version="1.2.0-beta.406"
-      PrivateAssets="all" 
-      Condition="$(MSBuildProjectExtension) == '.csproj'" 
-    />
-    <PackageReference
-      Include="SonarAnalyzer.CSharp"
-      Version="8.44.0.52574"
-      PrivateAssets="all"
-      Condition="$(MSBuildProjectExtension) == '.csproj'"
-    />
-  </ItemGroup>
 </Project>

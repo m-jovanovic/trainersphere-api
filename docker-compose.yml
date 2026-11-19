@@ -1,37 +1,70 @@
-version: '3.4'
+# Local stack: docker compose up --build
+#   web      http://localhost:8080   (UI; nginx proxies /api to the api service)
+#   api      http://localhost:5000   (Scalar docs at /scalar, OpenAPI at /openapi/v1.json)
+#   mailpit  http://localhost:8025   (every email the app sends)
+#   postgres localhost:5433          (trainersphere / trainersphere)
+# Demo accounts are seeded on startup; password for all of them: Demo123!
+name: trainersphere
 
 services:
-  trainersphere-app:
-    image: ${DOCKER_REGISTRY-}app
-    container_name: App
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: trainersphere
+      POSTGRES_USER: trainersphere
+      POSTGRES_PASSWORD: trainersphere
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trainersphere -d trainersphere"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  mailpit:
+    image: axllent/mailpit:v1.34.0
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+
+  api:
     build:
       context: .
-      dockerfile: src/App/Dockerfile
+      dockerfile: src/TrainerSphere.Api/Dockerfile
     depends_on:
-      - trainersphere-db
-
-  trainersphere-db:
-    image: postgres:14.1
-    container_name: Database
+      postgres:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
     environment:
-      - POSTGRES_DB=trainersphere
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    volumes:
-      - ./.containers/database:/var/lib/postgresql/data
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__Database: Host=postgres;Port=5432;Database=trainersphere;Username=trainersphere;Password=trainersphere
+      Database__MigrateOnStartup: "true"
+      Database__SeedDemoData: "true"
+      # Local-only key; real deployments supply their own secret.
+      Auth__SigningKey: compose-only-signing-key-change-me-0123456789abcdef
+      # The stack is served over plain http, so the refresh cookie cannot be Secure here.
+      Auth__RefreshCookieSecure: "false"
+      App__WebBaseUrl: http://localhost:8080
+      Smtp__Host: mailpit
+      Smtp__Port: "1025"
+      OpenApi__Enabled: "true"
+      # Relaxed so demo and e2e runs that sign in repeatedly are not throttled; production default is 10/min.
+      RateLimiting__AuthPermitLimitPerMinute: "1000"
     ports:
-      - 5100:5432
+      - "5000:8080"
 
-  trainersphere-db-management:
-    image: dpage/pgadmin4:latest
-    container_name: Database_management
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
     depends_on:
-      - trainersphere-db
-    volumes:
-      - ./.files/dev_servers.json:/pgadmin4/servers.json
-      - ./.containers/database_management:/var/lib/pgadmin
+      api:
+        condition: service_healthy
     ports:
-      - "5101:80"
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+      - "8080:80"
+
+volumes:
+  postgres-data:
